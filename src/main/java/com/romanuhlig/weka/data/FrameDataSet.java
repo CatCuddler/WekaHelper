@@ -31,6 +31,10 @@ public class FrameDataSet {
         // remove the first frame for each sensor, because no acceleration can be computed
         for (ArrayList<FrameData> sensorList : allFrameData) {
             sensorList.remove(0);
+
+            //TODO: - once the velocity is actually recorded instead of derived, it is no longer necessary to delete a second line
+            // delete a second line, since it used un-updated velocities from the first frame to update its acceleration
+            sensorList.remove(0);
         }
 
     }

@@ -29,7 +29,8 @@ public class FrameDataReader {
             FrameDataSet frameDataSet = new FrameDataSet(frameDataFromFile);
 
             for (int i = 0; i < frameDataSet.allFrameData.get(0).size(); i++) {
-                System.out.println(frameDataSet.allFrameData.get(0).get(i).getAccelerationX());
+                System.out.println("linear acceleration " + frameDataSet.allFrameData.get(0).get(i).getLinAccelerationX());
+                System.out.println("angular acceleration " + frameDataSet.allFrameData.get(0).get(i).getAngAccelerationX());
             }
 
             return frameDataSet;

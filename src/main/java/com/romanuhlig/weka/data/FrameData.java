@@ -38,12 +38,13 @@ public class FrameData {
     @CsvBindByName
     private double linVelZ;
 
-    //TODO: - deal with angular acceleration as well
-    //TODO: - either read real velocity values, or compute them as well
-    // the acceleration can not be read directly from the sensors, and has to be derived
-    private double accelerationX;
-    private double accelerationY;
-    private double accelerationZ;
+    // the acceleration can not be read directly from the sensors, and has to be derived using two frames
+    private double linAccelerationX;
+    private double linAccelerationY;
+    private double linAccelerationZ;
+    private double angAccelerationX;
+    private double angAccelerationY;
+    private double angAccelerationZ;
 
     @CsvBindByName
     private double scale;
@@ -52,11 +53,29 @@ public class FrameData {
 
 
     public void setAccelerationBasedOnPreviousFrame(FrameData previousFrame) {
-        this.accelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
-        this.accelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
-        this.accelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
-    }
 
+        //TODO: - remove linear velocity computation, once that data is collected live
+        // linear velocity
+        this.linVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosX, this.calPosX, previousFrame.time, this.time);
+        this.linVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosY, this.calPosY, previousFrame.time, this.time);
+        this.linVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosZ, this.calPosZ, previousFrame.time, this.time);
+
+        //TODO: - remove angular velocity computation, once that data is collected live
+        // angular velocity
+        this.angVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotX, this.calRotX, previousFrame.time, this.time);
+        this.angVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotY, this.calRotY, previousFrame.time, this.time);
+        this.angVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotZ, this.calRotZ, previousFrame.time, this.time);
+
+        // linear acceleration
+        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
+        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
+        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
+
+        // angular acceleration
+        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
+        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
+        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+    }
 
 
     public String getSensorPosition() {
@@ -115,16 +134,28 @@ public class FrameData {
         return linVelZ;
     }
 
-    public double getAccelerationX() {
-        return accelerationX;
+    public double getLinAccelerationX() {
+        return linAccelerationX;
     }
 
-    public double getAccelerationY() {
-        return accelerationY;
+    public double getLinAccelerationY() {
+        return linAccelerationY;
     }
 
-    public double getAccelerationZ() {
-        return accelerationZ;
+    public double getLinAccelerationZ() {
+        return linAccelerationZ;
+    }
+
+    public double getAngAccelerationX() {
+        return angAccelerationX;
+    }
+
+    public double getAngAccelerationY() {
+        return angAccelerationY;
+    }
+
+    public double getAngAccelerationZ() {
+        return angAccelerationZ;
     }
 
     public double getScale() {
