@@ -1,3 +1,9 @@
+# project settings for Intellij
+/.idea
+
+# maven target folder
+/target/**
+
 # Compiled class file
 *.class
 
