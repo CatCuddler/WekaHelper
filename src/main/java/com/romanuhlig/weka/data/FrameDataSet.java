@@ -9,7 +9,7 @@ import java.util.List;
 public class FrameDataSet {
 
     // an inner List represents all data collected for an individual sensor
-    ArrayList<ArrayList<FrameData>> allFrameData;
+    private ArrayList<ArrayList<FrameData>> allFrameData;
 
     public FrameDataSet(List<FrameData> originalFrameData) {
         allFrameData = new ArrayList<ArrayList<FrameData>>();
@@ -60,5 +60,19 @@ public class FrameDataSet {
             newSensorList.add(newFrameData);
             allFrameData.add(newSensorList);
         }
+    }
+
+    public ArrayList<FrameData> composeFlatList() {
+        ArrayList<FrameData> flatList = new ArrayList<FrameData>();
+        for (ArrayList<FrameData> sensorList : allFrameData
+        ) {
+            flatList.addAll(sensorList);
+        }
+
+        return flatList;
+    }
+
+    public ArrayList<ArrayList<FrameData>> getAllFrameData() {
+        return allFrameData;
     }
 }
