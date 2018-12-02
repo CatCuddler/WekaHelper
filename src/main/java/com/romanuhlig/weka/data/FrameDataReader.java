@@ -7,7 +7,6 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -26,6 +25,7 @@ public class FrameDataReader {
                 Reader reader = Files.newBufferedReader(Paths.get(filePath));
         ) {
             // read data directly into annotated fields of FrameData class
+            @SuppressWarnings("unchecked")
             CsvToBean<FrameData> csvToBean =
                     new CsvToBeanBuilder(reader)
                             .withType(FrameData.class)
@@ -49,6 +49,10 @@ public class FrameDataReader {
         }
     }
 
+    public static void extractFeatures(FrameDataSet frameDataSet){
+
+    }
+
 
     public static void createFeatureSets(String inputFilePath, String outputFilePath) {
 
@@ -58,11 +62,17 @@ public class FrameDataReader {
 
         // read existing data
         FrameDataSet dataSet = readFrameData(inputFilePath);
+        System.out.println("size " + dataSet.getAllFrameData().size());
+
+        // separate data into windows
+        ArrayList<FrameDataSet> segments = dataSet.separateFrameDataIntoWindows(5, 0.1);
+        System.out.println("size b " + segments.size());
 
         // write data back out
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get(outputFeaturesFilePath + "testFile"));
         ) {
+            @SuppressWarnings("unchecked")
             StatefulBeanToCsv<FrameData> beanToCsv = new StatefulBeanToCsvBuilder(writer)
                     .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
                     .build();

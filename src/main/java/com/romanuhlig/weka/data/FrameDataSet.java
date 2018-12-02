@@ -1,6 +1,7 @@
 package com.romanuhlig.weka.data;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -36,7 +37,10 @@ public class FrameDataSet {
             // delete a second line, since it used un-updated velocities from the first frame to update its acceleration
             sensorList.remove(0);
         }
+    }
 
+    public FrameDataSet(ArrayList<ArrayList<FrameData>> allFrameData) {
+        this.allFrameData = allFrameData;
     }
 
 
@@ -75,4 +79,59 @@ public class FrameDataSet {
     public ArrayList<ArrayList<FrameData>> getAllFrameData() {
         return allFrameData;
     }
+
+
+    public ArrayList<FrameDataSet> separateFrameDataIntoWindows(double windowSize, double timeBetweenWindows) {
+
+        // get first point in time
+        ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+        FrameData firstDataPoint = firstSensorList.get(0);
+        double startTime = firstDataPoint.getTime();
+
+        // initialize counters
+        LinkedList<Integer> potentialSegmentStartIndexes = new LinkedList<>();
+        potentialSegmentStartIndexes.add(0);
+        double lastPotentialSegmentStartTime = startTime;
+        double currentSegmentStartTime = startTime;
+
+        ArrayList<FrameDataSet> frameDataSegments = new ArrayList<>();
+
+        for (int i = 0; i < firstSensorList.size(); i++) {
+
+            double frameTime = firstSensorList.get(i).getTime();
+
+            // add another segment start index if enough time has passed
+            if (frameTime >= lastPotentialSegmentStartTime + timeBetweenWindows) {
+
+                potentialSegmentStartIndexes.add(i);
+                lastPotentialSegmentStartTime = firstSensorList.get(i).getTime();
+            }
+
+            // extract another segment if enough time has passed
+            if (frameTime >= currentSegmentStartTime + windowSize) {
+
+                // choose indexes for this segment
+                int startIndex = potentialSegmentStartIndexes.getFirst();
+                int endIndex = i;
+
+                // extract a new segment for all sensors
+                ArrayList<ArrayList<FrameData>> newFrameDataSegment = new ArrayList<>();
+                for (ArrayList<FrameData> sensorList : allFrameData) {
+                    ArrayList<FrameData> sensorSegment = new ArrayList<>(sensorList.subList(startIndex, endIndex));
+                    newFrameDataSegment.add(sensorSegment);
+                }
+                frameDataSegments.add(new FrameDataSet(newFrameDataSegment));
+
+                // update segment indexes and time
+                potentialSegmentStartIndexes.removeFirst();
+                currentSegmentStartTime = firstSensorList.get(potentialSegmentStartIndexes.getFirst()).getTime();
+            }
+
+        }
+
+        return frameDataSegments;
+
+    }
+
+
 }
