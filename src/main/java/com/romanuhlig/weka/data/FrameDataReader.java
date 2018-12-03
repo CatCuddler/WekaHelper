@@ -3,23 +3,22 @@ package com.romanuhlig.weka.data;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
+import weka.core.pmml.jaxbbindings.Output;
 
 import java.io.File;
 import java.io.Reader;
 import java.io.Writer;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class FrameDataReader {
 
     static final String outputBaseFolder = "features";
 
-    public static FrameDataSet readFrameData(String filePath) {
+    public static FrameDataSet readFrameDataSet(String filePath) {
 
         try (
                 // reader in resource statement is automatically closed on failure
@@ -56,56 +55,79 @@ public class FrameDataReader {
 
     }
 
+    // the test subject name is not a feature, but including it in the output data can be useful
+    // when checking if the data is written correctly
+    static boolean includeSubjectNameInFeatureOutput = false;
 
-    public static void createFeatureSets(String inputFilePath, String outputFilePath) {
-
-        // create feature table output folder
-        String outputFeaturesFilePath = outputFilePath + "/" + outputBaseFolder + "/";
-        new File(outputFeaturesFilePath).mkdirs();
+    public static ArrayList<FrameDataSet> readAllFrameDataSets(String inputFilePath) {
 
         // read existing data
         // get files in path
         File inputFolder = new File(inputFilePath);
         File[] listOfInputFiles = inputFolder.listFiles();
 
-        // collect window data from all files
-        ArrayList<FrameDataSet> windows = new ArrayList<>();
+        ArrayList<FrameDataSet> allFrameDataSets = new ArrayList<>();
         for (File inputFile : listOfInputFiles) {
             // exclude lock files
-            if (inputFile.getName().contains(".~")){
+            if (inputFile.getName().startsWith(".~")) {
                 continue;
             }
-            System.out.println(inputFile.getPath());
-            FrameDataSet dataSet = readFrameData(inputFile.getPath());
-            ArrayList<FrameDataSet> dataSetWindows = dataSet.separateFrameDataIntoWindows(5, 0.1);
-            windows.addAll(dataSetWindows);
-            System.out.println("windows: " + windows.size());
+
+            FrameDataSet frameDataSet = readFrameDataSet(inputFile.getPath());
+            allFrameDataSets.add(frameDataSet);
         }
 
-        //FrameDataSet dataSet = readFrameData(inputFilePath);
+        return allFrameDataSets;
 
-        // separate data into windows
-        //   ArrayList<FrameDataSet> windows = dataSet.separateFrameDataIntoWindows(5, 0.1);
-        //  System.out.println("windows: " + windows.size());
+    }
 
-        // prepare header
-        List<String> sensorTypes = windows.get(0).getSensorPositions();
+    public static ArrayList<FrameDataSet> separateFrameDataSetsIntoWindows(ArrayList<FrameDataSet> originalFrameDataSets, double windowSize, double timeBetweenWindows) {
+
+        ArrayList<FrameDataSet> windows = new ArrayList<>();
+        for (FrameDataSet frameDataSet : originalFrameDataSets) {
+            ArrayList<FrameDataSet> dataSetWindows = frameDataSet.separateFrameDataIntoWindows(windowSize, timeBetweenWindows);
+            windows.addAll(dataSetWindows);
+        }
+
+        return windows;
+    }
+
+    public static void createFeatureSets(String inputFilePath, String outputFilePath) {
+
+
+        // read original recorded data, and separate into windows
+        ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
+        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(originalFrameDataSets, 5, 0.1);
+
+        // collect all subject names
+        HashSet<String> subjectNames = new HashSet<>();
+        for (FrameDataSet originalFrameDataSet : originalFrameDataSets) {
+            subjectNames.add(originalFrameDataSet.getSubject());
+        }
+
+        // prepare header for output file
+        // identify sensors in original data
+        List<String> sensorTypes = windows.get(0).getAllSensorPositions();
         ArrayList<String> headerFields = new ArrayList<>();
+        // each feature for every sensor
         for (String sensorType : sensorTypes) {
             headerFields.add(sensorType + "_maximumHeight");
             headerFields.add(sensorType + "_averageHeight");
         }
+        if (includeSubjectNameInFeatureOutput) {
+            headerFields.add("subject");
+        }
         headerFields.add("activity");
 
-        ArrayList<ArrayList<String>> dataFields = new ArrayList<>();
+        ArrayList<OutputFeatureVector> outputFeatureVectors = new ArrayList<>();
 
         // extract features
         // for each window
         for (FrameDataSet singleWindow : windows) {
 
             // create new data line
-            ArrayList<String> dataLine = new ArrayList<>();
-            dataFields.add(dataLine);
+            OutputFeatureVector currentOutputFeatureVector = new OutputFeatureVector(singleWindow.getSubject());
+            outputFeatureVectors.add(currentOutputFeatureVector);
             ArrayList<ArrayList<FrameData>> frameDataSet = singleWindow.getAllFrameData();
 
             for (ArrayList<FrameData> singleSensor : frameDataSet) {
@@ -127,21 +149,62 @@ public class FrameDataReader {
                 averageHeight /= singleSensor.size();
 
                 // add features to data line
-                dataLine.add(Double.toString(maximumHeight));
-                dataLine.add(Double.toString(averageHeight));
+                currentOutputFeatureVector.addFeature(Double.toString(maximumHeight));
+                currentOutputFeatureVector.addFeature(Double.toString(averageHeight));
 
                 //  System.out.println("max          " + maximumHeight);
                 //  System.out.println("avg          " + averageHeight);
 
             }
 
-            dataLine.add(singleWindow.getActivity());
+            if (includeSubjectNameInFeatureOutput) {
+                currentOutputFeatureVector.addFeature(singleWindow.getSubject());
+            }
+            currentOutputFeatureVector.addFeature(singleWindow.getActivity());
 
         }
 
+
+        // create folder for feature output file
+        String outputFeaturesFilePath = outputFilePath + "/" + outputBaseFolder + "/";
+        new File(outputFeaturesFilePath).mkdirs();
+
+        // create folder for each subject
+        ArrayList<String> subjectNameList = new ArrayList<>(subjectNames);
+        for (String subject : subjectNameList) {
+            String subjectFolderPath = outputFilePath + "/" + outputBaseFolder + "/" + subject + "/";
+            new File(subjectFolderPath).mkdirs();
+        }
+
+        // create training and test file for each subject
+        for (String subject : subjectNameList) {
+
+            // collect training and test examples
+            ArrayList<OutputFeatureVector> onlySubjectVectors = new ArrayList<>();
+            ArrayList<OutputFeatureVector> allButSubjectVectors = new ArrayList<>();
+            for (OutputFeatureVector originalVector : outputFeatureVectors) {
+                if (originalVector.subject.equals(subject)) {
+                    onlySubjectVectors.add(originalVector);
+                } else {
+                    allButSubjectVectors.add(originalVector);
+                }
+            }
+
+            writeOutputFeatureVectorToCSV(outputFeaturesFilePath + subject + "/", "trainingDataSet", headerFields, allButSubjectVectors);
+            writeOutputFeatureVectorToCSV(outputFeaturesFilePath + subject + "/", "testDataSet", headerFields, onlySubjectVectors);
+
+        }
+
+
         // write feature data in file
+        writeOutputFeatureVectorToCSV(outputFeaturesFilePath, "allDataInOne", headerFields, outputFeatureVectors);
+
+    }
+
+
+    private static void writeOutputFeatureVectorToCSV(String filePath, String fileName, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
         try (
-                Writer writer = Files.newBufferedWriter(Paths.get(outputFeaturesFilePath + "testFile.csv"));
+                Writer writer = Files.newBufferedWriter(Paths.get(filePath + fileName + ".csv"));
 
                 CSVWriter csvWriter = new CSVWriter(writer,
                         CSVWriter.DEFAULT_SEPARATOR,
@@ -152,15 +215,13 @@ public class FrameDataReader {
             //  String[] headerRecord = {"Name", "Email", "Phone", "Country"};
             csvWriter.writeNext(headerFields.toArray(new String[headerFields.size()]));
 
-            for (ArrayList<String> line : dataFields) {
-                csvWriter.writeNext(line.toArray(new String[line.size()]));
+            for (OutputFeatureVector outputFeatureVector : featureVectors) {
+                csvWriter.writeNext(outputFeatureVector.getFeaturesAsArray());
             }
 
         } catch (Exception e) {
-            System.err.println("unable to write file " + outputFeaturesFilePath);
+            System.err.println("unable to write file " + featureVectors);
         }
-
-
     }
 
 

@@ -165,7 +165,7 @@ public class FrameDataSet {
         });
     }
 
-    public List<String> getSensorPositions() {
+    public List<String> getAllSensorPositions() {
         LinkedList<String> sensorPositions = new LinkedList<>();
         for (ArrayList<FrameData> sensorList : allFrameData) {
             sensorPositions.add(sensorList.get(0).getSensorPosition());
