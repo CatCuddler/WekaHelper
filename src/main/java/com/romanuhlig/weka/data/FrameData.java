@@ -10,6 +10,10 @@ public class FrameData {
 
     @CsvBindByName(column = "tag")
     private String sensorPosition;
+    @CsvBindByName
+    private String subject;
+    @CsvBindByName
+    private String activity;
 
     @CsvBindByName
     private double calPosX;
@@ -80,6 +84,14 @@ public class FrameData {
 
     public String getSensorPosition() {
         return sensorPosition;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getActivity() {
+        return activity;
     }
 
     public double getCalPosX() {
@@ -165,4 +177,5 @@ public class FrameData {
     public double getTime() {
         return time;
     }
+
 }

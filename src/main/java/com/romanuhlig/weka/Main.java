@@ -6,7 +6,7 @@ import com.romanuhlig.weka.time.TimeHelper;
 public class Main {
 
 
-    static String inputFilePath = "./inputFrameData/TestUser__Task1__SID1__1542377909.csv";
+    static String inputFilePath = "./inputFrameData";
     static String outputFilePathBase = "./outputResults/";
     static String outputFolderTag = "";
 

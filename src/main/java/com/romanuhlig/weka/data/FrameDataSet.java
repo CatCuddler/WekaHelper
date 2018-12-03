@@ -1,6 +1,7 @@
 package com.romanuhlig.weka.data;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,9 +11,18 @@ import java.util.List;
 public class FrameDataSet {
 
     // an inner List represents all data collected for an individual sensor
-    private ArrayList<ArrayList<FrameData>> allFrameData;
+    private final ArrayList<ArrayList<FrameData>> allFrameData;
+
+    private final String subject;
+
+    private final String activity;
 
     public FrameDataSet(List<FrameData> originalFrameData) {
+
+        subject = originalFrameData.get(0).getSubject();
+        activity = originalFrameData.get(0).getActivity();
+
+
         allFrameData = new ArrayList<ArrayList<FrameData>>();
 
         // collect all frame data in its corresponding sensor list
@@ -37,10 +47,15 @@ public class FrameDataSet {
             // delete a second line, since it used un-updated velocities from the first frame to update its acceleration
             sensorList.remove(0);
         }
+
+        // sort sensor lists by name, to keep them in the same order later on
+        sortSensorListsByPosition();
     }
 
-    public FrameDataSet(ArrayList<ArrayList<FrameData>> allFrameData) {
+    public FrameDataSet(ArrayList<ArrayList<FrameData>> allFrameData, String subject, String activity) {
         this.allFrameData = allFrameData;
+        this.subject = subject;
+        this.activity = activity;
     }
 
 
@@ -120,7 +135,7 @@ public class FrameDataSet {
                     ArrayList<FrameData> sensorSegment = new ArrayList<>(sensorList.subList(startIndex, endIndex));
                     newFrameDataSegment.add(sensorSegment);
                 }
-                frameDataSegments.add(new FrameDataSet(newFrameDataSegment));
+                frameDataSegments.add(new FrameDataSet(newFrameDataSegment, subject, activity));
 
                 // update segment indexes and time
                 potentialSegmentStartIndexes.removeFirst();
@@ -133,5 +148,29 @@ public class FrameDataSet {
 
     }
 
+    public String getSubject() {
+        return subject;
+    }
+
+    public String getActivity() {
+        return activity;
+    }
+
+    private void sortSensorListsByPosition() {
+        allFrameData.sort(new Comparator<ArrayList<FrameData>>() {
+            @Override
+            public int compare(ArrayList<FrameData> o1, ArrayList<FrameData> o2) {
+                return o1.get(0).getSensorPosition().compareTo(o2.get(0).getSensorPosition());
+            }
+        });
+    }
+
+    public List<String> getSensorPositions() {
+        LinkedList<String> sensorPositions = new LinkedList<>();
+        for (ArrayList<FrameData> sensorList : allFrameData) {
+            sensorPositions.add(sensorList.get(0).getSensorPosition());
+        }
+        return sensorPositions;
+    }
 
 }
