@@ -3,6 +3,9 @@ package com.romanuhlig.weka.data;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.romanuhlig.weka.io.FeatureExtractionResults;
+import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
+import weka.core.pmml.Array;
 import weka.core.pmml.jaxbbindings.Output;
 
 import java.io.File;
@@ -92,7 +95,7 @@ public class FrameDataReader {
         return windows;
     }
 
-    public static void createFeatureSets(String inputFilePath, String outputFilePath) {
+    public static FeatureExtractionResults createFeatureSets(String inputFilePath, String outputFilePath) {
 
 
         // read original recorded data, and separate into windows
@@ -107,7 +110,7 @@ public class FrameDataReader {
 
         // prepare header for output file
         // identify sensors in original data
-        List<String> sensorTypes = windows.get(0).getAllSensorPositions();
+        ArrayList<String> sensorTypes = windows.get(0).getAllSensorPositions();
         ArrayList<String> headerFields = new ArrayList<>();
         // each feature for every sensor
         for (String sensorType : sensorTypes) {
@@ -176,6 +179,8 @@ public class FrameDataReader {
             new File(subjectFolderPath).mkdirs();
         }
 
+        FeatureExtractionResults featureExtractionResults = new FeatureExtractionResults(sensorTypes);
+
         // create training and test file for each subject
         for (String subject : subjectNameList) {
 
@@ -190,21 +195,28 @@ public class FrameDataReader {
                 }
             }
 
-            writeOutputFeatureVectorToCSV(outputFeaturesFilePath + subject + "/", "trainingDataSet", headerFields, allButSubjectVectors);
-            writeOutputFeatureVectorToCSV(outputFeaturesFilePath + subject + "/", "testDataSet", headerFields, onlySubjectVectors);
+            // write and collect files
+            String trainingFilePath = outputFeaturesFilePath + subject + "/trainingDataSet.csv";
+            String testFilePath = outputFeaturesFilePath + subject + "/testDataSet.csv";
+
+            writeOutputFeatureVectorToCSV(trainingFilePath, headerFields, allButSubjectVectors);
+            writeOutputFeatureVectorToCSV(testFilePath, headerFields, onlySubjectVectors);
+
+            featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(trainingFilePath, testFilePath, subject));
 
         }
 
-
         // write feature data in file
-        writeOutputFeatureVectorToCSV(outputFeaturesFilePath, "allDataInOne", headerFields, outputFeatureVectors);
+        writeOutputFeatureVectorToCSV(outputFeaturesFilePath + "/allDataInOne.csv", headerFields, outputFeatureVectors);
+
+        return featureExtractionResults;
 
     }
 
 
-    private static void writeOutputFeatureVectorToCSV(String filePath, String fileName, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
+    private static void writeOutputFeatureVectorToCSV(String filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
         try (
-                Writer writer = Files.newBufferedWriter(Paths.get(filePath + fileName + ".csv"));
+                Writer writer = Files.newBufferedWriter(Paths.get(filePath));
 
                 CSVWriter csvWriter = new CSVWriter(writer,
                         CSVWriter.DEFAULT_SEPARATOR,
