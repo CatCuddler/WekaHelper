@@ -81,7 +81,7 @@ public class Main {
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
-            String outputFolderSensorPermutation = outputFolderMain + sensorPermutation.getNumberOfSensors() + " sensors/";
+            String outputFolderSensorPermutation = outputFolderMain + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
 
             ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(classifiersToUse);
 
