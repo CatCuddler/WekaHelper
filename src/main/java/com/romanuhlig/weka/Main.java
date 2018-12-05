@@ -87,7 +87,7 @@ public class Main {
 
             for (Classifier classifier : classifiers) {
 
-                String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getName() + "/";
+                String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
 
                 for (TrainingAndTestFilePackage filePackage : featureExtractionResults.getTrainingAndTestFilePackages()) {
 

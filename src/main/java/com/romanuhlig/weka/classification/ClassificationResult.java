@@ -24,7 +24,7 @@ public class ClassificationResult {
 
     public ClassificationResult(Evaluation evaluation, Classifier classifier, Instances instances, String subject,
                                 SensorPermutation sensorPermutation) {
-        this.classifier = classifier.getClass().getName();
+        this.classifier = classifier.getClass().getSimpleName();
         this.testDataSubject = subject;
         this.numberOfSensors = sensorPermutation.getNumberOfSensors();
 
