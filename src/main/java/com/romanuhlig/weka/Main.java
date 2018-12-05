@@ -1,9 +1,9 @@
 package com.romanuhlig.weka;
 
+import com.romanuhlig.weka.classification.ClassificationResult;
+import com.romanuhlig.weka.classification.ClassifierFactory;
 import com.romanuhlig.weka.data.FrameDataReader;
-import com.romanuhlig.weka.io.FeatureExtractionResults;
-import com.romanuhlig.weka.io.SensorPermutation;
-import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
+import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
 
 import java.util.*;
@@ -24,6 +24,16 @@ import weka.filters.unsupervised.attribute.Remove;
 public class Main {
 
 
+    // settings
+    static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
+            ClassifierFactory.ClassifierType.J48,
+            ClassifierFactory.ClassifierType.RandomForest,
+            ClassifierFactory.ClassifierType.NaiveBayes,
+            ClassifierFactory.ClassifierType.OneR,
+            ClassifierFactory.ClassifierType.ZeroR));
+
+
+    // folders
     static String inputFilePath = "./inputFrameData";
     static String outputFilePathBase = "./outputResults/";
     static String outputFolderTag = "";
@@ -52,85 +62,108 @@ public class Main {
 
         }
 
+
+        ClassifierFactory classifierFactory = new ClassifierFactory();
+
+
+        String outputFolderMain = outputFilePath + "/results/";
+
+        // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
-            // test weka
-            for (TrainingAndTestFilePackage filePackage : featureExtractionResults.getTrainingAndTestFilePackages()) {
+            String outputFolderSensorPermutation = outputFolderMain + sensorPermutation.getNumberOfSensors() + " sensors/";
 
-                // setup data sources
-                // training data
-                DataSource trainingSource = new DataSource(filePackage.getTrainingFilePath());
-                Instances trainingDataUnfiltered = trainingSource.getDataSet();
-                trainingDataUnfiltered.setClassIndex(trainingDataUnfiltered.numAttributes() - 1);
-                // test data
-                DataSource testSource = new DataSource(filePackage.getTestFilePath());
-                Instances testDataUnfiltered = testSource.getDataSet();
-                testDataUnfiltered.setClassIndex(testDataUnfiltered.numAttributes() - 1);
+            ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(classifiersToUse);
+
+            for (Classifier classifier : classifiers) {
+
+                String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getName() + "/";
+
+                for (TrainingAndTestFilePackage filePackage : featureExtractionResults.getTrainingAndTestFilePackages()) {
+
+                    String outputFolderSubject = outputFolderClassifier + filePackage.getSubject() + "/";
+
+                    // setup data sources
+                    // training data
+                    DataSource trainingSource = new DataSource(filePackage.getTrainingFilePath());
+                    Instances trainingDataUnfiltered = trainingSource.getDataSet();
+                    trainingDataUnfiltered.setClassIndex(trainingDataUnfiltered.numAttributes() - 1);
+                    // test data
+                    DataSource testSource = new DataSource(filePackage.getTestFilePath());
+                    Instances testDataUnfiltered = testSource.getDataSet();
+                    testDataUnfiltered.setClassIndex(testDataUnfiltered.numAttributes() - 1);
 
 
-                // remove attributes from sensors that should not be included in this permutation
-                Enumeration<Attribute> allAttributes = trainingDataUnfiltered.enumerateAttributes();
-                ArrayList<Attribute> allAttributesList = Collections.list(allAttributes);
-                ArrayList<Integer> attributesToRemove = new ArrayList<>();
-                System.out.println(sensorPermutation.getExcludedSensors().size());
-                for (int i = 0; i < allAttributesList.size(); i++) {
-                    if (sensorPermutation.attributeForbidden(allAttributesList.get(i))) {
-                        System.out.println("forbidden " + allAttributesList.get(i).name());
-                        attributesToRemove.add(i);
+                    // remove attributes from sensors that should not be included in this sensor permutation
+                    Enumeration<Attribute> allAttributes = trainingDataUnfiltered.enumerateAttributes();
+                    ArrayList<Attribute> allAttributesList = Collections.list(allAttributes);
+                    ArrayList<Integer> attributesToRemove = new ArrayList<>();
+                    for (int i = 0; i < allAttributesList.size(); i++) {
+                        if (sensorPermutation.attributeForbidden(allAttributesList.get(i))) {
+                            attributesToRemove.add(i);
+                        }
                     }
-                }
 
-                int[] attributeIndicesToRemove = attributesToRemove.stream().mapToInt(i -> i).toArray();
-
-
-                Instances trainingData = trainingDataUnfiltered;
-                Instances testData = testDataUnfiltered;
-
-                if (attributeIndicesToRemove.length > 0) {
-                    System.out.println("removing");
-                    Remove remove = new Remove();
-                    remove.setAttributeIndicesArray(attributeIndicesToRemove);
-                    remove.setInputFormat(trainingData);
-                    trainingData = Filter.useFilter(trainingDataUnfiltered, remove);
-                    testData = Filter.useFilter(testDataUnfiltered, remove);
-                }
+                    int[] attributeIndicesToRemove = ConversionHelper.integerListToIntArray(attributesToRemove);
 
 
-                // actual evaluation
-                Classifier classifier = new J48();
-                classifier.buildClassifier(trainingData);
-                Evaluation eval = new Evaluation(trainingData);
-                eval.evaluateModel(classifier, testData);
+                    Instances trainingData = trainingDataUnfiltered;
+                    Instances testData = testDataUnfiltered;
 
-
-                // output
-                System.out.println();
-                System.out.println();
-                System.out.println();
-                System.out.println();
-                System.out.println();
-
-                System.out.println(filePackage.getSubject());
-
-                System.out.println(sensorPermutation.getFolderStringRepresentation());
-
-                ArrayList<Attribute> attributesTraining = Collections.list(trainingData.enumerateAttributes());
-                ArrayList<Attribute> attributesTest = Collections.list(testData.enumerateAttributes());
-                System.out.println("number of training attributes from weka   " + attributesTraining.size());
-                System.out.println("number of test attributes from weka   " + attributesTest.size());
-
-
-                System.out.println(eval.toSummaryString("\nResults\n======\n", false));
-
-                // confusion matrix
-                double[][] matrix = eval.confusionMatrix();
-                for (int line = 0; line < matrix.length; line++) {
-                    for (int column = 0; column < matrix[line].length; column++) {
-                        System.out.print(Double.toString(matrix[line][column]));
-                        System.out.print("     ");
+                    if (attributeIndicesToRemove.length > 0) {
+                        Remove remove = new Remove();
+                        remove.setAttributeIndicesArray(attributeIndicesToRemove);
+                        remove.setInputFormat(trainingData);
+                        trainingData = Filter.useFilter(trainingDataUnfiltered, remove);
+                        testData = Filter.useFilter(testDataUnfiltered, remove);
                     }
+
+
+                    // actual evaluation
+                    classifier.buildClassifier(trainingData);
+                    Evaluation eval = new Evaluation(trainingData);
+                    eval.evaluateModel(classifier, testData);
+
+
+                    // file output
+                    ClassificationResult classificationResult = new ClassificationResult(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
+                    FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
+
+
+                    // console output
+                    /*
                     System.out.println();
+                    System.out.println();
+                    System.out.println();
+                    System.out.println();
+                    System.out.println();
+
+                    System.out.println(filePackage.getSubject());
+
+                    System.out.println(sensorPermutation.getFolderStringRepresentation());
+
+                    ArrayList<Attribute> attributesTraining = Collections.list(trainingData.enumerateAttributes());
+                    ArrayList<Attribute> attributesTest = Collections.list(testData.enumerateAttributes());
+                    System.out.println("number of training attributes from weka   " + attributesTraining.size());
+                    System.out.println("number of test attributes from weka   " + attributesTest.size());
+
+
+                    System.out.println(eval.toSummaryString("\nResults\n======\n", false));
+
+                    // confusion matrix
+                    double[][] matrix = eval.confusionMatrix();
+                    for (int line = 0; line < matrix.length; line++) {
+                        for (int column = 0; column < matrix[line].length; column++) {
+                            System.out.print(Double.toString(matrix[line][column]));
+                            System.out.print("     ");
+                        }
+                        System.out.println();
+                    }
+                    */
+
                 }
+
+
             }
 
 

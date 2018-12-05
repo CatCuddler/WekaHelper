@@ -43,6 +43,10 @@ public class SensorPermutation {
         return folderStringRepresentation;
     }
 
+    public int getNumberOfSensors() {
+        return includedSensors.size();
+    }
+
     public boolean attributeForbidden(Attribute attribute) {
 
         // test whether the attribute name contains an excluded sensor name
@@ -80,7 +84,7 @@ public class SensorPermutation {
             if (!currentIncludedSensors.isEmpty())
                 allPermutations.add((new SensorPermutation(currentIncludedSensors, currentExcludedSensors)));
             System.out.println("permutation sizes   " + currentIncludedSensors.size() + "   " + currentExcludedSensors.size()
-            + "   " + (currentIncludedSensors.size() + currentExcludedSensors.size()));
+                    + "   " + (currentIncludedSensors.size() + currentExcludedSensors.size()));
 
             // otherwise, look at the current element
         } else {
