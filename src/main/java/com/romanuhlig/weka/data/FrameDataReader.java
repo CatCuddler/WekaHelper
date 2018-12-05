@@ -100,7 +100,7 @@ public class FrameDataReader {
 
         // read original recorded data, and separate into windows
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
-        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(originalFrameDataSets, 5, 0.1);
+        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(originalFrameDataSets, 1, 0.1);
 
         // collect all subject names
         HashSet<String> subjectNames = new HashSet<>();

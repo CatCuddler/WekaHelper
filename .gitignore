@@ -4,6 +4,9 @@
 # maven target folder
 /target/**
 
+# generated evaluation results
+/outputResults/**
+
 # Compiled class file
 *.class
 
