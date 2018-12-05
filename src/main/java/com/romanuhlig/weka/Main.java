@@ -7,7 +7,9 @@ import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.time.StopWatch;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
@@ -41,6 +43,9 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        StopWatch stopwatchFullProcess = new StopWatch();
+        stopwatchFullProcess.start();
+
         // FrameDataReader.readFrameDataSet("./inputFrameData/TestUser__Task1__SID1__1542122933.csv");
 
         String startTime = TimeHelper.getDateWithSeconds();
@@ -66,6 +71,11 @@ public class Main {
         ClassifierFactory classifierFactory = new ClassifierFactory();
 
 
+        StopWatch stopWatchEvaluation = new StopWatch();
+        stopWatchEvaluation.start();
+
+        int numberOfEvaluationsCompleted = 0;
+
         String outputFolderMain = outputFilePath + "/results/";
 
         // Weka evaluation
@@ -85,13 +95,9 @@ public class Main {
 
                     // setup data sources
                     // training data
-                    DataSource trainingSource = new DataSource(filePackage.getTrainingFilePath());
-                    Instances trainingDataUnfiltered = trainingSource.getDataSet();
-                    trainingDataUnfiltered.setClassIndex(trainingDataUnfiltered.numAttributes() - 1);
+                    Instances trainingDataUnfiltered = filePackage.getTrainingDataUnfiltered();
                     // test data
-                    DataSource testSource = new DataSource(filePackage.getTestFilePath());
-                    Instances testDataUnfiltered = testSource.getDataSet();
-                    testDataUnfiltered.setClassIndex(testDataUnfiltered.numAttributes() - 1);
+                    Instances testDataUnfiltered = filePackage.getTestDataUnfiltered();
 
 
                     // remove attributes from sensors that should not be included in this sensor permutation
@@ -131,6 +137,9 @@ public class Main {
 
 
                     // console output
+
+                    System.out.println(numberOfEvaluationsCompleted++);
+
                     /*
                     System.out.println();
                     System.out.println();
@@ -169,6 +178,11 @@ public class Main {
 
         }
 
+        stopWatchEvaluation.stop();
+        stopwatchFullProcess.stop();
+
+        System.out.println("Evaluation took: " + stopWatchEvaluation.getTime(TimeUnit.SECONDS));
+        System.out.println("everything took: " + stopwatchFullProcess.getTime(TimeUnit.SECONDS));
 
     }
 
