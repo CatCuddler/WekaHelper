@@ -17,6 +17,16 @@ public class FileWriter {
 
     public static void writeClassificationResult(ClassificationResult result, String folder, String filename) {
 
+        List<ClassificationResult> results = new ArrayList<>();
+        results.add(result);
+
+        writeClassificationResults(results, folder, filename);
+
+    }
+
+    public static void writeClassificationResults(List<ClassificationResult> results, String folder, String
+            filename) {
+
         // make sure folder exists
         new File(folder).mkdirs();
 
@@ -28,9 +38,6 @@ public class FileWriter {
             StatefulBeanToCsv<ClassificationResult> beanToCsv = new StatefulBeanToCsvBuilder(writer)
                     .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
                     .build();
-
-            List<ClassificationResult> results = new ArrayList<>();
-            results.add(result);
 
             beanToCsv.write(results);
 

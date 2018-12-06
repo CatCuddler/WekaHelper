@@ -13,9 +13,7 @@ import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class TestBench {
@@ -30,20 +28,20 @@ public class TestBench {
 
         String startTime = TimeHelper.getDateWithSeconds();
 
-        String outputFilePath = TestBenchSettings.outputBaseFolder() + startTime + TestBenchSettings.getOutputFolderTag();
+        String outputFolderPath = TestBenchSettings.outputBaseFolder() + startTime + TestBenchSettings.getOutputFolderTag() + "/";
 
-        FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFilePath);
+        FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
 
         ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getSensorPositions());
 
-        System.out.println("permutations:     " + sensorPermutations.size());
+        // System.out.println("permutations:     " + sensorPermutations.size());
         for (SensorPermutation permutation : sensorPermutations) {
 
-            System.out.println();
+            //  System.out.println();
 
-            for (String sensor : permutation.getIncludedSensors()) {
-                System.out.print(sensor + "   ");
-            }
+            //  for (String sensor : permutation.getIncludedSensors()) {
+            //     System.out.print(sensor + "   ");
+            //  }
 
         }
 
@@ -56,16 +54,25 @@ public class TestBench {
 
         int numberOfEvaluationsCompleted = 0;
 
-        String outputFolderMain = outputFilePath + "/results/";
+        String resultsBaseFolder = outputFolderPath + "results/";
+
+        ArrayList<ClassificationResult> allResults = new ArrayList<>();
+
+        HashMap<Integer, ArrayList<ClassificationResult>> sensorNumberResults = new HashMap<>();
 
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
-            String outputFolderSensorPermutation = outputFolderMain + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
+            ArrayList<ClassificationResult> sensorPermutationResults = new ArrayList<>();
+
+            String outputFolderSensorPermutation = resultsBaseFolder + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
 
             ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
 
             for (Classifier classifier : classifiers) {
+
+                ArrayList<ClassificationResult> classifierResults = new ArrayList<>();
+
 
                 String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
 
@@ -112,8 +119,11 @@ public class TestBench {
 
 
                     // file output
-                    ClassificationResult classificationResult = new ClassificationResult(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
+                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResult(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
+
+                    // collect result for summaries
+                    classifierResults.add(classificationResult);
 
 
                     // console output
@@ -152,15 +162,49 @@ public class TestBench {
 
                 }
 
+                ClassificationResult classifierResultSummary = ClassificationResult.summarizeClassifierResults(classifierResults);
+                classifierResults.add(classifierResultSummary);
+                FileWriter.writeClassificationResults(classifierResults, outputFolderClassifier, "classificationResult");
+
+                // collect for overall summary
+                allResults.add(classifierResultSummary);
+
+                // collect for sensor permutation summary
+                sensorPermutationResults.add(classifierResultSummary);
+                // collect for sensor number summary
+                if (sensorNumberResults.containsKey(sensorPermutation.getNumberOfSensors())) {
+                    sensorNumberResults.get(sensorPermutation.getNumberOfSensors()).add(classifierResultSummary);
+                } else {
+                    ArrayList<ClassificationResult> sensorNumberResultList = new ArrayList<>();
+                    sensorNumberResultList.add(classifierResultSummary);
+                    sensorNumberResults.put(sensorPermutation.getNumberOfSensors(), sensorNumberResultList);
+                }
+
 
             }
+
+            FileWriter.writeClassificationResults(sensorPermutationResults, outputFolderSensorPermutation, "classificationResult");
 
 
         }
 
+        // write all results
+        allResults.sort(ClassificationResult.getF1Comperator());
+        FileWriter.writeClassificationResults(allResults, resultsBaseFolder, "classificationResult");
+
+        // write sensor number results
+        Iterator<Integer> sensorNumberIterator = sensorNumberResults.keySet().iterator();
+        while (sensorNumberIterator.hasNext()) {
+            Integer sensorNumber = sensorNumberIterator.next();
+            String outputFolderSensorNumber = resultsBaseFolder + sensorNumber + " sensors/";
+            ArrayList<ClassificationResult> sensorNumberResultsSorted = sensorNumberResults.get(sensorNumber);
+            sensorNumberResultsSorted.sort(ClassificationResult.getF1Comperator());
+            FileWriter.writeClassificationResults(sensorNumberResultsSorted, outputFolderSensorNumber, "classificationResult");
+        }
+
+        // output runtime
         stopWatchEvaluation.stop();
         stopwatchFullProcess.stop();
-
         System.out.println("Evaluation took: " + stopWatchEvaluation.getTime(TimeUnit.SECONDS));
         System.out.println("everything took: " + stopwatchFullProcess.getTime(TimeUnit.SECONDS));
     }

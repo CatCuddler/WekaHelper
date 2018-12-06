@@ -12,7 +12,8 @@ public class TestBenchSettings {
     static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
             ClassifierFactory.ClassifierType.RandomForest,
             ClassifierFactory.ClassifierType.NaiveBayes,
-            ClassifierFactory.ClassifierType.SMO));
+            ClassifierFactory.ClassifierType.SMO
+    ));
 
 
     // folders
@@ -24,19 +25,6 @@ public class TestBenchSettings {
     // input frame data
     static double windowSizeForFrameDataToFeatureConversion = 1;
     static double windowSpacingForFrameDataToFeatureConversion = 0.1;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     public static ArrayList<ClassifierFactory.ClassifierType> getClassifiersToUse() {

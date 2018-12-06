@@ -11,6 +11,7 @@ public class SensorPermutation {
     private final ArrayList<String> includedSensors;
     private final ArrayList<String> excludedSensors;
     private final String folderStringRepresentation;
+    private final String sensorListRepresentation;
 
 
     public SensorPermutation(ArrayList<String> includedSensors, ArrayList<String> excludedSensors) {
@@ -28,6 +29,14 @@ public class SensorPermutation {
             newFolderStringRepresentation += "-" + sensor;
         }
         this.folderStringRepresentation = newFolderStringRepresentation;
+
+        // construct sensor list representation for results as "Sensor01-Sensor02-Sensor03"
+        String newSensorListRepresentation = includedSensors.get(0);
+        for (int i = 1; i < includedSensors.size(); i++) {
+            newSensorListRepresentation += "-" + includedSensors.get(i);
+        }
+        sensorListRepresentation = newSensorListRepresentation;
+
 
     }
 
@@ -83,8 +92,8 @@ public class SensorPermutation {
             // only if at least one sensorPosition is in list
             if (!currentIncludedSensors.isEmpty())
                 allPermutations.add((new SensorPermutation(currentIncludedSensors, currentExcludedSensors)));
-            System.out.println("permutation sizes   " + currentIncludedSensors.size() + "   " + currentExcludedSensors.size()
-                    + "   " + (currentIncludedSensors.size() + currentExcludedSensors.size()));
+            // System.out.println("permutation sizes   " + currentIncludedSensors.size() + "   " + currentExcludedSensors.size()
+            //       + "   " + (currentIncludedSensors.size() + currentExcludedSensors.size()));
 
             // otherwise, look at the current element
         } else {
@@ -107,5 +116,7 @@ public class SensorPermutation {
 
     }
 
-
+    public String getSensorListRepresentation() {
+        return sensorListRepresentation;
+    }
 }

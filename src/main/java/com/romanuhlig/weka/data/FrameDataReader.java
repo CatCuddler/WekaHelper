@@ -44,8 +44,8 @@ public class FrameDataReader {
  }
  */
 
-            System.out.println(frameDataSet.getSubject());
-            System.out.println(frameDataSet.getActivity());
+            //    System.out.println(frameDataSet.getSubject());
+            //   System.out.println(frameDataSet.getActivity());
 
             return frameDataSet;
 
