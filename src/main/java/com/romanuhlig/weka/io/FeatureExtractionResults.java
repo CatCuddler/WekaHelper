@@ -5,10 +5,10 @@ import java.util.ArrayList;
 public class FeatureExtractionResults {
 
     private final ArrayList<TrainingAndTestFilePackage> trainingAndTestFilePackages = new ArrayList<>();
-    private final ArrayList<String> sensorPositions;
+    private final ArrayList<String> allSensorPositions;
 
     public FeatureExtractionResults(ArrayList<String> sensorPositions) {
-        this.sensorPositions = sensorPositions;
+        this.allSensorPositions = sensorPositions;
     }
 
     public void addTrainingAndTestFilePackage(TrainingAndTestFilePackage newPackage) {
@@ -19,7 +19,7 @@ public class FeatureExtractionResults {
         return trainingAndTestFilePackages;
     }
 
-    public ArrayList<String> getSensorPositions() {
-        return sensorPositions;
+    public ArrayList<String> getAllSensorPositions() {
+        return allSensorPositions;
     }
 }

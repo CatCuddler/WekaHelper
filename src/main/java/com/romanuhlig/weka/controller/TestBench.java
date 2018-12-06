@@ -32,18 +32,17 @@ public class TestBench {
 
         FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
 
-        ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getSensorPositions());
+        ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
+        GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
 
         // System.out.println("permutations:     " + sensorPermutations.size());
-        for (SensorPermutation permutation : sensorPermutations) {
+//        for (SensorPermutation permutation : sensorPermutations) {
+        //  System.out.println();
 
-            //  System.out.println();
-
-            //  for (String sensor : permutation.getIncludedSensors()) {
-            //     System.out.print(sensor + "   ");
-            //  }
-
-        }
+        //  for (String sensor : permutation.getIncludedSensors()) {
+        //     System.out.print(sensor + "   ");
+        //  }
+//        }
 
 
         ClassifierFactory classifierFactory = new ClassifierFactory();
@@ -189,7 +188,7 @@ public class TestBench {
         }
 
         // write all results
-        allResults.sort(ClassificationResult.getF1Comperator());
+        allResults.sort(ClassificationResult.getF1Comparator());
         FileWriter.writeClassificationResults(allResults, resultsBaseFolder, "classificationResult");
 
         // write sensor number results
@@ -198,7 +197,7 @@ public class TestBench {
             Integer sensorNumber = sensorNumberIterator.next();
             String outputFolderSensorNumber = resultsBaseFolder + sensorNumber + " sensors/";
             ArrayList<ClassificationResult> sensorNumberResultsSorted = sensorNumberResults.get(sensorNumber);
-            sensorNumberResultsSorted.sort(ClassificationResult.getF1Comperator());
+            sensorNumberResultsSorted.sort(ClassificationResult.getF1Comparator());
             FileWriter.writeClassificationResults(sensorNumberResultsSorted, outputFolderSensorNumber, "classificationResult");
         }
 

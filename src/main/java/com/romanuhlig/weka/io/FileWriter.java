@@ -23,6 +23,29 @@ public class FileWriter {
         writeClassificationResults(results, folder, filename);
 
     }
+//
+//    public static void writeClassificationResults(List<ClassificationResult> results, String folder, String
+//            filename) {
+//
+//        // make sure folder exists
+//        new File(folder).mkdirs();
+//
+//        String fullFilePath = folder + filename + ".csv";
+//
+//        try (
+//                Writer writer = Files.newBufferedWriter(Paths.get(fullFilePath));
+//        ) {
+//            StatefulBeanToCsv<ClassificationResult> beanToCsv = new StatefulBeanToCsvBuilder(writer)
+//                    .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
+//                    .build();
+//
+//            beanToCsv.write(results);
+//
+//        } catch (Exception e) {
+//            System.err.println("could not write classification result " + fullFilePath);
+//        }
+//
+//    }
 
     public static void writeClassificationResults(List<ClassificationResult> results, String folder, String
             filename) {
@@ -34,12 +57,19 @@ public class FileWriter {
 
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get(fullFilePath));
-        ) {
-            StatefulBeanToCsv<ClassificationResult> beanToCsv = new StatefulBeanToCsvBuilder(writer)
-                    .withQuotechar(CSVWriter.NO_QUOTE_CHARACTER)
-                    .build();
 
-            beanToCsv.write(results);
+                CSVWriter csvWriter = new CSVWriter(writer,
+                        CSVWriter.DEFAULT_SEPARATOR,
+                        CSVWriter.NO_QUOTE_CHARACTER,
+                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                        CSVWriter.DEFAULT_LINE_END);
+        ) {
+
+            csvWriter.writeNext(ClassificationResult.getHeaderForCSV());
+
+            for (ClassificationResult result : results) {
+                csvWriter.writeNext(result.getDataForCSV());
+            }
 
         } catch (Exception e) {
             System.err.println("could not write classification result " + fullFilePath);

@@ -1,7 +1,6 @@
 package com.romanuhlig.weka.classification;
 
-import com.opencsv.bean.CsvBindByName;
-import com.romanuhlig.weka.io.ConsoleHelper;
+import com.romanuhlig.weka.controller.GlobalData;
 import com.romanuhlig.weka.io.SensorPermutation;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
@@ -9,32 +8,65 @@ import weka.core.Instances;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class ClassificationResult {
 
-    private static ClassificationResultF1Comperator f1Comperator = new ClassificationResultF1Comperator();
+    private static ClassificationResultF1Comparator f1Comparator = new ClassificationResultF1Comparator();
 
-    @CsvBindByName
     private final String classifier;
-    @CsvBindByName
     private final String testDataSubject;
-
-    @CsvBindByName
     private final int numberOfSensors;
-
-    @CsvBindByName
-    private final String sensorList;
-
-    @CsvBindByName
+    private final List<String> sensorList;
     private final double averageF1Score;
+    private static String[] headerForCSV;
+    private String[] dataForCSV;
+    private String sensorSummary;
 
 
-    private ClassificationResult(String classifier, String testDataSubject, int numberOfSensors, String sensorList, double averageF1Score) {
+    private ClassificationResult(String classifier, String testDataSubject, int numberOfSensors, List<String> sensorList, String sensorSummary, double averageF1Score) {
+
+        // create header for CSV writing later on, MIND THE ORDER, has to stay the same as below
+        if (headerForCSV == null) {
+            LinkedList<String> headerList = new LinkedList<>();
+            headerList = new LinkedList<>();
+            headerList.add("classifier");
+            headerList.add("averageF1Score");
+            headerList.add("numberOfSensors");
+            //            headerList.add("sensorList");
+            for (String sensor : GlobalData.getAllAvailableSensors()) {
+                headerList.add(sensor);
+            }
+            headerList.add("sensorSummary");
+            headerList.add("testDataSubject");
+            headerForCSV = headerList.toArray(new String[headerList.size()]);
+        }
+
+        // collect data for CSV writing later on, MIND THE ORDER
+        LinkedList<String> dataForCSVList = new LinkedList<>();
+        dataForCSVList.add(classifier);
+        dataForCSVList.add(Double.toString(averageF1Score));
+        dataForCSVList.add(Integer.toString(numberOfSensors));
+        //        dataForCSVList.add(sensorList);
+        for (String sensor : GlobalData.getAllAvailableSensors()) {
+            if (sensorList.contains(sensor)) {
+                dataForCSVList.add("USED");
+            } else {
+                dataForCSVList.add("");
+            }
+        }
+        dataForCSVList.add(sensorSummary);
+        dataForCSVList.add(testDataSubject);
+        dataForCSV = dataForCSVList.toArray(new String[dataForCSVList.size()]);
+
+        // collect original data for comparisons
         this.classifier = classifier;
         this.testDataSubject = testDataSubject;
         this.numberOfSensors = numberOfSensors;
         this.sensorList = sensorList;
         this.averageF1Score = averageF1Score;
+        this.sensorSummary = sensorSummary;
     }
 
     public static ClassificationResult constructClassificationResult(Evaluation evaluation, Classifier classifier, Instances instances, String subject,
@@ -44,7 +76,8 @@ public class ClassificationResult {
         String _classifier = classifier.getClass().getSimpleName();
         String _testDataSubject = subject;
         int _numberOfSensors = sensorPermutation.getNumberOfSensors();
-        String _sensorList = sensorPermutation.getSensorListRepresentation();
+        List<String> _sensorList = sensorPermutation.getIncludedSensors();
+        String _sensorSummary = sensorPermutation.getSensorListRepresentation();
 
 //        System.out.println("sensors: " + sensorPermutation.getNumberOfSensors());
 
@@ -67,7 +100,7 @@ public class ClassificationResult {
 //        System.out.println("fmeasure uMI: " + evaluation.unweightedMicroFmeasure());
 //        ConsoleHelper.printConfusionMatrix(evaluation.confusionMatrix());
 
-        ClassificationResult classificationResult = new ClassificationResult(_classifier, _testDataSubject, _numberOfSensors, _sensorList, _averageF1);
+        ClassificationResult classificationResult = new ClassificationResult(_classifier, _testDataSubject, _numberOfSensors, _sensorList, _sensorSummary, _averageF1);
         return classificationResult;
 
     }
@@ -86,7 +119,7 @@ public class ClassificationResult {
         String testDataSubject = "summary";
 
         ClassificationResult summaryResult = new ClassificationResult
-                (old.classifier, testDataSubject, old.numberOfSensors, old.sensorList, averageClassifierF1);
+                (old.classifier, testDataSubject, old.numberOfSensors, old.sensorList, old.sensorSummary, averageClassifierF1);
         return summaryResult;
 
     }
@@ -104,7 +137,7 @@ public class ClassificationResult {
         return numberOfSensors;
     }
 
-    public String getSensorList() {
+    public List<String> getSensorList() {
         return sensorList;
     }
 
@@ -112,12 +145,12 @@ public class ClassificationResult {
         return averageF1Score;
     }
 
-    public static ClassificationResultF1Comperator getF1Comperator() {
-        return f1Comperator;
+    public static ClassificationResultF1Comparator getF1Comparator() {
+        return f1Comparator;
     }
 
 
-    public static class ClassificationResultF1Comperator implements Comparator<ClassificationResult> {
+    public static class ClassificationResultF1Comparator implements Comparator<ClassificationResult> {
         public int compare(ClassificationResult c1, ClassificationResult c2) {
 
             if (Double.isNaN(c1.getAverageF1Score())) {
@@ -136,4 +169,11 @@ public class ClassificationResult {
     }
 
 
+    public static String[] getHeaderForCSV() {
+        return headerForCSV;
+    }
+
+    public String[] getDataForCSV() {
+        return dataForCSV;
+    }
 }
