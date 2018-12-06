@@ -2,6 +2,7 @@ package com.romanuhlig.weka.classification;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.NaiveBayes;
+import weka.classifiers.functions.SMO;
 import weka.classifiers.rules.OneR;
 import weka.classifiers.rules.ZeroR;
 import weka.classifiers.trees.J48;
@@ -12,7 +13,7 @@ import java.util.List;
 
 public class ClassifierFactory {
 
-    public enum ClassifierType {J48, NaiveBayes, RandomForest, ZeroR, OneR}
+    public enum ClassifierType {J48, NaiveBayes, RandomForest, ZeroR, OneR, SMO}
 
 
     public ArrayList<Classifier> getClassifiers(List<ClassifierType> classifierTypes) {
@@ -36,6 +37,9 @@ public class ClassifierFactory {
                     break;
                 case OneR:
                     classifiers.add(getOneR());
+                    break;
+                case SMO:
+                    classifiers.add(getSMO());
                     break;
                 default:
                     System.err.println(classifierType.toString() + "  classifier not implemented!");
@@ -67,6 +71,11 @@ public class ClassifierFactory {
 
     private Classifier getOneR() {
         Classifier classifier = new OneR();
+        return classifier;
+    }
+
+    private Classifier getSMO(){
+        Classifier classifier = new SMO();
         return classifier;
     }
 

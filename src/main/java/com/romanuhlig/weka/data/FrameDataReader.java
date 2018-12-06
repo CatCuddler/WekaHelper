@@ -3,10 +3,9 @@ package com.romanuhlig.weka.data;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.io.FeatureExtractionResults;
 import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
-import weka.core.pmml.Array;
-import weka.core.pmml.jaxbbindings.Output;
 
 import java.io.File;
 import java.io.Reader;
@@ -100,7 +99,10 @@ public class FrameDataReader {
 
         // read original recorded data, and separate into windows
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
-        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(originalFrameDataSets, 1, 0.1);
+        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(
+                originalFrameDataSets,
+                TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
+                TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
 
         // collect all subject names
         HashSet<String> subjectNames = new HashSet<>();
