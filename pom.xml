@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.romanuhlig.weka</groupId>
-    <artifactId>weka</artifactId>
+    <artifactId>WekaMotionRecognitionForCpp</artifactId>
     <version>1.0</version>
 
     <packaging>jar</packaging>
@@ -19,6 +19,29 @@
                 <version>3.8.0</version>
                 <configuration>
                     <release>11</release>
+                    <!-- optionally, include only specified classes (and classes they reference) in jar -->
+                    <!--
+                    <includes>
+                        <include>com/romanuhlig/weka/math/MathHelper.java</include>
+                    </includes>
+                    -->
+                </configuration>
+            </plugin>
+            <!-- include dependencies in packaged jar, e.g. weka -->
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
                 </configuration>
             </plugin>
         </plugins>
