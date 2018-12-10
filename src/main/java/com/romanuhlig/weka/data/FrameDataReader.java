@@ -57,9 +57,6 @@ public class FrameDataReader {
 
     }
 
-    // the test subject name is not a feature, but including it in the output data can be useful
-    // when checking if the data is written correctly
-    static boolean includeSubjectNameInFeatureOutput = false;
 
     public static ArrayList<FrameDataSet> readAllFrameDataSets(String inputFilePath) {
 
@@ -113,16 +110,7 @@ public class FrameDataReader {
         // prepare header for output file
         // identify sensors in original data
         ArrayList<String> sensorTypes = windows.get(0).getAllSensorPositions();
-        ArrayList<String> headerFields = new ArrayList<>();
-        // each feature for every sensor
-        for (String sensorType : sensorTypes) {
-            headerFields.add(sensorType + "_maximumHeight");
-            headerFields.add(sensorType + "_averageHeight");
-        }
-        if (includeSubjectNameInFeatureOutput) {
-            headerFields.add("subject");
-        }
-        headerFields.add("activity");
+        ArrayList<String> headerFields = getHeaderForSensorTypes(sensorTypes, true);
 
         ArrayList<OutputFeatureVector> outputFeatureVectors = new ArrayList<>();
 
@@ -131,41 +119,8 @@ public class FrameDataReader {
         for (FrameDataSet singleWindow : windows) {
 
             // create new data line
-            OutputFeatureVector currentOutputFeatureVector = new OutputFeatureVector(singleWindow.getSubject());
+            OutputFeatureVector currentOutputFeatureVector = getFeaturesForFrameDataSet(singleWindow, true);
             outputFeatureVectors.add(currentOutputFeatureVector);
-            ArrayList<ArrayList<FrameData>> frameDataSet = singleWindow.getAllFrameData();
-
-            for (ArrayList<FrameData> singleSensor : frameDataSet) {
-
-                // calculate features for sensor
-                double maximumHeight = 0;
-                double averageHeight = 0;
-
-                for (FrameData frameData : singleSensor) {
-
-                    // if (frameData.getSensorPosition().equals("head"))
-                    //     System.out.println(frameData.getCalPosZ()); // correctly shows different values from original file
-
-                    if (frameData.getCalPosZ() > maximumHeight) {
-                        maximumHeight = frameData.getCalPosZ();
-                    }
-                    averageHeight += frameData.getCalPosZ();
-                }
-                averageHeight /= singleSensor.size();
-
-                // add features to data line
-                currentOutputFeatureVector.addFeature(Double.toString(maximumHeight));
-                currentOutputFeatureVector.addFeature(Double.toString(averageHeight));
-
-                //  System.out.println("max          " + maximumHeight);
-                //  System.out.println("avg          " + averageHeight);
-
-            }
-
-            if (includeSubjectNameInFeatureOutput) {
-                currentOutputFeatureVector.addFeature(singleWindow.getSubject());
-            }
-            currentOutputFeatureVector.addFeature(singleWindow.getActivity());
 
         }
 
@@ -216,7 +171,72 @@ public class FrameDataReader {
     }
 
 
-    private static void writeOutputFeatureVectorToCSV(String filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
+    public static ArrayList<String> getHeaderForFrameDataSet(FrameDataSet frameDataSet, boolean includeClassForTraining) {
+
+        ArrayList<String> sensorTypes = frameDataSet.getAllSensorPositions();
+        return getHeaderForSensorTypes(sensorTypes, includeClassForTraining);
+    }
+
+    public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes, boolean includeClassForTraining) {
+
+        ArrayList<String> headerFields = new ArrayList<>();
+
+        for (String sensorType : sensorTypes) {
+            headerFields.add(sensorType + "_maximumHeight");
+            headerFields.add(sensorType + "_averageHeight");
+        }
+
+        if (includeClassForTraining) {
+            headerFields.add("activity");
+        }
+
+        return headerFields;
+    }
+
+    public static OutputFeatureVector getFeaturesForFrameDataSet(FrameDataSet dataSource, boolean includeClassForTraining) {
+
+        // create new data line
+        OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject());
+
+        ArrayList<ArrayList<FrameData>> frameDataSet = dataSource.getAllFrameData();
+
+        for (ArrayList<FrameData> singleSensor : frameDataSet) {
+
+            // calculate features for sensor
+            double maximumHeight = 0;
+            double averageHeight = 0;
+
+            for (FrameData frameData : singleSensor) {
+
+                // if (frameData.getSensorPosition().equals("head"))
+                //     System.out.println(frameData.getCalPosZ()); // correctly shows different values from original file
+
+                if (frameData.getCalPosZ() > maximumHeight) {
+                    maximumHeight = frameData.getCalPosZ();
+                }
+                averageHeight += frameData.getCalPosZ();
+            }
+            averageHeight /= singleSensor.size();
+
+            // add features to data line
+            outputFeatureVector.addFeature(Double.toString(maximumHeight));
+            outputFeatureVector.addFeature(Double.toString(averageHeight));
+
+            //  System.out.println("max          " + maximumHeight);
+            //  System.out.println("avg          " + averageHeight);
+
+        }
+
+        if (includeClassForTraining) {
+            outputFeatureVector.addFeature(dataSource.getActivity());
+        }
+
+        return outputFeatureVector;
+    }
+
+
+    private static void writeOutputFeatureVectorToCSV(String
+                                                              filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get(filePath));
 

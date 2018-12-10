@@ -23,11 +23,11 @@ public class FrameDataSet {
         activity = originalFrameData.get(0).getActivity();
 
 
-        allFrameData = new ArrayList<ArrayList<FrameData>>();
+        allFrameData = new ArrayList<>();
 
         // collect all frame data in its corresponding sensor list
         for (FrameData frameData : originalFrameData) {
-            addFrameDataChronologically(frameData);
+            addInitialFrameDataChronologically(frameData);
         }
 
         // compute acceleration
@@ -59,7 +59,7 @@ public class FrameDataSet {
     }
 
 
-    private void addFrameDataChronologically(FrameData newFrameData) {
+    private void addInitialFrameDataChronologically(FrameData newFrameData) {
 
         boolean sensorPositionAlreadyKnown = false;
 

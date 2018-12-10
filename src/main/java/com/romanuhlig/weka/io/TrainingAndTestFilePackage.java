@@ -1,5 +1,6 @@
 package com.romanuhlig.weka.io;
 
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 

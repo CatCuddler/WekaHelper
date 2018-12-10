@@ -55,6 +55,39 @@ public class FrameData {
     @CsvBindByName
     private double time;
 
+    /**
+     * Empty constructor, DO NOT USE
+     * Required by OpenCSV to fill class automatically when reading from csv file, but should not be used manually
+     */
+    public FrameData() {
+    }
+
+
+    public FrameData(String sensorPosition, String subject, String activity,
+                     double calPosX, double calPosY, double calPosZ,
+                     double calRotX, double calRotY, double calRotZ, double calRotW,
+                     double angVelX, double angVelY, double angVelZ,
+                     double linVelX, double linVelY, double linVelZ,
+                     double scale, double time) {
+        this.sensorPosition = sensorPosition;
+        this.subject = subject;
+        this.activity = activity;
+        this.calPosX = calPosX;
+        this.calPosY = calPosY;
+        this.calPosZ = calPosZ;
+        this.calRotX = calRotX;
+        this.calRotY = calRotY;
+        this.calRotZ = calRotZ;
+        this.calRotW = calRotW;
+        this.angVelX = angVelX;
+        this.angVelY = angVelY;
+        this.angVelZ = angVelZ;
+        this.linVelX = linVelX;
+        this.linVelY = linVelY;
+        this.linVelZ = linVelZ;
+        this.scale = scale;
+        this.time = time;
+    }
 
     public void setAccelerationBasedOnPreviousFrame(FrameData previousFrame) {
 
@@ -80,7 +113,6 @@ public class FrameData {
         this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
         this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
     }
-
 
     public String getSensorPosition() {
         return sensorPosition;
