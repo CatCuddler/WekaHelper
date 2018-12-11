@@ -55,6 +55,12 @@ public class FrameData {
     @CsvBindByName
     private double time;
 
+    // acceleration and (currently) velocity have to be calculated from the previous frame,
+    // which leaves data points where that data can not be accurate
+    //TODO: - remove velocity checks, and this attribute, once properly retrieved from actual sensor
+    boolean velocityCalculated = false;
+    boolean accelerationCalculated = false;
+
     /**
      * Empty constructor, DO NOT USE
      * Required by OpenCSV to fill class automatically when reading from csv file, but should not be used manually
@@ -103,15 +109,24 @@ public class FrameData {
         this.angVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotY, this.calRotY, previousFrame.time, this.time);
         this.angVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotZ, this.calRotZ, previousFrame.time, this.time);
 
-        // linear acceleration
-        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
-        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
-        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
+        this.velocityCalculated = true;
 
-        // angular acceleration
-        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
-        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
-        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+
+        if (previousFrame.velocityCalculated) {
+
+            // linear acceleration
+            this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
+            this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
+            this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
+
+            // angular acceleration
+            this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
+            this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
+            this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+
+            accelerationCalculated = true;
+        }
+
     }
 
     public String getSensorPosition() {
@@ -208,6 +223,11 @@ public class FrameData {
 
     public double getTime() {
         return time;
+    }
+
+
+    public boolean derivedDataWasCalculated() {
+        return velocityCalculated && accelerationCalculated;
     }
 
 }

@@ -1,44 +1,57 @@
 package com.romanuhlig.weka.lifeClassification;
 
+import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.data.FrameData;
 import com.romanuhlig.weka.data.FrameDataSet;
-import weka.classifiers.Classifier;
-import weka.core.Attribute;
-import weka.core.DenseInstance;
-import weka.core.Instance;
-
-import java.util.ArrayList;
 
 public class CppDataClassifier {
 
-    private int numberOfDataPoints = 0;
+    private int numberOfDataPointsAdded = 0;
 
-    double timeBetweenCallbacks = 1;
-    double timeOfLastCallback = 0;
+    double timeOfLastFrameData = 0;
+    final double timeBetweenClassifications = 1;
+    double timeOfLastClassification = 0;
+
+    private FrameDataSet frameDataSet;
+
 
     public CppDataClassifier() {
-        //TODO: -pass on and save initial time?
+        frameDataSet = new FrameDataSet("", "");
     }
 
-    public void addDataPoint(String sensorPosition, String subject, String activity,
+    public void addFrameData(String sensorPosition, String subject, String activity,
                              double calPosX, double calPosY, double calPosZ,
                              double calRotX, double calRotY, double calRotZ, double calRotW,
                              double angVelX, double angVelY, double angVelZ,
                              double linVelX, double linVelY, double linVelZ,
                              double scale, double time) {
-        numberOfDataPoints++;
-        outputClassifierResultToCpp("classifier Result = " + numberOfDataPoints);
 
-        FrameData newDataPoint = new FrameData(
+        // only consider a new classification once a new frame has started
+        // that is, not while different sensors for the current frame might still be incoming
+        if ((timeOfLastFrameData != time) && (time - timeOfLastClassification > timeBetweenClassifications)) {
+
+            // only consider a new classification if enough data was collected
+            if (frameDataSet.enoughDataForWindowSize(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion())) {
+
+                timeOfLastClassification = time;
+
+                outputClassifierResultToCpp("classifier Result = " + numberOfDataPointsAdded);
+                outputClassifierResultToCpp(sensorPosition);
+            }
+
+        }
+
+
+        // create and remember new frame data
+        FrameData newFrameData = new FrameData(
                 sensorPosition, subject, activity,
                 calPosX, calPosY, calPosZ,
                 calRotX, calRotY, calRotZ, calRotW,
                 angVelX, angVelY, angVelZ,
                 linVelX, linVelY, linVelZ,
                 scale, time);
-
-
-        outputClassifierResultToCpp(newDataPoint.getSensorPosition() + newDataPoint.getActivity() + newDataPoint.getSubject());
+        frameDataSet.addFrameData(newFrameData);
+        numberOfDataPointsAdded++;
 
 
 // ---------------- Instance creation -------------------------
@@ -63,6 +76,8 @@ public class CppDataClassifier {
 //
 //        classifier.classifyInstance(inst);
 
+
+        timeOfLastFrameData = newFrameData.getTime();
     }
 
     // to be supplied in C++ through JNI

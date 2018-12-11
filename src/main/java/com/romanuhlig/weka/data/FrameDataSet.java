@@ -17,38 +17,25 @@ public class FrameDataSet {
 
     private final String activity;
 
+    public FrameDataSet(String subject, String activity) {
+        this.subject = subject;
+        this.activity = activity;
+        allFrameData = new ArrayList<>();
+    }
+
     public FrameDataSet(List<FrameData> originalFrameData) {
 
         subject = originalFrameData.get(0).getSubject();
         activity = originalFrameData.get(0).getActivity();
-
-
         allFrameData = new ArrayList<>();
 
         // collect all frame data in its corresponding sensor list
         for (FrameData frameData : originalFrameData) {
-            addInitialFrameDataChronologically(frameData);
-        }
-
-        // compute acceleration
-        int frameDataPerSensor = allFrameData.get(0).size();
-        for (int i = 1; i < frameDataPerSensor; i++) {
-            for (ArrayList<FrameData> sensorList : allFrameData) {
-                sensorList.get(i).setAccelerationBasedOnPreviousFrame(sensorList.get(i - 1));
-
-            }
-        }
-
-        // remove the first frame for each sensor, because no acceleration can be computed
-        for (ArrayList<FrameData> sensorList : allFrameData) {
-            sensorList.remove(0);
-
-            //TODO: - once the velocity is actually recorded instead of derived, it is no longer necessary to delete a second line
-            // delete a second line, since it used un-updated velocities from the first frame to update its acceleration
-            sensorList.remove(0);
+            addFrameData(frameData);
         }
 
         // sort sensor lists by name, to keep them in the same order later on
+        //TODO: -currently not done when adding data one by one, check if this would be required for Weka
         sortSensorListsByPosition();
     }
 
@@ -59,7 +46,7 @@ public class FrameDataSet {
     }
 
 
-    private void addInitialFrameDataChronologically(FrameData newFrameData) {
+    public void addFrameData(FrameData newFrameData) {
 
         boolean sensorPositionAlreadyKnown = false;
 
@@ -69,9 +56,22 @@ public class FrameDataSet {
                     && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
                 sensorList.add(newFrameData);
                 sensorPositionAlreadyKnown = true;
+                // compute acceleration
+                if (sensorList.size() > 1) {
+                    FrameData previousFrameData = sensorList.get(sensorList.size() - 2);
+                    newFrameData.setAccelerationBasedOnPreviousFrame(previousFrameData);
+
+                    // remove the first pieces of data, where acceleration could not yet have been set correctly
+                    if (!previousFrameData.derivedDataWasCalculated()) {
+                        // can only happen when the first data pieces are added,
+                        // meaning the previous piece of data has to be the first in the list
+                        sensorList.remove(0);
+                    }
+                }
                 break;
             }
         }
+
 
         // if no sensor list exist for this sensor yet, add a new one
         if (!sensorPositionAlreadyKnown) {
@@ -173,4 +173,17 @@ public class FrameDataSet {
         return sensorPositions;
     }
 
+
+    public boolean enoughDataForWindowSize(double windowSize) {
+
+        if (allFrameData.size() > 0 && allFrameData.get(0).size() > 0) {
+            ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+            double startTime = firstSensorList.get(0).getTime();
+            double endTime = firstSensorList.get(firstSensorList.size() - 1).getTime();
+            return (endTime - startTime) > windowSize;
+        } else {
+            return false;
+        }
+
+    }
 }
