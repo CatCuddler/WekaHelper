@@ -6,11 +6,10 @@ import com.romanuhlig.weka.data.FrameDataSet;
 
 public class CppDataClassifier {
 
-    private int numberOfDataPointsAdded = 0;
-
     double timeOfLastFrameData = 0;
-    final double timeBetweenClassifications = 1;
     double timeOfLastClassification = 0;
+
+    final double timeBetweenClassifications = 1;
 
     private FrameDataSet frameDataSet;
 
@@ -26,17 +25,32 @@ public class CppDataClassifier {
                              double linVelX, double linVelY, double linVelZ,
                              double scale, double time) {
 
+//        if (frameDataSet.getAllFrameData().size() > 0) {
+//            if (frameDataSet.getAllFrameData().get(0) != null) {
+//                outputClassifierResultToCpp("" + frameDataSet.getAllFrameData().get(0).size());
+//            }
+//        }
+
+//        outputClassifierResultToCpp("" + time);
+
         // only consider a new classification once a new frame has started
         // that is, not while different sensors for the current frame might still be incoming
-        if ((timeOfLastFrameData != time) && (time - timeOfLastClassification > timeBetweenClassifications)) {
+        if ((time != timeOfLastFrameData) && (time - timeOfLastClassification > timeBetweenClassifications)) {
 
             // only consider a new classification if enough data was collected
             if (frameDataSet.enoughDataForWindowSize(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion())) {
 
                 timeOfLastClassification = time;
 
-                outputClassifierResultToCpp("classifier Result = " + numberOfDataPointsAdded);
-                outputClassifierResultToCpp(sensorPosition);
+                FrameDataSet frameDataSetForWindow =
+                        frameDataSet.getLatestDataForWindowSizeAndRemoveEarlierData(
+                                TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion());
+
+                outputClassifierResultToCpp("number of sensor lists = " + frameDataSetForWindow.getAllFrameData().size());
+                outputClassifierResultToCpp("first list data = " + frameDataSetForWindow.getAllFrameData().get(0).size());
+//                outputClassifierResultToCpp("classifier Result = " + frameDataSet.getAllFrameData().get(0).size());
+//                outputClassifierResultToCpp(sensorPosition);
+
             }
 
         }
@@ -51,7 +65,8 @@ public class CppDataClassifier {
                 linVelX, linVelY, linVelZ,
                 scale, time);
         frameDataSet.addFrameData(newFrameData);
-        numberOfDataPointsAdded++;
+
+        timeOfLastFrameData = newFrameData.getTime();
 
 
 // ---------------- Instance creation -------------------------
@@ -77,7 +92,6 @@ public class CppDataClassifier {
 //        classifier.classifyInstance(inst);
 
 
-        timeOfLastFrameData = newFrameData.getTime();
     }
 
     // to be supplied in C++ through JNI

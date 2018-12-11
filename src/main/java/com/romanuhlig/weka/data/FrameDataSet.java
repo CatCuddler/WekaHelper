@@ -1,5 +1,8 @@
 package com.romanuhlig.weka.data;
 
+import com.romanuhlig.weka.lifeClassification.CppDataClassifier;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -148,6 +151,37 @@ public class FrameDataSet {
 
     }
 
+    public FrameDataSet getLatestDataForWindowSizeAndRemoveEarlierData(double windowSize) {
+
+
+        ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+
+        // determine index of first data point in time frame
+        double latestTime = firstSensorList.get(firstSensorList.size() - 1).getTime();
+        int indexOfFirstSensorData = 0;
+        for (int i = firstSensorList.size() - 1; i >= 0; i--) {
+            if (latestTime - firstSensorList.get(i).getTime() >= windowSize) {
+                indexOfFirstSensorData = i;
+                break;
+            }
+        }
+
+        // collect sublists within the required time frame
+        ArrayList<ArrayList<FrameData>> newSensorLists = new ArrayList<>();
+        for (int i = 0; i < allFrameData.size(); i++) {
+            ArrayList<FrameData> oldSensorList = allFrameData.get(i);
+            ArrayList<FrameData> newSensorList =
+                    new ArrayList<>(oldSensorList.subList(indexOfFirstSensorData, oldSensorList.size() - 1));
+            newSensorLists.add(newSensorList);
+            // we will not need the older data either, so we can forget it by also using the reduced list
+            allFrameData.set(i, newSensorList);
+        }
+
+        return new FrameDataSet(newSensorLists, subject, activity);
+
+
+    }
+
     public String getSubject() {
         return subject;
     }
@@ -186,4 +220,6 @@ public class FrameDataSet {
         }
 
     }
+
+
 }
