@@ -27,6 +27,10 @@ public class TestBenchSettings {
     static double windowSpacingForFrameDataToFeatureConversion = 0.1;
 
 
+    // result output
+    static boolean writeAllModelsToFolder = true;
+
+
     public static ArrayList<ClassifierFactory.ClassifierType> getClassifiersToUse() {
         return classifiersToUse;
     }
@@ -49,5 +53,9 @@ public class TestBenchSettings {
 
     public static double getWindowSpacingForFrameDataToFeatureConversion() {
         return windowSpacingForFrameDataToFeatureConversion;
+    }
+
+    public static boolean isWriteAllModelsToFolder() {
+        return writeAllModelsToFolder;
     }
 }

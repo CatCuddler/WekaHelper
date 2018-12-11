@@ -10,6 +10,7 @@ import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
 
@@ -118,8 +119,14 @@ public class TestBench {
 
 
                     // file output
+                    // current result
                     ClassificationResult classificationResult = ClassificationResult.constructClassificationResult(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
+                    // model
+                    if (TestBenchSettings.writeAllModelsToFolder) {
+                        SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
+                    }
+
 
                     // collect result for summaries
                     classifierResults.add(classificationResult);

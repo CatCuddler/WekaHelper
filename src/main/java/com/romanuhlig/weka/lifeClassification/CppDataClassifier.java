@@ -3,6 +3,10 @@ package com.romanuhlig.weka.lifeClassification;
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.data.FrameData;
 import com.romanuhlig.weka.data.FrameDataSet;
+import weka.classifiers.Classifier;
+
+import java.io.File;
+import java.net.URLDecoder;
 
 public class CppDataClassifier {
 
@@ -13,9 +17,20 @@ public class CppDataClassifier {
 
     private FrameDataSet frameDataSet;
 
+    final String pathToClassifier;
+    Classifier classifier;
+
 
     public CppDataClassifier() {
         frameDataSet = new FrameDataSet("", "");
+
+        // load pre-trained weka model
+        pathToClassifier = getFilePathToJar() + "/wekaModel.model";
+        try {
+            classifier = (Classifier) weka.core.SerializationHelper.read(pathToClassifier);
+        } catch (Exception e) {
+            outputClassifierResultToCpp("unable to load weka classifier from   " + pathToClassifier + "   !!!");
+        }
     }
 
     public void addFrameData(String sensorPosition, String subject, String activity,
@@ -24,6 +39,7 @@ public class CppDataClassifier {
                              double angVelX, double angVelY, double angVelZ,
                              double linVelX, double linVelY, double linVelZ,
                              double scale, double time) {
+
 
 //        if (frameDataSet.getAllFrameData().size() > 0) {
 //            if (frameDataSet.getAllFrameData().get(0) != null) {
@@ -92,6 +108,19 @@ public class CppDataClassifier {
 //        classifier.classifyInstance(inst);
 
 
+    }
+
+    String getFilePathToJar() {
+
+        String path = CppDataClassifier.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        try {
+            path = new File(path).getParentFile().getPath();
+            String decodedPath = URLDecoder.decode(path, "UTF-8");
+            return decodedPath;
+        } catch (Exception e) {
+            outputClassifierResultToCpp("Determining jar folder for weka model loading failed !!!");
+            return "Determining jar folder for weka model loading failed !!!";
+        }
     }
 
     // to be supplied in C++ through JNI
