@@ -60,6 +60,12 @@ public class TestBench {
 
         HashMap<Integer, ArrayList<ClassificationResult>> sensorNumberResults = new HashMap<>();
 
+        ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
+
+        int numberOfEvaluationsInTotal =
+                sensorPermutations.size() * classifiers.size()
+                        * featureExtractionResults.getTrainingAndTestFilePackages().size();
+
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
@@ -67,7 +73,6 @@ public class TestBench {
 
             String outputFolderSensorPermutation = resultsBaseFolder + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
 
-            ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
 
             for (Classifier classifier : classifiers) {
 
@@ -137,13 +142,15 @@ public class TestBench {
 
                     // console output
                     // evaluation counter
-                    System.out.println("evaluations done:   " + numberOfEvaluationsCompleted++);
+                    numberOfEvaluationsCompleted++;
+                    System.out.println("evaluations done:   " + numberOfEvaluationsCompleted + "   /   " + numberOfEvaluationsInTotal);
 
-                    // attributes in current training instances
-                    System.out.println("attributes in current training instance:");
-                    for (int i = 0; i < trainingData.numAttributes(); i++) {
-                        System.out.println(trainingData.attribute(i).name());
-                    }
+
+//                    // attributes in current training instances
+//                    System.out.println("attributes in current training instance:");
+//                    for (int i = 0; i < trainingData.numAttributes(); i++) {
+//                        System.out.println(trainingData.attribute(i).name());
+//                    }
 
                     /*
                     System.out.println();
@@ -220,8 +227,9 @@ public class TestBench {
         // output runtime
         stopWatchEvaluation.stop();
         stopwatchFullProcess.stop();
-        System.out.println("Evaluation took: " + stopWatchEvaluation.getTime(TimeUnit.SECONDS));
-        System.out.println("everything took: " + stopwatchFullProcess.getTime(TimeUnit.SECONDS));
+        System.out.println();
+        System.out.println("duration of evaluation:   " + stopWatchEvaluation.getTime(TimeUnit.SECONDS) + " seconds");
+        System.out.println("duration overall:         " + stopwatchFullProcess.getTime(TimeUnit.SECONDS) + "   seconds");
     }
 
 

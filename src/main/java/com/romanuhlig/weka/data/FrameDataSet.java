@@ -33,10 +33,6 @@ public class FrameDataSet {
         for (FrameData frameData : originalFrameData) {
             addFrameData(frameData);
         }
-
-        // sort sensor lists by name, to keep them in the same order later on
-        //TODO: -currently not done when adding data one by one, check if this would be required for Weka
-        sortSensorListsByPosition();
     }
 
     public FrameDataSet(ArrayList<ArrayList<FrameData>> allSensorLists, String subject, String activity) {

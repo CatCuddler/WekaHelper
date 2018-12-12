@@ -140,11 +140,11 @@ public class CppDataClassifier {
 //                outputClassifierResultToCpp("f");
 
 
-//              output state for debugging
-                outputClassifierResultToCpp("final attributes in instance:");
-                for (int i = 0; i < instance.numAttributes(); i++) {
-                    outputClassifierResultToCpp(instance.attribute(i).name() + "   " + instance.value(i));
-                }
+////              output state for debugging
+//                outputClassifierResultToCpp("final attributes in instance:");
+//                for (int i = 0; i < instance.numAttributes(); i++) {
+//                    outputClassifierResultToCpp(instance.attribute(i).name() + "   " + instance.value(i));
+//                }
 
 
                 // predict the class
