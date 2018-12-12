@@ -1,8 +1,5 @@
 package com.romanuhlig.weka.data;
 
-import com.romanuhlig.weka.lifeClassification.CppDataClassifier;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -14,7 +11,7 @@ import java.util.List;
 public class FrameDataSet {
 
     // an inner List represents all data collected for an individual sensor
-    private final ArrayList<ArrayList<FrameData>> allFrameData;
+    private final ArrayList<ArrayList<FrameData>> allSensorLists;
 
     private final String subject;
 
@@ -23,14 +20,14 @@ public class FrameDataSet {
     public FrameDataSet(String subject, String activity) {
         this.subject = subject;
         this.activity = activity;
-        allFrameData = new ArrayList<>();
+        allSensorLists = new ArrayList<>();
     }
 
     public FrameDataSet(List<FrameData> originalFrameData) {
 
         subject = originalFrameData.get(0).getSubject();
         activity = originalFrameData.get(0).getActivity();
-        allFrameData = new ArrayList<>();
+        allSensorLists = new ArrayList<>();
 
         // collect all frame data in its corresponding sensor list
         for (FrameData frameData : originalFrameData) {
@@ -42,8 +39,8 @@ public class FrameDataSet {
         sortSensorListsByPosition();
     }
 
-    public FrameDataSet(ArrayList<ArrayList<FrameData>> allFrameData, String subject, String activity) {
-        this.allFrameData = allFrameData;
+    public FrameDataSet(ArrayList<ArrayList<FrameData>> allSensorLists, String subject, String activity) {
+        this.allSensorLists = allSensorLists;
         this.subject = subject;
         this.activity = activity;
     }
@@ -54,7 +51,7 @@ public class FrameDataSet {
         boolean sensorPositionAlreadyKnown = false;
 
         // find the corresponding sensor list, and add the new data
-        for (ArrayList<FrameData> sensorList : allFrameData) {
+        for (ArrayList<FrameData> sensorList : allSensorLists) {
             if (!sensorList.isEmpty()
                     && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
                 sensorList.add(newFrameData);
@@ -80,13 +77,21 @@ public class FrameDataSet {
         if (!sensorPositionAlreadyKnown) {
             ArrayList<FrameData> newSensorList = new ArrayList<FrameData>();
             newSensorList.add(newFrameData);
-            allFrameData.add(newSensorList);
+            addNewSensorListAndSortByPosition(newSensorList);
         }
     }
 
+    void addNewSensorListAndSortByPosition(ArrayList<FrameData> newSensorList) {
+
+        allSensorLists.add(newSensorList);
+        sortSensorListsByPosition();
+
+    }
+
+
     public ArrayList<FrameData> composeFlatList() {
         ArrayList<FrameData> flatList = new ArrayList<FrameData>();
-        for (ArrayList<FrameData> sensorList : allFrameData
+        for (ArrayList<FrameData> sensorList : allSensorLists
         ) {
             flatList.addAll(sensorList);
         }
@@ -94,15 +99,15 @@ public class FrameDataSet {
         return flatList;
     }
 
-    public ArrayList<ArrayList<FrameData>> getAllFrameData() {
-        return allFrameData;
+    public ArrayList<ArrayList<FrameData>> getAllSensorLists() {
+        return allSensorLists;
     }
 
 
     public ArrayList<FrameDataSet> separateFrameDataIntoWindows(double windowSize, double timeBetweenWindows) {
 
         // get first point in time
-        ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+        ArrayList<FrameData> firstSensorList = allSensorLists.get(0);
         FrameData firstDataPoint = firstSensorList.get(0);
         double startTime = firstDataPoint.getTime();
 
@@ -134,7 +139,7 @@ public class FrameDataSet {
 
                 // extract a new segment for all sensors
                 ArrayList<ArrayList<FrameData>> newFrameDataSegment = new ArrayList<>();
-                for (ArrayList<FrameData> sensorList : allFrameData) {
+                for (ArrayList<FrameData> sensorList : allSensorLists) {
                     ArrayList<FrameData> sensorSegment = new ArrayList<>(sensorList.subList(startIndex, endIndex));
                     newFrameDataSegment.add(sensorSegment);
                 }
@@ -154,7 +159,7 @@ public class FrameDataSet {
     public FrameDataSet getLatestDataForWindowSizeAndRemoveEarlierData(double windowSize) {
 
 
-        ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+        ArrayList<FrameData> firstSensorList = allSensorLists.get(0);
 
         // determine index of first data point in time frame
         double latestTime = firstSensorList.get(firstSensorList.size() - 1).getTime();
@@ -168,13 +173,13 @@ public class FrameDataSet {
 
         // collect sublists within the required time frame
         ArrayList<ArrayList<FrameData>> newSensorLists = new ArrayList<>();
-        for (int i = 0; i < allFrameData.size(); i++) {
-            ArrayList<FrameData> oldSensorList = allFrameData.get(i);
+        for (int i = 0; i < allSensorLists.size(); i++) {
+            ArrayList<FrameData> oldSensorList = allSensorLists.get(i);
             ArrayList<FrameData> newSensorList =
                     new ArrayList<>(oldSensorList.subList(indexOfFirstSensorData, oldSensorList.size() - 1));
             newSensorLists.add(newSensorList);
             // we will not need the older data either, so we can forget it by also using the reduced list
-            allFrameData.set(i, newSensorList);
+            allSensorLists.set(i, newSensorList);
         }
 
         return new FrameDataSet(newSensorLists, subject, activity);
@@ -191,7 +196,7 @@ public class FrameDataSet {
     }
 
     private void sortSensorListsByPosition() {
-        allFrameData.sort(new Comparator<ArrayList<FrameData>>() {
+        allSensorLists.sort(new Comparator<ArrayList<FrameData>>() {
             @Override
             public int compare(ArrayList<FrameData> o1, ArrayList<FrameData> o2) {
                 return o1.get(0).getSensorPosition().compareTo(o2.get(0).getSensorPosition());
@@ -201,7 +206,7 @@ public class FrameDataSet {
 
     public ArrayList<String> getAllSensorPositions() {
         ArrayList<String> sensorPositions = new ArrayList<>();
-        for (ArrayList<FrameData> sensorList : allFrameData) {
+        for (ArrayList<FrameData> sensorList : allSensorLists) {
             sensorPositions.add(sensorList.get(0).getSensorPosition());
         }
         return sensorPositions;
@@ -210,8 +215,8 @@ public class FrameDataSet {
 
     public boolean enoughDataForWindowSize(double windowSize) {
 
-        if (allFrameData.size() > 0 && allFrameData.get(0).size() > 0) {
-            ArrayList<FrameData> firstSensorList = allFrameData.get(0);
+        if (allSensorLists.size() > 0 && allSensorLists.get(0).size() > 0) {
+            ArrayList<FrameData> firstSensorList = allSensorLists.get(0);
             double startTime = firstSensorList.get(0).getTime();
             double endTime = firstSensorList.get(firstSensorList.size() - 1).getTime();
             return (endTime - startTime) > windowSize;

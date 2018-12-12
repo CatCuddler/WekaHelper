@@ -2,11 +2,18 @@ package com.romanuhlig.weka.lifeClassification;
 
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.data.FrameData;
+import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.data.FrameDataSet;
+import com.romanuhlig.weka.data.OutputFeatureVector;
 import weka.classifiers.Classifier;
+import weka.core.Attribute;
+import weka.core.DenseInstance;
+import weka.core.Instance;
+import weka.core.Instances;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.ArrayList;
 
 public class CppDataClassifier {
 
@@ -28,6 +35,7 @@ public class CppDataClassifier {
         pathToClassifier = getFilePathToJar() + "/wekaModel.model";
         try {
             classifier = (Classifier) weka.core.SerializationHelper.read(pathToClassifier);
+            outputClassifierResultToCpp("weka model successfully loaded from file");
         } catch (Exception e) {
             outputClassifierResultToCpp("unable to load weka classifier from   " + pathToClassifier + "   !!!");
         }
@@ -41,9 +49,9 @@ public class CppDataClassifier {
                              double scale, double time) {
 
 
-//        if (frameDataSet.getAllFrameData().size() > 0) {
-//            if (frameDataSet.getAllFrameData().get(0) != null) {
-//                outputClassifierResultToCpp("" + frameDataSet.getAllFrameData().get(0).size());
+//        if (frameDataSet.getAllSensorLists().size() > 0) {
+//            if (frameDataSet.getAllSensorLists().get(0) != null) {
+//                outputClassifierResultToCpp("" + frameDataSet.getAllSensorLists().get(0).size());
 //            }
 //        }
 
@@ -58,13 +66,101 @@ public class CppDataClassifier {
 
                 timeOfLastClassification = time;
 
+//                outputClassifierResultToCpp("a");
+
                 FrameDataSet frameDataSetForWindow =
                         frameDataSet.getLatestDataForWindowSizeAndRemoveEarlierData(
                                 TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion());
 
-                outputClassifierResultToCpp("number of sensor lists = " + frameDataSetForWindow.getAllFrameData().size());
-                outputClassifierResultToCpp("first list data = " + frameDataSetForWindow.getAllFrameData().get(0).size());
-//                outputClassifierResultToCpp("classifier Result = " + frameDataSet.getAllFrameData().get(0).size());
+//                outputClassifierResultToCpp("b");
+
+                // create features
+                OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow, false);
+                ArrayList<String> header = FrameDataReader.getHeaderForFrameDataSet(frameDataSetForWindow, false);
+
+//                outputClassifierResultToCpp("c");
+
+                // create weka data instance from features
+                // ---------------- Instance creation -------------------------
+                // Create empty instance with three attribute values
+                int numberOfFeatures = header.size();
+                Instance instance = new DenseInstance(numberOfFeatures);
+                ArrayList<Attribute> attributes = new ArrayList<>(numberOfFeatures);
+                for (int i = 0; i < numberOfFeatures; i++) {
+                    Attribute newAttribute = new Attribute(header.get(i));
+                    attributes.add(newAttribute);
+//                    outputClassifierResultToCpp("attribute added:   " + header.get(i));
+                }
+
+
+                // add class attribute
+                ArrayList<String> classVal = new ArrayList<>();
+                classVal.add("BackStep");
+                classVal.add("CircleWalk");
+                classVal.add("Kiks");
+                classVal.add("Squat");
+                Attribute classAttribute = new Attribute("activity", classVal);
+                attributes.add(classAttribute);
+//                try {
+//                    attributes.add(new Attribute("@@class@@", classVal));
+//
+//                } catch (Exception e) {
+//                    outputClassifierResultToCpp(e.getLocalizedMessage());
+//                }
+
+
+//                outputClassifierResultToCpp("d");
+
+                // create an Instances Object to house the instance (as its single entry)
+                Instances instances = new Instances("LifeInstances", attributes, 0);
+                instances.setClass(classAttribute);
+
+                // make them known to each other
+                instances.add(instance);
+                instance.setDataset(instances);
+
+//                outputClassifierResultToCpp("e");
+
+                // fill the attribute values for the instance
+                for (int i = 0; i < numberOfFeatures; i++) {
+//                    outputClassifierResultToCpp("trying to set value:   ");
+//                    outputClassifierResultToCpp("" + features.getFeatures().get(i));
+//                    outputClassifierResultToCpp("" + attributes.get(i).name());
+
+                    try {
+                        instance.setValue(attributes.get(i), Double.parseDouble(features.getFeatures().get(i)));
+//                        outputClassifierResultToCpp("success setting value:   ");
+                    } catch (Exception e) {
+//                        outputClassifierResultToCpp(e.getLocalizedMessage());
+//                        outputClassifierResultToCpp("error setting value:   ");
+                    }
+                }
+
+
+//                outputClassifierResultToCpp("f");
+
+
+//              output state for debugging
+                outputClassifierResultToCpp("final attributes in instance:");
+                for (int i = 0; i < instance.numAttributes(); i++) {
+                    outputClassifierResultToCpp(instance.attribute(i).name() + "   " + instance.value(i));
+                }
+
+
+                // predict the class
+                try {
+                    double prediction = classifier.classifyInstance(instance);
+                    outputClassifierResultToCpp("prediction:   " + prediction + "   " + classVal.get((int) prediction));
+                } catch (Exception e) {
+                    outputClassifierResultToCpp(e.getLocalizedMessage());
+                    outputClassifierResultToCpp("classification failed !!!");
+                }
+
+//                outputClassifierResultToCpp("g");
+
+//                outputClassifierResultToCpp("number of sensor lists = " + frameDataSetForWindow.getAllSensorLists().size());
+//                outputClassifierResultToCpp("first list data = " + frameDataSetForWindow.getAllSensorLists().get(0).size());
+//                outputClassifierResultToCpp("classifier Result = " + frameDataSet.getAllSensorLists().get(0).size());
 //                outputClassifierResultToCpp(sensorPosition);
 
             }

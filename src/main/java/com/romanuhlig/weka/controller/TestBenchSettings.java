@@ -12,7 +12,8 @@ public class TestBenchSettings {
     static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
             ClassifierFactory.ClassifierType.RandomForest,
             ClassifierFactory.ClassifierType.NaiveBayes,
-            ClassifierFactory.ClassifierType.SMO
+            ClassifierFactory.ClassifierType.SMO,
+            ClassifierFactory.ClassifierType.OneR
     ));
 
 

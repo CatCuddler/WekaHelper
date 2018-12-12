@@ -38,9 +38,9 @@ public class FrameDataReader {
 
             FrameDataSet frameDataSet = new FrameDataSet(frameDataFromFile);
 
-/*            for (int i = 0; i < frameDataSet.getAllFrameData().get(0).size(); i++) {
-                System.out.println("linear acceleration " + frameDataSet.getAllFrameData().get(0).get(i).getLinAccelerationX());
-                System.out.println("angular acceleration " + frameDataSet.getAllFrameData().get(0).get(i).getAngAccelerationX());
+/*            for (int i = 0; i < frameDataSet.getAllSensorLists().get(0).size(); i++) {
+                System.out.println("linear acceleration " + frameDataSet.getAllSensorLists().get(0).get(i).getLinAccelerationX());
+                System.out.println("angular acceleration " + frameDataSet.getAllSensorLists().get(0).get(i).getAngAccelerationX());
  }
  */
 
@@ -152,6 +152,27 @@ public class FrameDataReader {
                 }
             }
 
+
+//            // sort data by class value
+//            onlySubjectVectors.sort(new Comparator<OutputFeatureVector>() {
+//                @Override
+//                public int compare(OutputFeatureVector o1, OutputFeatureVector o2) {
+//                    String o1Class = o1.getFeatures().get(o1.getFeatures().size() - 1);
+//                    String o2Class = o2.getFeatures().get(o2.getFeatures().size() - 1);
+//                    return o1Class.compareTo(o2Class);
+//                }
+//            });
+//
+//            allButSubjectVectors.sort(new Comparator<OutputFeatureVector>() {
+//                @Override
+//                public int compare(OutputFeatureVector o1, OutputFeatureVector o2) {
+//                    String o1Class = o1.getFeatures().get(o1.getFeatures().size() - 1);
+//                    String o2Class = o2.getFeatures().get(o2.getFeatures().size() - 1);
+//                    return o1Class.compareTo(o2Class);
+//                }
+//            });
+
+
             // write and collect files
             String trainingFilePath = outputFeaturesFilePath + subject + "/trainingDataSet.csv";
             String testFilePath = outputFeaturesFilePath + subject + "/testDataSet.csv";
@@ -198,7 +219,7 @@ public class FrameDataReader {
         // create new data line
         OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject());
 
-        ArrayList<ArrayList<FrameData>> frameDataSet = dataSource.getAllFrameData();
+        ArrayList<ArrayList<FrameData>> frameDataSet = dataSource.getAllSensorLists();
 
         for (ArrayList<FrameData> singleSensor : frameDataSet) {
 

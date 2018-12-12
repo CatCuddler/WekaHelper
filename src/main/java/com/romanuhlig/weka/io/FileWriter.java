@@ -5,6 +5,7 @@ import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.romanuhlig.weka.classification.ClassificationResult;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -73,6 +74,21 @@ public class FileWriter {
 
         } catch (Exception e) {
             System.err.println("could not write classification result " + fullFilePath);
+        }
+
+    }
+
+    public static void writeTextFile(String text, String folder, String filename) {
+
+        File logFile = new File(folder + filename);
+
+        try (
+                BufferedWriter writer = new BufferedWriter(new java.io.FileWriter(logFile));
+        ) {
+            writer.write(text);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

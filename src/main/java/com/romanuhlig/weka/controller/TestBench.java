@@ -127,14 +127,23 @@ public class TestBench {
                         SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
                     }
 
+                    // confusion matrix
+//                    System.out.println(eval.toMatrixString());
+                    FileWriter.writeTextFile(eval.toMatrixString(), outputFolderSubject, "confusion matrix.txt");
 
                     // collect result for summaries
                     classifierResults.add(classificationResult);
 
 
                     // console output
+                    // evaluation counter
+                    System.out.println("evaluations done:   " + numberOfEvaluationsCompleted++);
 
-                    System.out.println(numberOfEvaluationsCompleted++);
+                    // attributes in current training instances
+                    System.out.println("attributes in current training instance:");
+                    for (int i = 0; i < trainingData.numAttributes(); i++) {
+                        System.out.println(trainingData.attribute(i).name());
+                    }
 
                     /*
                     System.out.println();
