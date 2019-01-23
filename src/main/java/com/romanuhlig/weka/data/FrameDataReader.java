@@ -13,6 +13,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
@@ -204,7 +205,17 @@ public class FrameDataReader {
 
         for (String sensorType : sensorTypes) {
             headerFields.add(sensorType + "_maximumHeight");
+            headerFields.add(sensorType + "_minimumHeight");
             headerFields.add(sensorType + "_averageHeight");
+            headerFields.add(sensorType + "_rangeX");
+            headerFields.add(sensorType + "_rangeZ");
+            headerFields.add(sensorType + "_averageVelocityX");
+            headerFields.add(sensorType + "_averageVelocityY");
+            headerFields.add(sensorType + "_averageVelocityZ");
+            headerFields.add(sensorType + "_averageAccelerationX");
+            headerFields.add(sensorType + "_averageAccelerationY");
+            headerFields.add(sensorType + "_averageAccelerationZ");
+            //TODO: -add AT LEAST rotational velocity, acceleration (overall, not single axis) and test if it helps
         }
 
         if (includeClassForTraining) {
@@ -224,24 +235,108 @@ public class FrameDataReader {
         for (ArrayList<FrameData> singleSensor : frameDataSet) {
 
             // calculate features for sensor
-            double maximumHeight = 0;
+            double maximumHeight = Double.NEGATIVE_INFINITY;
             double averageHeight = 0;
+            double minimumHeight = Double.POSITIVE_INFINITY;
+            double minimumX = Double.POSITIVE_INFINITY;
+            double minimumZ = Double.POSITIVE_INFINITY;
+            double maximumX = Double.NEGATIVE_INFINITY;
+            double maximumZ = Double.NEGATIVE_INFINITY;
+            double averageVelocityX = 0;
+            double averageVelocityY = 0;
+            double averageVelocityZ = 0;
+            double averageAccelerationX = 0;
+            double averageAccelerationY = 0;
+            double averageAccelerationZ = 0;
 
-            for (FrameData frameData : singleSensor) {
+
+            for (int i = 0; i < singleSensor.size(); i++) {
+
+                FrameData frameData = singleSensor.get(i);
+
+                if (i > 0) {
+                    double timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
+
+                    averageVelocityX += (Math.abs(frameData.getLinVelX()) * timeSinceLastFrame);
+                    averageVelocityY += (Math.abs(frameData.getLinVelY()) * timeSinceLastFrame);
+                    averageVelocityZ += (Math.abs(frameData.getLinVelZ()) * timeSinceLastFrame);
+
+                    averageAccelerationX += (Math.abs(frameData.getLinAccelerationX()) * timeSinceLastFrame);
+                    averageAccelerationY += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
+                    averageAccelerationZ += (Math.abs(frameData.getLinAccelerationZ()) * timeSinceLastFrame);
+
+
+                    averageHeight += frameData.getCalPosY() * timeSinceLastFrame;
+
+                }
+
 
                 // if (frameData.getSensorPosition().equals("head"))
                 //     System.out.println(frameData.getCalPosZ()); // correctly shows different values from original file
 
-                if (frameData.getCalPosZ() > maximumHeight) {
-                    maximumHeight = frameData.getCalPosZ();
+                if (frameData.getCalPosY() > maximumHeight) {
+                    maximumHeight = frameData.getCalPosY();
                 }
-                averageHeight += frameData.getCalPosZ();
+                if (frameData.getCalPosY() < minimumHeight) {
+                    minimumHeight = frameData.getCalPosY();
+                }
+
+
+                if (frameData.getCalPosX() > maximumX) {
+                    maximumX = frameData.getCalPosX();
+                } else if (frameData.getCalPosX() < minimumX) {
+                    minimumX = frameData.getCalPosX();
+                }
+
+                if (frameData.getCalPosZ() > maximumZ) {
+                    maximumZ = frameData.getCalPosZ();
+                } else if (frameData.getCalPosZ() < minimumZ) {
+                    minimumZ = frameData.getCalPosZ();
+                }
             }
-            averageHeight /= singleSensor.size();
+
+
+            // adjust average values to overall time passed
+            double overallTimePassed =
+                    singleSensor.get(singleSensor.size() - 1).getTime()
+                            - singleSensor.get(0).getTime();
+            averageHeight /= overallTimePassed;
+            averageVelocityX /= overallTimePassed;
+            averageVelocityY /= overallTimePassed;
+            averageVelocityZ /= overallTimePassed;
+            averageAccelerationX /= overallTimePassed;
+            averageAccelerationY /= overallTimePassed;
+            averageAccelerationZ /= overallTimePassed;
+
+            double rangeX = maximumX - minimumX;
+            double rangeZ = maximumZ - minimumZ;
+
+            // adjust to subject height
+            maximumHeight /= singleSensor.get(0).getScale();
+            minimumHeight /= singleSensor.get(0).getScale();
+            averageHeight /= singleSensor.get(0).getScale();
+            rangeX /= singleSensor.get(0).getScale();
+            rangeZ /= singleSensor.get(0).getScale();
+            averageVelocityX /= singleSensor.get(0).getScale();
+            averageVelocityY /= singleSensor.get(0).getScale();
+            averageVelocityZ /= singleSensor.get(0).getScale();
+            averageAccelerationX /= singleSensor.get(0).getScale();
+            averageAccelerationY /= singleSensor.get(0).getScale();
+            averageAccelerationZ /= singleSensor.get(0).getScale();
+
 
             // add features to data line
             outputFeatureVector.addFeature(Double.toString(maximumHeight));
+            outputFeatureVector.addFeature(Double.toString(minimumHeight));
             outputFeatureVector.addFeature(Double.toString(averageHeight));
+            outputFeatureVector.addFeature(Double.toString(rangeX));
+            outputFeatureVector.addFeature(Double.toString(rangeZ));
+            outputFeatureVector.addFeature(Double.toString(averageVelocityX));
+            outputFeatureVector.addFeature(Double.toString(averageVelocityY));
+            outputFeatureVector.addFeature(Double.toString(averageVelocityZ));
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationX));
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationY));
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationZ));
 
             //  System.out.println("max          " + maximumHeight);
             //  System.out.println("avg          " + averageHeight);
@@ -258,6 +353,16 @@ public class FrameDataReader {
 
     private static void writeOutputFeatureVectorToCSV(String
                                                               filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
+
+        // sort output by class
+        // The Weka Gui is unable to deal with unordered classes, which makes sanity checks difficult
+        featureVectors.sort(new Comparator<OutputFeatureVector>() {
+            @Override
+            public int compare(OutputFeatureVector o1, OutputFeatureVector o2) {
+                return o1.getClassValue().compareTo(o2.getClassValue());
+            }
+        });
+
         try (
                 Writer writer = Files.newBufferedWriter(Paths.get(filePath));
 

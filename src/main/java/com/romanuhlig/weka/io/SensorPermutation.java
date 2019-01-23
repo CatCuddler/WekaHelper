@@ -119,4 +119,13 @@ public class SensorPermutation {
     public String getSensorListRepresentation() {
         return sensorListRepresentation;
     }
+
+    public boolean includesHeadAndHands() {
+
+        return includedSensors.contains("head")
+                && includedSensors.contains("lHand")
+                && includedSensors.contains("rHand");
+
+
+    }
 }

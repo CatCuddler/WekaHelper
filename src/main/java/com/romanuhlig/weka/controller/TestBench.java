@@ -69,6 +69,22 @@ public class TestBench {
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
+            //   if (sensorPermutation.getNumberOfSensors() > 1) {
+            //      continue;
+            // }
+
+            if (TestBenchSettings.getSensorPermutationUsage() == TestBenchSettings.SensorPermutationUsage.Only_HH) {
+                if (sensorPermutation.getNumberOfSensors() > 3 || !sensorPermutation.includesHeadAndHands()) {
+                    continue;
+                }
+            } else if (TestBenchSettings.getSensorPermutationUsage() == TestBenchSettings.SensorPermutationUsage.HH_plus_Trackers_upTo) {
+                if (sensorPermutation.getNumberOfSensors() > 3 + TestBenchSettings.getMaximumNumberOfTrackers()
+                        || !sensorPermutation.includesHeadAndHands()) {
+                    continue;
+                }
+
+            }
+
             ArrayList<ClassificationResult> sensorPermutationResults = new ArrayList<>();
 
             String outputFolderSensorPermutation = resultsBaseFolder + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";

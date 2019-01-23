@@ -15,31 +15,31 @@ public class FrameData {
     @CsvBindByName
     private String activity;
 
-    @CsvBindByName
+    @CsvBindByName(column = "rawPosX")
     private double calPosX;
-    @CsvBindByName
+    @CsvBindByName(column = "rawPosY")
     private double calPosY;
-    @CsvBindByName
+    @CsvBindByName(column = "rawPosZ")
     private double calPosZ;
-    @CsvBindByName
+    @CsvBindByName(column = "rawRotX")
     private double calRotX;
-    @CsvBindByName
+    @CsvBindByName(column = "rawRotY")
     private double calRotY;
-    @CsvBindByName
+    @CsvBindByName(column = "rawRotZ")
     private double calRotZ;
-    @CsvBindByName
+    @CsvBindByName(column = "rawRotW")
     private double calRotW;
-    @CsvBindByName
+    @CsvBindByName(column = "rawAngVelX")
     private double angVelX;
-    @CsvBindByName
+    @CsvBindByName(column = "rawAngVelY")
     private double angVelY;
-    @CsvBindByName
+    @CsvBindByName(column = "rawAngVelZ")
     private double angVelZ;
-    @CsvBindByName
+    @CsvBindByName(column = "rawLinVelX")
     private double linVelX;
-    @CsvBindByName
+    @CsvBindByName(column = "rawLinVelY")
     private double linVelY;
-    @CsvBindByName
+    @CsvBindByName(column = "rawLinVelZ")
     private double linVelZ;
 
     // the acceleration can not be read directly from the sensors, and has to be derived using two frames
@@ -58,7 +58,7 @@ public class FrameData {
     // acceleration and (currently) velocity have to be calculated from the previous frame,
     // which leaves data points where that data can not be accurate
     //TODO: - remove velocity checks, and this attribute, once properly retrieved from actual sensor
-    boolean velocityCalculated = false;
+    //boolean velocityCalculated = false;
     boolean accelerationCalculated = false;
 
     /**
@@ -99,33 +99,33 @@ public class FrameData {
 
         //TODO: - remove linear velocity computation, once that data is collected live
         // linear velocity
-        this.linVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosX, this.calPosX, previousFrame.time, this.time);
-        this.linVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosY, this.calPosY, previousFrame.time, this.time);
-        this.linVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosZ, this.calPosZ, previousFrame.time, this.time);
+        //this.linVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosX, this.calPosX, previousFrame.time, this.time);
+        //this.linVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosY, this.calPosY, previousFrame.time, this.time);
+        //this.linVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosZ, this.calPosZ, previousFrame.time, this.time);
 
         //TODO: - remove angular velocity computation, once that data is collected live
         // angular velocity
-        this.angVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotX, this.calRotX, previousFrame.time, this.time);
-        this.angVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotY, this.calRotY, previousFrame.time, this.time);
-        this.angVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotZ, this.calRotZ, previousFrame.time, this.time);
+        //this.angVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotX, this.calRotX, previousFrame.time, this.time);
+        //this.angVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotY, this.calRotY, previousFrame.time, this.time);
+        //this.angVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotZ, this.calRotZ, previousFrame.time, this.time);
 
-        this.velocityCalculated = true;
+        //this.velocityCalculated = true;
 
 
-        if (previousFrame.velocityCalculated) {
+        //if (previousFrame.velocityCalculated) {
 
-            // linear acceleration
-            this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
-            this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
-            this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
+        // linear acceleration
+        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
+        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
+        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
 
-            // angular acceleration
-            this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
-            this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
-            this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+        // angular acceleration
+        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
+        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
+        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
 
-            accelerationCalculated = true;
-        }
+        accelerationCalculated = true;
+        //}
 
     }
 
@@ -227,7 +227,9 @@ public class FrameData {
 
 
     public boolean derivedDataWasCalculated() {
-        return velocityCalculated && accelerationCalculated;
+        return
+                //velocityCalculated &&
+                accelerationCalculated;
     }
 
 }

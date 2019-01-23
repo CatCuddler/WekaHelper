@@ -32,4 +32,8 @@ public class OutputFeatureVector {
     public String[] getFeaturesAsArray() {
         return features.toArray(new String[features.size()]);
     }
+
+    public String getClassValue() {
+        return features.get(features.size() - 1);
+    }
 }
