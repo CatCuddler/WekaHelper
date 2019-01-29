@@ -29,7 +29,7 @@ public class TestBench {
 
         String startTime = TimeHelper.getDateWithSeconds();
 
-        String outputFolderPath = TestBenchSettings.outputBaseFolder() + startTime + TestBenchSettings.getOutputFolderTag() + "/";
+        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine() + "   " + TestBenchSettings.getOutputFolderTag() + startTime+ "/";
 
         FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
 
@@ -124,6 +124,11 @@ public class TestBench {
         int numberOfEvaluationsInTotal =
                 sensorPermutations.size() * classifiers.size()
                         * featureExtractionResults.getTrainingAndTestFilePackages().size();
+
+
+        // output information about test
+        FileWriter.writeTextFile(TestBenchSettings.summaryBig(),outputFolderPath,"settings.txt");
+
 
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
@@ -288,6 +293,8 @@ public class TestBench {
         // write all results
         allResults.sort(ClassificationResult.getF1Comparator());
         FileWriter.writeClassificationResults(allResults, resultsBaseFolder, "classificationResult");
+        // write the overall results in base folder as well, for easier access
+        FileWriter.writeClassificationResults(allResults, outputFolderPath, "classificationResult");
 
         // write sensor number results
         Iterator<Integer> sensorNumberIterator = sensorNumberResults.keySet().iterator();
