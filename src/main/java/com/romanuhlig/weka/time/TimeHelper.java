@@ -17,5 +17,21 @@ public class TimeHelper {
 
     }
 
+    public static String secondsToTimeOutput(int seconds) {
+        int minutesPart = seconds / 60;
+        int secondsPart = seconds % 60;
+
+        String secondsString = Integer.toString(secondsPart);
+        if (secondsPart < 10) {
+            secondsString = "0" + secondsString;
+        }
+
+        return minutesPart + ":" + secondsString;
+    }
+
+    public static String secondsToTimeOutput(long seconds) {
+        return secondsToTimeOutput(Math.toIntExact(seconds));
+    }
+
 
 }

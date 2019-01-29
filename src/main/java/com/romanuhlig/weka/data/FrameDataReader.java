@@ -6,6 +6,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.io.FeatureExtractionResults;
 import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
+import com.romanuhlig.weka.math.MathHelper;
 
 import java.io.File;
 import java.io.Reader;
@@ -215,7 +216,9 @@ public class FrameDataReader {
             headerFields.add(sensorType + "_averageAccelerationX");
             headerFields.add(sensorType + "_averageAccelerationY");
             headerFields.add(sensorType + "_averageAccelerationZ");
-            //TODO: -add AT LEAST rotational velocity, acceleration (overall, not single axis) and test if it helps
+            headerFields.add(sensorType + "_averageAngularVelocity");
+            headerFields.add(sensorType + "_averageAngularAcceleration");
+
         }
 
         if (includeClassForTraining) {
@@ -248,6 +251,8 @@ public class FrameDataReader {
             double averageAccelerationX = 0;
             double averageAccelerationY = 0;
             double averageAccelerationZ = 0;
+            double averageAngularVelocity = 0;
+            double averageAngularAcceleration = 0;
 
 
             for (int i = 0; i < singleSensor.size(); i++) {
@@ -265,8 +270,19 @@ public class FrameDataReader {
                     averageAccelerationY += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
                     averageAccelerationZ += (Math.abs(frameData.getLinAccelerationZ()) * timeSinceLastFrame);
 
-
                     averageHeight += frameData.getCalPosY() * timeSinceLastFrame;
+
+                    averageAngularVelocity +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getAngVelX(),
+                                    frameData.getAngVelY(),
+                                    frameData.getAngVelZ());
+                    averageAngularAcceleration +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getAngAccelerationX(),
+                                    frameData.getAngAccelerationY(),
+                                    frameData.getAngAccelerationZ());
+
 
                 }
 
@@ -307,6 +323,8 @@ public class FrameDataReader {
             averageAccelerationX /= overallTimePassed;
             averageAccelerationY /= overallTimePassed;
             averageAccelerationZ /= overallTimePassed;
+            averageAngularVelocity /= overallTimePassed;
+            averageAngularAcceleration /= overallTimePassed;
 
             double rangeX = maximumX - minimumX;
             double rangeZ = maximumZ - minimumZ;
@@ -323,6 +341,8 @@ public class FrameDataReader {
             averageAccelerationX /= singleSensor.get(0).getScale();
             averageAccelerationY /= singleSensor.get(0).getScale();
             averageAccelerationZ /= singleSensor.get(0).getScale();
+            averageAngularVelocity /= singleSensor.get(0).getScale();
+            averageAngularAcceleration /= singleSensor.get(0).getScale();
 
 
             // add features to data line
@@ -337,6 +357,8 @@ public class FrameDataReader {
             outputFeatureVector.addFeature(Double.toString(averageAccelerationX));
             outputFeatureVector.addFeature(Double.toString(averageAccelerationY));
             outputFeatureVector.addFeature(Double.toString(averageAccelerationZ));
+            outputFeatureVector.addFeature(Double.toString(averageAngularVelocity));
+            outputFeatureVector.addFeature(Double.toString(averageAngularAcceleration));
 
             //  System.out.println("max          " + maximumHeight);
             //  System.out.println("avg          " + averageHeight);

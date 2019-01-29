@@ -10,11 +10,11 @@ public class TestBenchSettings {
 
     // algorithms to test
     static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
-            //ClassifierFactory.ClassifierType.J48
-            ClassifierFactory.ClassifierType.RandomForest
-            //ClassifierFactory.ClassifierType.NaiveBayes,
-            //ClassifierFactory.ClassifierType.SMO,
-            //ClassifierFactory.ClassifierType.OneR
+            ClassifierFactory.ClassifierType.J48,
+            ClassifierFactory.ClassifierType.RandomForest,
+            ClassifierFactory.ClassifierType.NaiveBayes,
+            ClassifierFactory.ClassifierType.SMO,
+            ClassifierFactory.ClassifierType.OneR
     ));
 
 
@@ -25,16 +25,19 @@ public class TestBenchSettings {
 
     // sensor permutations to use during evaluation
     // HH stands for Head + HandControllers
-    static SensorPermutationUsage sensorPermutationUsage = SensorPermutationUsage.HH_plus_Trackers_upTo;
+    static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
+    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
+    static boolean disAllowSingleHandController = true;
     static int maximumNumberOfTrackers = 1;
+    static int maximumNumberOfSensors = 5;
 
-    public enum SensorPermutationUsage {
-        All, Only_HH, HH_plus_Trackers_upTo
+    public enum SensorUsage {
+        MayInclude, MustInclude, CannotInclude
     }
 
 
     // input frame data
-    static double windowSizeForFrameDataToFeatureConversion = 5;
+    static double windowSizeForFrameDataToFeatureConversion = 1;
     static double windowSpacingForFrameDataToFeatureConversion = 1;
 
 
@@ -66,12 +69,25 @@ public class TestBenchSettings {
         return windowSpacingForFrameDataToFeatureConversion;
     }
 
-    public static SensorPermutationUsage getSensorPermutationUsage() {
-        return sensorPermutationUsage;
+    public static SensorUsage getSensorUsageHMD() {
+        return sensorUsageHMD;
     }
+
+    public static SensorUsage getSensorUsageHandControllers() {
+        return sensorUsageHandControllers;
+    }
+
 
     public static int getMaximumNumberOfTrackers() {
         return maximumNumberOfTrackers;
+    }
+
+    public static int getMaximumNumberOfSensors() {
+        return maximumNumberOfSensors;
+    }
+
+    public static boolean disAllowSingleHandController() {
+        return disAllowSingleHandController;
     }
 
     public static boolean isWriteAllModelsToFolder() {

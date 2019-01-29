@@ -4,6 +4,7 @@ import com.opencsv.CSVWriter;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.romanuhlig.weka.classification.ClassificationResult;
+import weka.core.Instances;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -90,6 +91,29 @@ public class FileWriter {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    public static void writeFeaturesUsed(Instances trainingData, Instances testData, String folder, String filename) {
+
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("Training Data features:   ");
+        for (int i = 0; i < trainingData.numAttributes(); i++) {
+            stringBuilder.append(trainingData.attribute(i).name());
+            stringBuilder.append("   ");
+        }
+
+        stringBuilder.append(System.lineSeparator());
+        stringBuilder.append(System.lineSeparator());
+
+        stringBuilder.append("Test Data features:       ");
+        for (int i = 0; i < trainingData.numAttributes(); i++) {
+            stringBuilder.append(trainingData.attribute(i).name());
+            stringBuilder.append("   ");
+        }
+
+        writeTextFile(stringBuilder.toString(), folder, filename);
 
     }
 

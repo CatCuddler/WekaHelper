@@ -13,6 +13,12 @@ public class SensorPermutation {
     private final String folderStringRepresentation;
     private final String sensorListRepresentation;
 
+    private final boolean includesBothHandControllers;
+    private final boolean includesAtLeastOneHandController;
+    private final boolean includesHMD;
+    private final int numberOfHeadControllersAndHMD;
+    private final int numberOfTrackers;
+
 
     public SensorPermutation(ArrayList<String> includedSensors, ArrayList<String> excludedSensors) {
         this.includedSensors = includedSensors;
@@ -37,6 +43,22 @@ public class SensorPermutation {
         }
         sensorListRepresentation = newSensorListRepresentation;
 
+
+        // determine which sensors are present
+        int tempNumberOfHeadControllersAndHMD = 0;
+        includesAtLeastOneHandController = includedSensors.contains("lHand") || includedSensors.contains("rHand");
+        includesBothHandControllers = includedSensors.contains("lHand") && includedSensors.contains("rHand");
+        includesHMD = includedSensors.contains("head");
+        if (includesHMD) {
+            tempNumberOfHeadControllersAndHMD += 1;
+        }
+        if (includesBothHandControllers) {
+            tempNumberOfHeadControllersAndHMD += 2;
+        } else if (includesAtLeastOneHandController) {
+            tempNumberOfHeadControllersAndHMD += 1;
+        }
+        numberOfHeadControllersAndHMD = tempNumberOfHeadControllersAndHMD;
+        numberOfTrackers = getNumberOfSensors() - numberOfHeadControllersAndHMD;
 
     }
 
@@ -120,12 +142,21 @@ public class SensorPermutation {
         return sensorListRepresentation;
     }
 
-    public boolean includesHeadAndHands() {
 
-        return includedSensors.contains("head")
-                && includedSensors.contains("lHand")
-                && includedSensors.contains("rHand");
+    public boolean includesBothHandControllers() {
+        return includesBothHandControllers;
+    }
+
+    public boolean includesAtLeastOneHandController() {
+        return includesAtLeastOneHandController;
+    }
+
+    public boolean includesHMD() {
+        return includesHMD;
+    }
 
 
+    public int getNumberOfTrackers(){
+        return numberOfTrackers;
     }
 }

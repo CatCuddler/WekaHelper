@@ -36,6 +36,65 @@ public class TestBench {
         ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
         GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
 
+
+        // remove sensor permutations we do not need for this run
+        for (int i = sensorPermutations.size() - 1; i >= 0; i--) {
+
+            SensorPermutation sensorPermutation = sensorPermutations.get(i);
+
+            // check for hand controller inclusion
+            switch (TestBenchSettings.getSensorUsageHandControllers()) {
+                case CannotInclude:
+                    if (sensorPermutation.includesAtLeastOneHandController()) {
+                        sensorPermutations.remove(i);
+                        continue;
+                    }
+                    break;
+                case MustInclude:
+                    if (!sensorPermutation.includesBothHandControllers()) {
+                        sensorPermutations.remove(i);
+                        continue;
+                    }
+                    break;
+            }
+            if (TestBenchSettings.disAllowSingleHandController()
+                    && !sensorPermutation.includesBothHandControllers()
+                    && sensorPermutation.includesAtLeastOneHandController()) {
+                continue;
+            }
+
+            // check for HMD inclusion
+            switch (TestBenchSettings.getSensorUsageHMD()) {
+                case CannotInclude:
+                    if (sensorPermutation.includesHMD()) {
+                        sensorPermutations.remove(i);
+                        continue;
+                    }
+                    break;
+                case MustInclude:
+                    if (!sensorPermutation.includesHMD()) {
+                        sensorPermutations.remove(i);
+                        continue;
+                    }
+                    break;
+            }
+
+            // check for tracker inclusion
+            if (TestBenchSettings.getMaximumNumberOfTrackers() >= 0 &&
+                    sensorPermutation.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
+                sensorPermutations.remove(i);
+                continue;
+            }
+
+            // check for overall sensor inclusion
+            if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
+                    sensorPermutation.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
+                sensorPermutations.remove(i);
+                continue;
+            }
+
+        }
+
         // System.out.println("permutations:     " + sensorPermutations.size());
 //        for (SensorPermutation permutation : sensorPermutations) {
         //  System.out.println();
@@ -69,21 +128,6 @@ public class TestBench {
         // Weka evaluation
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
-            //   if (sensorPermutation.getNumberOfSensors() > 1) {
-            //      continue;
-            // }
-
-            if (TestBenchSettings.getSensorPermutationUsage() == TestBenchSettings.SensorPermutationUsage.Only_HH) {
-                if (sensorPermutation.getNumberOfSensors() > 3 || !sensorPermutation.includesHeadAndHands()) {
-                    continue;
-                }
-            } else if (TestBenchSettings.getSensorPermutationUsage() == TestBenchSettings.SensorPermutationUsage.HH_plus_Trackers_upTo) {
-                if (sensorPermutation.getNumberOfSensors() > 3 + TestBenchSettings.getMaximumNumberOfTrackers()
-                        || !sensorPermutation.includesHeadAndHands()) {
-                    continue;
-                }
-
-            }
 
             ArrayList<ClassificationResult> sensorPermutationResults = new ArrayList<>();
 
@@ -141,12 +185,16 @@ public class TestBench {
 
                     // file output
                     // current result
-                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResult(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
+                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // model
                     if (TestBenchSettings.writeAllModelsToFolder) {
                         SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
                     }
+
+                    // features used
+                    FileWriter.writeFeaturesUsed(trainingData, testData, outputFolderSubject, "features used.txt");
+
 
                     // confusion matrix
 //                    System.out.println(eval.toMatrixString());
@@ -159,7 +207,18 @@ public class TestBench {
                     // console output
                     // evaluation counter
                     numberOfEvaluationsCompleted++;
-                    System.out.println("evaluations done:   " + numberOfEvaluationsCompleted + "   /   " + numberOfEvaluationsInTotal);
+                    double timePerTask = stopWatchEvaluation.getTime(TimeUnit.MILLISECONDS) / numberOfEvaluationsCompleted;
+                    float numberOfEvaluationsLeft = numberOfEvaluationsInTotal - numberOfEvaluationsCompleted;
+                    // due to decreasing number of sensors per evaluation, estimated time is off by about 50% at the start
+                    // correctionFactor will be about 2 at the start, and about 1 at the end
+                    float correctionFactor = 1 + (numberOfEvaluationsLeft / numberOfEvaluationsInTotal);
+                    int approximateTimeLeft =
+                            (int) (timePerTask * numberOfEvaluationsLeft * (1 / correctionFactor) / 1000);
+
+
+                    System.out.println(
+                            "evaluations done:  " + numberOfEvaluationsCompleted + " | " + numberOfEvaluationsInTotal
+                                    + "     time left:  " + TimeHelper.secondsToTimeOutput(approximateTimeLeft));
 
 
 //                    // attributes in current training instances
@@ -244,8 +303,8 @@ public class TestBench {
         stopWatchEvaluation.stop();
         stopwatchFullProcess.stop();
         System.out.println();
-        System.out.println("duration of evaluation:   " + stopWatchEvaluation.getTime(TimeUnit.SECONDS) + " seconds");
-        System.out.println("duration overall:         " + stopwatchFullProcess.getTime(TimeUnit.SECONDS) + "   seconds");
+        System.out.println("duration of evaluation:   " + TimeHelper.secondsToTimeOutput(stopWatchEvaluation.getTime(TimeUnit.SECONDS)));
+        System.out.println("duration overall:         " + TimeHelper.secondsToTimeOutput(stopwatchFullProcess.getTime(TimeUnit.SECONDS)));
     }
 
 
