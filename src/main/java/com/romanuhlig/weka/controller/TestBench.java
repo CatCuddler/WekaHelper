@@ -29,7 +29,7 @@ public class TestBench {
 
         String startTime = TimeHelper.getDateWithSeconds();
 
-        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine() + "   " + TestBenchSettings.getOutputFolderTag() + startTime+ "/";
+        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine() + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
 
         FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
 
@@ -57,9 +57,10 @@ public class TestBench {
                     }
                     break;
             }
-            if (TestBenchSettings.disAllowSingleHandController()
+            if (!TestBenchSettings.allowSingleHandController()
+                    && sensorPermutation.includesAtLeastOneHandController()
                     && !sensorPermutation.includesBothHandControllers()
-                    && sensorPermutation.includesAtLeastOneHandController()) {
+            ) {
                 continue;
             }
 
@@ -85,6 +86,11 @@ public class TestBench {
                 sensorPermutations.remove(i);
                 continue;
             }
+            if (TestBenchSettings.getMinimumNumberOfTrackers() >= 0 &&
+                    sensorPermutation.getNumberOfTrackers() < TestBenchSettings.getMinimumNumberOfTrackers()) {
+                sensorPermutations.remove(i);
+                continue;
+            }
 
             // check for overall sensor inclusion
             if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
@@ -92,7 +98,11 @@ public class TestBench {
                 sensorPermutations.remove(i);
                 continue;
             }
-
+            if (TestBenchSettings.getMinimumNumberOfSensors() >= 0 &&
+                    sensorPermutation.getNumberOfSensors() < TestBenchSettings.getMinimumNumberOfSensors()) {
+                sensorPermutations.remove(i);
+                continue;
+            }
         }
 
         // System.out.println("permutations:     " + sensorPermutations.size());
@@ -127,7 +137,7 @@ public class TestBench {
 
 
         // output information about test
-        FileWriter.writeTextFile(TestBenchSettings.summaryBig(),outputFolderPath,"settings.txt");
+        FileWriter.writeTextFile(TestBenchSettings.summaryBig(), outputFolderPath, "settings.txt");
 
 
         // Weka evaluation

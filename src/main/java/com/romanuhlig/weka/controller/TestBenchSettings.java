@@ -10,11 +10,15 @@ public class TestBenchSettings {
 
     // algorithms to test
     static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
-            ClassifierFactory.ClassifierType.J48,
-           // ClassifierFactory.ClassifierType.RandomForest,
-           // ClassifierFactory.ClassifierType.NaiveBayes,
-           // ClassifierFactory.ClassifierType.SMO,
-            ClassifierFactory.ClassifierType.OneR
+//            ClassifierFactory.ClassifierType.J48
+//          ,
+            ClassifierFactory.ClassifierType.RandomForest
+            ,
+            ClassifierFactory.ClassifierType.NaiveBayes
+            ,
+            ClassifierFactory.ClassifierType.SMO
+//            ,
+//            ClassifierFactory.ClassifierType.OneR
     ));
 
 
@@ -24,12 +28,13 @@ public class TestBenchSettings {
     static String outputFolderTag = "";
 
     // sensor permutations to use during evaluation
-    // HH stands for Head + HandControllers
     static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
-    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
-    static boolean disAllowSingleHandController = true;
+    static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
+    static boolean allowSingleHandController = false;
+    static int minimumNumberOfTrackers = 0;
     static int maximumNumberOfTrackers = 1;
-    static int maximumNumberOfSensors = 5;
+    static int minimumNumberOfSensors = -1;
+    static int maximumNumberOfSensors = -1;
 
     public enum SensorUsage {
         MayInclude, MustInclude, CannotInclude
@@ -50,17 +55,17 @@ public class TestBenchSettings {
 
         stringBuilder.append("C");
         for (ClassifierFactory.ClassifierType classifier : classifiersToUse) {
-            stringBuilder.append("-");
+            stringBuilder.append("_");
             stringBuilder.append(classifier.toString());
         }
 
-        stringBuilder.append("   WS-" + windowSizeForFrameDataToFeatureConversion);
-        stringBuilder.append("   WSP-" + windowSpacingForFrameDataToFeatureConversion);
-        stringBuilder.append("   HMD-" + sensorUsageHMD.toString());
-        stringBuilder.append("   HC-" + sensorUsageHandControllers.toString());
-        stringBuilder.append("   dSHC-" + disAllowSingleHandController);
-        stringBuilder.append("   T-" + maximumNumberOfTrackers);
-        stringBuilder.append("   S-" + maximumNumberOfSensors);
+        stringBuilder.append("   ws_" + windowSizeForFrameDataToFeatureConversion);
+        stringBuilder.append("   wsp_" + windowSpacingForFrameDataToFeatureConversion);
+        stringBuilder.append("   hmd_" + sensorUsageHMD.toString());
+        stringBuilder.append("   hc_" + sensorUsageHandControllers.toString());
+        stringBuilder.append("   shc_" + allowSingleHandController);
+        stringBuilder.append("   t_" + minimumNumberOfTrackers + "-" + maximumNumberOfTrackers);
+        stringBuilder.append("   s_" + minimumNumberOfSensors + "-" + maximumNumberOfSensors);
 
         return stringBuilder.toString();
     }
@@ -88,13 +93,19 @@ public class TestBenchSettings {
         stringBuilder.append("sensor usage HandController:   " + sensorUsageHandControllers.toString());
         stringBuilder.append(System.lineSeparator());
 
-        stringBuilder.append("disallow single HandController:   " + disAllowSingleHandController);
+        stringBuilder.append("disallow single HandController:   " + allowSingleHandController);
         stringBuilder.append(System.lineSeparator());
 
         stringBuilder.append("maximum number Of Trackers:  " + maximumNumberOfTrackers);
         stringBuilder.append(System.lineSeparator());
 
+        stringBuilder.append("minimum number Of Trackers:  " + minimumNumberOfTrackers);
+        stringBuilder.append(System.lineSeparator());
+
         stringBuilder.append("maximum number of Sensors:   " + maximumNumberOfSensors);
+        stringBuilder.append(System.lineSeparator());
+
+        stringBuilder.append("minimum number of Sensors:   " + minimumNumberOfSensors);
         stringBuilder.append(System.lineSeparator());
 
         return stringBuilder.toString();
@@ -142,8 +153,16 @@ public class TestBenchSettings {
         return maximumNumberOfSensors;
     }
 
-    public static boolean disAllowSingleHandController() {
-        return disAllowSingleHandController;
+    public static boolean allowSingleHandController() {
+        return allowSingleHandController;
+    }
+
+    public static int getMinimumNumberOfTrackers() {
+        return minimumNumberOfTrackers;
+    }
+
+    public static int getMinimumNumberOfSensors() {
+        return minimumNumberOfSensors;
     }
 
     public static boolean writeAllModelsToFolder() {

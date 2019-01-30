@@ -28,4 +28,12 @@ public class MathHelper {
         return Double.min(double1, double2);
     }
 
+    public static double getZeroIfNAN(double value) {
+        if (Double.isNaN(value)) {
+            return 0;
+        } else {
+            return value;
+        }
+    }
+
 }
