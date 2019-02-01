@@ -17,8 +17,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.math.BigDecimal;
 
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
+
+import javax.sound.midi.Soundbank;
 
 public class FrameDataReader {
 
@@ -245,19 +248,29 @@ public class FrameDataReader {
                     averageVelocityHeight += (Math.abs(frameData.getLinVelY()) * timeSinceLastFrame);
                     averageVelocityZ += (Math.abs(frameData.getLinVelZ()) * timeSinceLastFrame);
 
-                    averageVelocityXZ += MathHelper.EuclideanNorm(
-                            frameData.getLinVelX(), frameData.getLinVelZ());
-                    averageVelocityXYZ += MathHelper.EuclideanNorm(
-                            frameData.getLinVelX(), frameData.getLinVelY(), frameData.getLinVelZ());
+                    averageVelocityXZ +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getLinVelX(),
+                                    frameData.getLinVelZ());
+                    averageVelocityXYZ +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getLinVelX(),
+                                    frameData.getLinVelY(),
+                                    frameData.getLinVelZ());
 
                     averageAccelerationX += (Math.abs(frameData.getLinAccelerationX()) * timeSinceLastFrame);
                     averageAccelerationHeight += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
                     averageAccelerationZ += (Math.abs(frameData.getLinAccelerationZ()) * timeSinceLastFrame);
 
-                    averageAccelerationXZ += MathHelper.EuclideanNorm(
-                            frameData.getLinAccelerationX(), frameData.getLinAccelerationZ());
-                    averageAccelerationXYZ += MathHelper.EuclideanNorm(
-                            frameData.getLinAccelerationX(), frameData.getLinAccelerationY(), frameData.getLinAccelerationZ());
+                    averageAccelerationXZ +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getLinAccelerationX(),
+                                    frameData.getLinAccelerationZ());
+                    averageAccelerationXYZ +=
+                            timeSinceLastFrame * MathHelper.EuclideanNorm(
+                                    frameData.getLinAccelerationX(),
+                                    frameData.getLinAccelerationY(),
+                                    frameData.getLinAccelerationZ());
 
                     averageHeight += frameData.getCalPosY() * timeSinceLastFrame;
 
@@ -365,11 +378,72 @@ public class FrameDataReader {
                 outputFeatureVector.addFeature(Double.toString(averageAngularAcceleration));
             }
 
-
-            //  System.out.println("max          " + maximumHeight);
-            //  System.out.println("avg          " + averageHeight);
-
         }
+
+        // collect features that depend on the relationship between two sensors
+        if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
+            for (int ssA = 0; ssA < frameDataSet.size(); ssA++) {
+                ArrayList<FrameData> singleSensorA = frameDataSet.get(ssA);
+                for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
+                    ArrayList<FrameData> singleSensorB = frameDataSet.get(ssB);
+
+
+
+                    double averageDistanceXYZ = 0;
+                    double averageDistanceChangeXYZ = 0;
+                    double averageDistanceLastFrame = 0;
+
+                    for (int i = 0; i < singleSensorA.size(); i++) {
+
+                        // prepare current frame
+                        FrameData frameDataA = singleSensorA.get(i);
+                        FrameData frameDataB = singleSensorB.get(i);
+
+                        double averageDistanceCurrentFrame =
+                                MathHelper.distance(
+                                        frameDataA.getCalPosX(),
+                                        frameDataA.getCalPosY(),
+                                        frameDataA.getCalPosZ(),
+                                        frameDataB.getCalPosX(),
+                                        frameDataB.getCalPosY(),
+                                        frameDataB.getCalPosZ());
+
+                        // calculate current frame
+                        if (i > 0) {
+                            double timeSinceLastFrame = frameDataA.getTime() - singleSensorA.get(i - 1).getTime();
+
+                            averageDistanceXYZ += timeSinceLastFrame
+                                    * averageDistanceCurrentFrame;
+                            averageDistanceChangeXYZ +=
+                                    //timeSinceLastFrame *
+                                    (Math.abs(averageDistanceCurrentFrame - averageDistanceLastFrame));
+
+                        }
+
+                        // prepare next frame
+                        averageDistanceLastFrame = averageDistanceCurrentFrame;
+                    }
+
+                    double overallTimePassed =
+                            singleSensorA.get(singleSensorA.size() - 1).getTime()
+                                    - singleSensorA.get(0).getTime();
+
+//                    System.out.println(overallTimePassed);
+
+                    averageDistanceXYZ /= overallTimePassed;
+                    averageDistanceChangeXYZ /= overallTimePassed;
+
+                    averageDistanceXYZ /= singleSensorA.get(0).getScale();
+                    averageDistanceChangeXYZ /= singleSensorA.get(0).getScale();
+
+
+                    outputFeatureVector.addFeature(Double.toString(averageDistanceXYZ));
+                    outputFeatureVector.addFeature(Double.toString(averageDistanceChangeXYZ));
+
+                }
+            }
+        }
+
 
         if (includeClassForTraining) {
             outputFeatureVector.addFeature(dataSource.getActivity());
@@ -379,7 +453,8 @@ public class FrameDataReader {
     }
 
 
-    public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes, boolean includeClassForTraining) {
+    public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes,
+                                                            boolean includeClassForTraining) {
 
         ArrayList<String> headerFields = new ArrayList<>();
 
@@ -410,6 +485,21 @@ public class FrameDataReader {
             }
 
         }
+
+        // collect features that depend on the relationship between two sensors
+        if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
+            for (int ssA = 0; ssA < sensorTypes.size(); ssA++) {
+                String singleSensorA = sensorTypes.get(ssA);
+                for (int ssB = ssA + 1; ssB < sensorTypes.size(); ssB++) {
+                    String singleSensorB = sensorTypes.get(ssB);
+
+                    headerFields.add(singleSensorA + "_" + singleSensorB + "_averageDistance");
+                    headerFields.add(singleSensorA + "_" + singleSensorB + "_averageDistanceChange");
+
+                }
+            }
+        }
+
 
         if (includeClassForTraining) {
             headerFields.add("activity");

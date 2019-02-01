@@ -39,8 +39,9 @@ public class TestBenchSettings {
 
     // feature types to disallow
     static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
-            //FeatureTag.Angular
-            FeatureTag.SubjectOrientationRelevant
+//          FeatureTag.Angular
+          FeatureTag.SubjectOrientationRelevant
+//          FeatureTag.DualSensorCombination
     ));
 
 
@@ -59,7 +60,8 @@ public class TestBenchSettings {
 
     public enum FeatureTag {
         Angular,
-        SubjectOrientationRelevant
+        SubjectOrientationRelevant,
+        DualSensorCombination
     }
 
     public static String summarySingleLine() {

@@ -104,7 +104,7 @@ public class ClassificationResult {
         for (int i = 0; i < instances.numClasses(); i++) {
             _averageF1 += evaluation.fMeasure(i);
             _averageF1zeroNAN += MathHelper.getZeroIfNAN(evaluation.fMeasure(i));
-            _minimumF1 = MathHelper.getMinimumWithNAN(_minimumF1,evaluation.fMeasure(i));
+            _minimumF1 = MathHelper.getMinimumWithNAN(_minimumF1, evaluation.fMeasure(i));
 
 //            System.out.println("recall " + i + " " + evaluation.recall(i));
 //            System.out.println("precision " + i + " " + evaluation.precision(i));
@@ -142,8 +142,8 @@ public class ClassificationResult {
         for (ClassificationResult result : classifierResults) {
             _averageClassifierF1 += result.averageF1Score;
             _averageClassifierF1zeroNAN += result.averageF1zeroNAN;
-            _minAvgF1Person = MathHelper.getMinimumWithNAN(_minAvgF1Person,result.minAvgF1Person);
-            _minimumF1Task = MathHelper.getMinimumWithNAN(_minimumF1Task,result.minimumF1Task);
+            _minAvgF1Person = MathHelper.getMinimumWithNAN(_minAvgF1Person, result.minAvgF1Person);
+            _minimumF1Task = MathHelper.getMinimumWithNAN(_minimumF1Task, result.minimumF1Task);
         }
         _averageClassifierF1 /= classifierResults.size();
         _averageClassifierF1zeroNAN /= classifierResults.size();
@@ -179,6 +179,18 @@ public class ClassificationResult {
         return averageF1Score;
     }
 
+    public double getAverageF1zeroNAN() {
+        return averageF1zeroNAN;
+    }
+
+    public double getMinAvgF1Person() {
+        return minAvgF1Person;
+    }
+
+    public double getMinimumF1Task() {
+        return minimumF1Task;
+    }
+
     public static ClassificationResultF1Comparator getF1Comparator() {
         return f1Comparator;
     }
@@ -187,16 +199,29 @@ public class ClassificationResult {
     public static class ClassificationResultF1Comparator implements Comparator<ClassificationResult> {
         public int compare(ClassificationResult c1, ClassificationResult c2) {
 
-            if (Double.isNaN(c1.getAverageF1Score())) {
-                if (Double.isNaN(c2.getAverageF1Score())) {
-                    return 0;
+            if (Double.isNaN(c1.getMinimumF1Task())) {
+                if (Double.isNaN(c2.getMinimumF1Task())) {
+
+                    // if min f1 is NAN for both, do the same test for non-NAN-f1 instead
+                    if (Double.isNaN(c1.getAverageF1zeroNAN())) {
+                        if (Double.isNaN(c2.getAverageF1zeroNAN())) {
+                            return 0;
+                        } else {
+                            return 1;
+                        }
+                    } else if (Double.isNaN(c2.getAverageF1zeroNAN())) {
+                        return -1;
+                    } else {
+                        return Double.compare(c2.averageF1zeroNAN, c1.averageF1zeroNAN);
+                    }
+
                 } else {
                     return 1;
                 }
-            } else if (Double.isNaN(c2.getAverageF1Score())) {
+            } else if (Double.isNaN(c2.getMinimumF1Task())) {
                 return -1;
             } else {
-                return Double.compare(c2.averageF1Score, c1.averageF1Score);
+                return Double.compare(c2.getMinimumF1Task(), c1.getMinimumF1Task());
             }
 
         }
