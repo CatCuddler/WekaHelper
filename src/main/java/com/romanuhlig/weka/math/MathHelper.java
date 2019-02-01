@@ -11,6 +11,10 @@ public class MathHelper {
         return (velocityFinal - velocityBegin) / (timeFinal - timeBegin);
     }
 
+    public static double EuclideanNorm(double a, double b) {
+        return Math.sqrt(a * a + b * b);
+    }
+
     public static double EuclideanNorm(double x, double y, double z) {
         return Math.sqrt(x * x + y * y + z * z);
     }
@@ -35,5 +39,6 @@ public class MathHelper {
             return value;
         }
     }
+
 
 }

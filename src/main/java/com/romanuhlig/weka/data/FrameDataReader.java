@@ -18,6 +18,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
+import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
+
 public class FrameDataReader {
 
     static final String outputBaseFolder = "features";
@@ -200,33 +202,6 @@ public class FrameDataReader {
         return getHeaderForSensorTypes(sensorTypes, includeClassForTraining);
     }
 
-    public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes, boolean includeClassForTraining) {
-
-        ArrayList<String> headerFields = new ArrayList<>();
-
-        for (String sensorType : sensorTypes) {
-            headerFields.add(sensorType + "_maximumHeight");
-            headerFields.add(sensorType + "_minimumHeight");
-            headerFields.add(sensorType + "_averageHeight");
-            headerFields.add(sensorType + "_rangeX");
-            headerFields.add(sensorType + "_rangeZ");
-            headerFields.add(sensorType + "_averageVelocityX");
-            headerFields.add(sensorType + "_averageVelocityY");
-            headerFields.add(sensorType + "_averageVelocityZ");
-            headerFields.add(sensorType + "_averageAccelerationX");
-            headerFields.add(sensorType + "_averageAccelerationY");
-            headerFields.add(sensorType + "_averageAccelerationZ");
-            headerFields.add(sensorType + "_averageAngularVelocity");
-            headerFields.add(sensorType + "_averageAngularAcceleration");
-
-        }
-
-        if (includeClassForTraining) {
-            headerFields.add("activity");
-        }
-
-        return headerFields;
-    }
 
     public static OutputFeatureVector getFeaturesForFrameDataSet(FrameDataSet dataSource, boolean includeClassForTraining) {
 
@@ -246,11 +221,15 @@ public class FrameDataReader {
             double maximumX = Double.NEGATIVE_INFINITY;
             double maximumZ = Double.NEGATIVE_INFINITY;
             double averageVelocityX = 0;
-            double averageVelocityY = 0;
+            double averageVelocityHeight = 0;
             double averageVelocityZ = 0;
+            double averageVelocityXZ = 0;
+            double averageVelocityXYZ = 0;
             double averageAccelerationX = 0;
-            double averageAccelerationY = 0;
+            double averageAccelerationHeight = 0;
             double averageAccelerationZ = 0;
+            double averageAccelerationXZ = 0;
+            double averageAccelerationXYZ = 0;
             double averageAngularVelocity = 0;
             double averageAngularAcceleration = 0;
 
@@ -263,12 +242,22 @@ public class FrameDataReader {
                     double timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
 
                     averageVelocityX += (Math.abs(frameData.getLinVelX()) * timeSinceLastFrame);
-                    averageVelocityY += (Math.abs(frameData.getLinVelY()) * timeSinceLastFrame);
+                    averageVelocityHeight += (Math.abs(frameData.getLinVelY()) * timeSinceLastFrame);
                     averageVelocityZ += (Math.abs(frameData.getLinVelZ()) * timeSinceLastFrame);
 
+                    averageVelocityXZ += MathHelper.EuclideanNorm(
+                            frameData.getLinVelX(), frameData.getLinVelZ());
+                    averageVelocityXYZ += MathHelper.EuclideanNorm(
+                            frameData.getLinVelX(), frameData.getLinVelY(), frameData.getLinVelZ());
+
                     averageAccelerationX += (Math.abs(frameData.getLinAccelerationX()) * timeSinceLastFrame);
-                    averageAccelerationY += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
+                    averageAccelerationHeight += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
                     averageAccelerationZ += (Math.abs(frameData.getLinAccelerationZ()) * timeSinceLastFrame);
+
+                    averageAccelerationXZ += MathHelper.EuclideanNorm(
+                            frameData.getLinAccelerationX(), frameData.getLinAccelerationZ());
+                    averageAccelerationXYZ += MathHelper.EuclideanNorm(
+                            frameData.getLinAccelerationX(), frameData.getLinAccelerationY(), frameData.getLinAccelerationZ());
 
                     averageHeight += frameData.getCalPosY() * timeSinceLastFrame;
 
@@ -318,10 +307,14 @@ public class FrameDataReader {
                             - singleSensor.get(0).getTime();
             averageHeight /= overallTimePassed;
             averageVelocityX /= overallTimePassed;
-            averageVelocityY /= overallTimePassed;
+            averageVelocityHeight /= overallTimePassed;
             averageVelocityZ /= overallTimePassed;
+            averageVelocityXZ /= overallTimePassed;
+            averageVelocityXYZ /= overallTimePassed;
             averageAccelerationX /= overallTimePassed;
-            averageAccelerationY /= overallTimePassed;
+            averageAccelerationHeight /= overallTimePassed;
+            averageAccelerationXZ /= overallTimePassed;
+            averageAccelerationXYZ /= overallTimePassed;
             averageAccelerationZ /= overallTimePassed;
             averageAngularVelocity /= overallTimePassed;
             averageAngularAcceleration /= overallTimePassed;
@@ -336,29 +329,42 @@ public class FrameDataReader {
             rangeX /= singleSensor.get(0).getScale();
             rangeZ /= singleSensor.get(0).getScale();
             averageVelocityX /= singleSensor.get(0).getScale();
-            averageVelocityY /= singleSensor.get(0).getScale();
+            averageVelocityHeight /= singleSensor.get(0).getScale();
             averageVelocityZ /= singleSensor.get(0).getScale();
+            averageVelocityXZ /= singleSensor.get(0).getScale();
+            averageVelocityXYZ /= singleSensor.get(0).getScale();
             averageAccelerationX /= singleSensor.get(0).getScale();
-            averageAccelerationY /= singleSensor.get(0).getScale();
+            averageAccelerationHeight /= singleSensor.get(0).getScale();
             averageAccelerationZ /= singleSensor.get(0).getScale();
-            averageAngularVelocity /= singleSensor.get(0).getScale();
-            averageAngularAcceleration /= singleSensor.get(0).getScale();
+            averageAccelerationXZ /= singleSensor.get(0).getScale();
+            averageAccelerationXYZ /= singleSensor.get(0).getScale();
 
 
             // add features to data line
             outputFeatureVector.addFeature(Double.toString(maximumHeight));
             outputFeatureVector.addFeature(Double.toString(minimumHeight));
             outputFeatureVector.addFeature(Double.toString(averageHeight));
-            outputFeatureVector.addFeature(Double.toString(rangeX));
-            outputFeatureVector.addFeature(Double.toString(rangeZ));
-            outputFeatureVector.addFeature(Double.toString(averageVelocityX));
-            outputFeatureVector.addFeature(Double.toString(averageVelocityY));
-            outputFeatureVector.addFeature(Double.toString(averageVelocityZ));
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationX));
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationY));
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationZ));
-            outputFeatureVector.addFeature(Double.toString(averageAngularVelocity));
-            outputFeatureVector.addFeature(Double.toString(averageAngularAcceleration));
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                outputFeatureVector.addFeature(Double.toString(rangeX));
+                outputFeatureVector.addFeature(Double.toString(rangeZ));
+                outputFeatureVector.addFeature(Double.toString(averageVelocityX));
+                outputFeatureVector.addFeature(Double.toString(averageVelocityZ));
+            }
+            outputFeatureVector.addFeature(Double.toString(averageVelocityHeight));
+            outputFeatureVector.addFeature(Double.toString(averageVelocityXZ));
+            outputFeatureVector.addFeature(Double.toString(averageVelocityXYZ));
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                outputFeatureVector.addFeature(Double.toString(averageAccelerationX));
+                outputFeatureVector.addFeature(Double.toString(averageAccelerationZ));
+            }
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationHeight));
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationXZ));
+            outputFeatureVector.addFeature(Double.toString(averageAccelerationXYZ));
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
+                outputFeatureVector.addFeature(Double.toString(averageAngularVelocity));
+                outputFeatureVector.addFeature(Double.toString(averageAngularAcceleration));
+            }
+
 
             //  System.out.println("max          " + maximumHeight);
             //  System.out.println("avg          " + averageHeight);
@@ -370,6 +376,46 @@ public class FrameDataReader {
         }
 
         return outputFeatureVector;
+    }
+
+
+    public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes, boolean includeClassForTraining) {
+
+        ArrayList<String> headerFields = new ArrayList<>();
+
+        for (String sensorType : sensorTypes) {
+            headerFields.add(sensorType + "_maximumHeight");
+            headerFields.add(sensorType + "_minimumHeight");
+            headerFields.add(sensorType + "_averageHeight");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                //TODO: - add rangeXZ and rangeXYZ, which is harder to compute but independent of orientation
+                headerFields.add(sensorType + "_rangeX");
+                headerFields.add(sensorType + "_rangeZ");
+                headerFields.add(sensorType + "_averageVelocityX");
+                headerFields.add(sensorType + "_averageVelocityZ");
+            }
+            headerFields.add(sensorType + "_averageVelocityHeight");
+            headerFields.add(sensorType + "_averageVelocityXZ");
+            headerFields.add(sensorType + "_averageVelocityXYZ");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                headerFields.add(sensorType + "_averageAccelerationX");
+                headerFields.add(sensorType + "_averageAccelerationZ");
+            }
+            headerFields.add(sensorType + "_averageAccelerationHeight");
+            headerFields.add(sensorType + "_averageAccelerationXZ");
+            headerFields.add(sensorType + "_averageAccelerationXYZ");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
+                headerFields.add(sensorType + "_averageAngularVelocity");
+                headerFields.add(sensorType + "_averageAngularAcceleration");
+            }
+
+        }
+
+        if (includeClassForTraining) {
+            headerFields.add("activity");
+        }
+
+        return headerFields;
     }
 
 

@@ -12,10 +12,10 @@ public class TestBenchSettings {
     static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
 //            ClassifierFactory.ClassifierType.J48
 //          ,
-            ClassifierFactory.ClassifierType.RandomForest
-            ,
-            ClassifierFactory.ClassifierType.NaiveBayes
-            ,
+//            ClassifierFactory.ClassifierType.RandomForest
+//            ,
+//            ClassifierFactory.ClassifierType.NaiveBayes
+//            ,
             ClassifierFactory.ClassifierType.SMO
 //            ,
 //            ClassifierFactory.ClassifierType.OneR
@@ -28,17 +28,20 @@ public class TestBenchSettings {
     static String outputFolderTag = "";
 
     // sensor permutations to use during evaluation
-    static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
-    static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
+    static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
+    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
     static boolean allowSingleHandController = false;
     static int minimumNumberOfTrackers = 0;
-    static int maximumNumberOfTrackers = 1;
+    static int maximumNumberOfTrackers = 2;
     static int minimumNumberOfSensors = -1;
     static int maximumNumberOfSensors = -1;
 
-    public enum SensorUsage {
-        MayInclude, MustInclude, CannotInclude
-    }
+
+    // feature types to disallow
+    static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
+            //FeatureTag.Angular
+            FeatureTag.SubjectOrientationRelevant
+    ));
 
 
     // input frame data
@@ -49,6 +52,15 @@ public class TestBenchSettings {
     // result output
     static boolean writeAllModelsToFolder = true;
 
+
+    public enum SensorUsage {
+        MayInclude, MustInclude, CannotInclude
+    }
+
+    public enum FeatureTag {
+        Angular,
+        SubjectOrientationRelevant
+    }
 
     public static String summarySingleLine() {
         StringBuilder stringBuilder = new StringBuilder();
@@ -169,5 +181,16 @@ public class TestBenchSettings {
         return writeAllModelsToFolder;
     }
 
+
+    public static boolean featureTagsAllowed(FeatureTag... tags) {
+
+        for (FeatureTag tag : tags) {
+            if (forbiddenFeatureTags.contains(tag)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
 }
