@@ -55,7 +55,7 @@ public class SortingValueCollector {
         }
     }
 
-    public double getPercentile50Median() {
+    public double getPercentile50median() {
         return getPercentile(0.5);
     }
 

@@ -28,11 +28,11 @@ public class TestBenchSettings {
     static String outputFolderTag = "";
 
     // sensor permutations to use during evaluation
-    static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
-    static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
+    static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
+    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
     static boolean allowSingleHandController = false;
     static int minimumNumberOfTrackers = 0;
-    static int maximumNumberOfTrackers = 1;
+    static int maximumNumberOfTrackers = 2;
     static int minimumNumberOfSensors = -1;
     static int maximumNumberOfSensors = -1;
 
