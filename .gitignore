@@ -7,6 +7,10 @@
 # generated evaluation results
 /outputResults/**
 
+# data source for training
+/inputFrameData/
+
+
 # Compiled class file
 *.class
 

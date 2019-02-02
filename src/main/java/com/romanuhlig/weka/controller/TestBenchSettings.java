@@ -28,11 +28,11 @@ public class TestBenchSettings {
     static String outputFolderTag = "";
 
     // sensor permutations to use during evaluation
-    static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
-    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
+    static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
+    static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
     static boolean allowSingleHandController = false;
     static int minimumNumberOfTrackers = 0;
-    static int maximumNumberOfTrackers = 2;
+    static int maximumNumberOfTrackers = 1;
     static int minimumNumberOfSensors = -1;
     static int maximumNumberOfSensors = -1;
 
@@ -40,7 +40,7 @@ public class TestBenchSettings {
     // feature types to disallow
     static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
 //          FeatureTag.Angular
-          FeatureTag.SubjectOrientationRelevant
+//          FeatureTag.SubjectOrientationRelevant
 //          FeatureTag.DualSensorCombination
     ));
 

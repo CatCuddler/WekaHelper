@@ -17,11 +17,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.math.BigDecimal;
 
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
 
-import javax.sound.midi.Soundbank;
 
 public class FrameDataReader {
 
@@ -215,167 +213,119 @@ public class FrameDataReader {
 
         for (ArrayList<FrameData> singleSensor : frameDataSet) {
 
+            // values that stay true for the whole window
+            double overallTimePassed =
+                    singleSensor.get(singleSensor.size() - 1).getTime()
+                            - singleSensor.get(0).getTime();
+            double bodySize = singleSensor.get(0).getScale();
+
             // calculate features for sensor
-            double maximumHeight = Double.NEGATIVE_INFINITY;
-            double averageHeight = 0;
-            double minimumHeight = Double.POSITIVE_INFINITY;
-            double minimumX = Double.POSITIVE_INFINITY;
-            double minimumZ = Double.POSITIVE_INFINITY;
-            double maximumX = Double.NEGATIVE_INFINITY;
-            double maximumZ = Double.NEGATIVE_INFINITY;
-            double averageVelocityX = 0;
-            double averageVelocityHeight = 0;
-            double averageVelocityZ = 0;
-            double averageVelocityXZ = 0;
-            double averageVelocityXYZ = 0;
-            double averageAccelerationX = 0;
-            double averageAccelerationHeight = 0;
-            double averageAccelerationZ = 0;
-            double averageAccelerationXZ = 0;
-            double averageAccelerationXYZ = 0;
-            double averageAngularVelocity = 0;
-            double averageAngularAcceleration = 0;
+            SortingValueCollector Position_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Position_X = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Position_Z = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Velocity_X = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Velocity_Z = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Velocity_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Velocity_XZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Velocity_XYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_X = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_Z = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_XZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_XYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector AngularVelocity = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+            SortingValueCollector AngularAcceleration = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
 
             for (int i = 0; i < singleSensor.size(); i++) {
 
                 FrameData frameData = singleSensor.get(i);
 
+                double timeSinceLastFrame;
                 if (i > 0) {
-                    double timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
-
-                    averageVelocityX += (Math.abs(frameData.getLinVelX()) * timeSinceLastFrame);
-                    averageVelocityHeight += (Math.abs(frameData.getLinVelY()) * timeSinceLastFrame);
-                    averageVelocityZ += (Math.abs(frameData.getLinVelZ()) * timeSinceLastFrame);
-
-                    averageVelocityXZ +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getLinVelX(),
-                                    frameData.getLinVelZ());
-                    averageVelocityXYZ +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getLinVelX(),
-                                    frameData.getLinVelY(),
-                                    frameData.getLinVelZ());
-
-                    averageAccelerationX += (Math.abs(frameData.getLinAccelerationX()) * timeSinceLastFrame);
-                    averageAccelerationHeight += (Math.abs(frameData.getLinAccelerationY()) * timeSinceLastFrame);
-                    averageAccelerationZ += (Math.abs(frameData.getLinAccelerationZ()) * timeSinceLastFrame);
-
-                    averageAccelerationXZ +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getLinAccelerationX(),
-                                    frameData.getLinAccelerationZ());
-                    averageAccelerationXYZ +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getLinAccelerationX(),
-                                    frameData.getLinAccelerationY(),
-                                    frameData.getLinAccelerationZ());
-
-                    averageHeight += frameData.getCalPosY() * timeSinceLastFrame;
-
-                    averageAngularVelocity +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getAngVelX(),
-                                    frameData.getAngVelY(),
-                                    frameData.getAngVelZ());
-                    averageAngularAcceleration +=
-                            timeSinceLastFrame * MathHelper.EuclideanNorm(
-                                    frameData.getAngAccelerationX(),
-                                    frameData.getAngAccelerationY(),
-                                    frameData.getAngAccelerationZ());
-
-
+                    timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
+                } else {
+                    timeSinceLastFrame = 0;
                 }
 
-
-                // if (frameData.getSensorPosition().equals("head"))
-                //     System.out.println(frameData.getCalPosZ()); // correctly shows different values from original file
-
-                if (frameData.getCalPosY() > maximumHeight) {
-                    maximumHeight = frameData.getCalPosY();
-                }
-                if (frameData.getCalPosY() < minimumHeight) {
-                    minimumHeight = frameData.getCalPosY();
-                }
+                Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
+                Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
+                Velocity_Height.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
 
 
-                if (frameData.getCalPosX() > maximumX) {
-                    maximumX = frameData.getCalPosX();
-                } else if (frameData.getCalPosX() < minimumX) {
-                    minimumX = frameData.getCalPosX();
-                }
+                Velocity_XZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinVelX(),
+                                frameData.getLinVelZ()),
+                        timeSinceLastFrame);
+                Velocity_XYZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinVelX(),
+                                frameData.getLinVelY(),
+                                frameData.getLinVelZ()),
+                        timeSinceLastFrame);
 
-                if (frameData.getCalPosZ() > maximumZ) {
-                    maximumZ = frameData.getCalPosZ();
-                } else if (frameData.getCalPosZ() < minimumZ) {
-                    minimumZ = frameData.getCalPosZ();
-                }
+
+                Acceleration_X.addValue(Math.abs(frameData.getLinAccelerationX()), timeSinceLastFrame);
+                Acceleration_Height.addValue(Math.abs(frameData.getLinAccelerationY()), timeSinceLastFrame);
+                Acceleration_Z.addValue(Math.abs(frameData.getLinAccelerationZ()), timeSinceLastFrame);
+
+
+                Acceleration_XZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinAccelerationX(),
+                                frameData.getLinAccelerationZ()),
+                        timeSinceLastFrame);
+                Acceleration_XYZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinAccelerationX(),
+                                frameData.getLinAccelerationY(),
+                                frameData.getLinAccelerationZ()),
+                        timeSinceLastFrame);
+
+
+                AngularVelocity.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getAngVelX(),
+                                frameData.getAngVelY(),
+                                frameData.getAngVelZ()),
+                        timeSinceLastFrame);
+                AngularAcceleration.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getAngAccelerationX(),
+                                frameData.getAngAccelerationY(),
+                                frameData.getAngAccelerationZ()),
+                        timeSinceLastFrame);
+
+
+                Position_X.addValue(frameData.getCalPosX(), timeSinceLastFrame);
+                Position_Z.addValue(frameData.getCalPosZ(), timeSinceLastFrame);
+                Position_Height.addValue(frameData.getCalPosY(), timeSinceLastFrame);
             }
 
-
-            // adjust average values to overall time passed
-            double overallTimePassed =
-                    singleSensor.get(singleSensor.size() - 1).getTime()
-                            - singleSensor.get(0).getTime();
-            averageHeight /= overallTimePassed;
-            averageVelocityX /= overallTimePassed;
-            averageVelocityHeight /= overallTimePassed;
-            averageVelocityZ /= overallTimePassed;
-            averageVelocityXZ /= overallTimePassed;
-            averageVelocityXYZ /= overallTimePassed;
-            averageAccelerationX /= overallTimePassed;
-            averageAccelerationHeight /= overallTimePassed;
-            averageAccelerationXZ /= overallTimePassed;
-            averageAccelerationXYZ /= overallTimePassed;
-            averageAccelerationZ /= overallTimePassed;
-            averageAngularVelocity /= overallTimePassed;
-            averageAngularAcceleration /= overallTimePassed;
-
-            double rangeX = maximumX - minimumX;
-            double rangeZ = maximumZ - minimumZ;
-
-            // adjust to subject height
-            maximumHeight /= singleSensor.get(0).getScale();
-            minimumHeight /= singleSensor.get(0).getScale();
-            averageHeight /= singleSensor.get(0).getScale();
-            rangeX /= singleSensor.get(0).getScale();
-            rangeZ /= singleSensor.get(0).getScale();
-            averageVelocityX /= singleSensor.get(0).getScale();
-            averageVelocityHeight /= singleSensor.get(0).getScale();
-            averageVelocityZ /= singleSensor.get(0).getScale();
-            averageVelocityXZ /= singleSensor.get(0).getScale();
-            averageVelocityXYZ /= singleSensor.get(0).getScale();
-            averageAccelerationX /= singleSensor.get(0).getScale();
-            averageAccelerationHeight /= singleSensor.get(0).getScale();
-            averageAccelerationZ /= singleSensor.get(0).getScale();
-            averageAccelerationXZ /= singleSensor.get(0).getScale();
-            averageAccelerationXYZ /= singleSensor.get(0).getScale();
-
-
-            // add features to data line
-            outputFeatureVector.addFeature(Double.toString(maximumHeight));
-            outputFeatureVector.addFeature(Double.toString(minimumHeight));
-            outputFeatureVector.addFeature(Double.toString(averageHeight));
+            // output the calculated values
+            outputFeatureVector.addFeature(Double.toString(Position_Height.getMax()));
+            outputFeatureVector.addFeature(Double.toString(Position_Height.getMin()));
+            outputFeatureVector.addFeature(Double.toString(Position_Height.getAverage()));
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                outputFeatureVector.addFeature(Double.toString(rangeX));
-                outputFeatureVector.addFeature(Double.toString(rangeZ));
-                outputFeatureVector.addFeature(Double.toString(averageVelocityX));
-                outputFeatureVector.addFeature(Double.toString(averageVelocityZ));
+                outputFeatureVector.addFeature(Double.toString(Position_X.getRange()));
+                outputFeatureVector.addFeature(Double.toString(Position_Z.getRange()));
+                outputFeatureVector.addFeature(Double.toString(Velocity_X.getAverage()));
+                outputFeatureVector.addFeature(Double.toString(Velocity_Z.getAverage()));
             }
-            outputFeatureVector.addFeature(Double.toString(averageVelocityHeight));
-            outputFeatureVector.addFeature(Double.toString(averageVelocityXZ));
-            outputFeatureVector.addFeature(Double.toString(averageVelocityXYZ));
+            outputFeatureVector.addFeature(Double.toString(Velocity_Height.getAverage()));
+            outputFeatureVector.addFeature(Double.toString(Velocity_XZ.getAverage()));
+            outputFeatureVector.addFeature(Double.toString(Velocity_XYZ.getAverage()));
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                outputFeatureVector.addFeature(Double.toString(averageAccelerationX));
-                outputFeatureVector.addFeature(Double.toString(averageAccelerationZ));
+                outputFeatureVector.addFeature(Double.toString(Acceleration_X.getAverage()));
+                outputFeatureVector.addFeature(Double.toString(Acceleration_Z.getAverage()));
             }
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationHeight));
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationXZ));
-            outputFeatureVector.addFeature(Double.toString(averageAccelerationXYZ));
+            outputFeatureVector.addFeature(Double.toString(Acceleration_Height.getAverage()));
+            outputFeatureVector.addFeature(Double.toString(Acceleration_XZ.getAverage()));
+            outputFeatureVector.addFeature(Double.toString(Acceleration_XYZ.getAverage()));
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
-                outputFeatureVector.addFeature(Double.toString(averageAngularVelocity));
-                outputFeatureVector.addFeature(Double.toString(averageAngularAcceleration));
+                outputFeatureVector.addFeature(Double.toString(AngularVelocity.getAverage()));
+                outputFeatureVector.addFeature(Double.toString(AngularAcceleration.getAverage()));
             }
 
         }
@@ -386,7 +336,6 @@ public class FrameDataReader {
                 ArrayList<FrameData> singleSensorA = frameDataSet.get(ssA);
                 for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
                     ArrayList<FrameData> singleSensorB = frameDataSet.get(ssB);
-
 
 
                     double averageDistanceXYZ = 0;
