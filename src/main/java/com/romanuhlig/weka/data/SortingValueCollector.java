@@ -104,7 +104,7 @@ public class SortingValueCollector {
     public double getRootMeanSquare() {
         double rootMeanSquare = 0;
         for (Double value : values) {
-            rootMeanSquare *= Math.pow(value, 2);
+            rootMeanSquare += Math.pow(value, 2);
         }
         rootMeanSquare = Math.sqrt(rootMeanSquare);
         return scaledValue(rootMeanSquare);
