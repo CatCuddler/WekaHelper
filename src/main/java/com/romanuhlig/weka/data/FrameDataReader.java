@@ -419,31 +419,31 @@ public class FrameDataReader {
             headerFields.add(sensorType + "_minimum_Height");
             headerFields.add(sensorType + "_range_Height");
 
-            addStandardFeatures(headerFields,sensorType,"Height");
+            addStandardFeatures(headerFields, sensorType, "Height");
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
                 //TODO: - add rangeXZ and rangeXYZ, which is harder to compute but independent of orientation
                 headerFields.add(sensorType + "_range_X");
                 headerFields.add(sensorType + "_range_Z");
 
-                addStandardFeatures(headerFields,sensorType,"Velocity_X");
-                addStandardFeatures(headerFields,sensorType,"Velocity_Z");
+                addStandardFeatures(headerFields, sensorType, "Velocity_X");
+                addStandardFeatures(headerFields, sensorType, "Velocity_Z");
             }
-            addStandardFeatures(headerFields,sensorType,"Velocity_Height");
-            addStandardFeatures(headerFields,sensorType,"Velocity_XZ");
-            addStandardFeatures(headerFields,sensorType,"Velocity_XYZ");
+            addStandardFeatures(headerFields, sensorType, "Velocity_Height");
+            addStandardFeatures(headerFields, sensorType, "Velocity_XZ");
+            addStandardFeatures(headerFields, sensorType, "Velocity_XYZ");
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                addStandardFeatures(headerFields,sensorType,"Acceleration_X");
-                addStandardFeatures(headerFields,sensorType,"Acceleration_Z");
+                addStandardFeatures(headerFields, sensorType, "Acceleration_X");
+                addStandardFeatures(headerFields, sensorType, "Acceleration_Z");
             }
-            addStandardFeatures(headerFields,sensorType,"Acceleration_Height");
-            addStandardFeatures(headerFields,sensorType,"Acceleration_XZ");
-            addStandardFeatures(headerFields,sensorType,"Acceleration_XYZ");
+            addStandardFeatures(headerFields, sensorType, "Acceleration_Height");
+            addStandardFeatures(headerFields, sensorType, "Acceleration_XZ");
+            addStandardFeatures(headerFields, sensorType, "Acceleration_XYZ");
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
-                addStandardFeatures(headerFields,sensorType,"Velocity_Angular");
-                addStandardFeatures(headerFields,sensorType,"Acceleration_Angular");
+                addStandardFeatures(headerFields, sensorType, "Velocity_Angular");
+                addStandardFeatures(headerFields, sensorType, "Acceleration_Angular");
             }
 
         }
@@ -472,17 +472,30 @@ public class FrameDataReader {
 
     private static void addStandardFeatures(OutputFeatureVector featureVector, SortingValueCollector valueCollector) {
         featureVector.addFeature(Double.toString(valueCollector.getAverage()));
-        featureVector.addFeature(Double.toString(valueCollector.getPercentile25()));
-        featureVector.addFeature(Double.toString(valueCollector.getPercentile50median()));
-        featureVector.addFeature(Double.toString(valueCollector.getPercentile75()));
+        featureVector.addFeature(Double.toString(valueCollector.getRootMeanSquare()));
+        featureVector.addFeature(Double.toString(valueCollector.getStandardDeviation()));
+        featureVector.addFeature(Double.toString(valueCollector.getVariance()));
+        featureVector.addFeature(Double.toString(valueCollector.getMeanAbsoluteDeviation()));
+        featureVector.addFeature(Double.toString(valueCollector.getInterquartileRange()));
+
+        for (int i = 25; i < 100; i += 25) {
+            featureVector.addFeature(Double.toString(valueCollector.getPercentile(i / 100d)));
+        }
+
+
     }
 
     private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute) {
         headerFields.add(sensor + "_average_" + attribute);
-        headerFields.add(sensor + "_percentile25_" + attribute);
-        headerFields.add(sensor + "_percentile50_" + attribute);
-        headerFields.add(sensor + "_percentile75_" + attribute);
+        headerFields.add(sensor + "_rootMeanSquare_" + attribute);
+        headerFields.add(sensor + "_standardDeviation_" + attribute);
+        headerFields.add(sensor + "_variance_" + attribute);
+        headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
+        headerFields.add(sensor + "_interquartileRange_" + attribute);
 
+        for (int i = 25; i < 100; i += 25) {
+            headerFields.add(sensor + "_percentile" + i + "_" + attribute);
+        }
     }
 
 
