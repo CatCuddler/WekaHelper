@@ -487,10 +487,10 @@ public class FrameDataReader {
 
     private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute) {
         headerFields.add(sensor + "_average_" + attribute);
-        headerFields.add(sensor + "_rootMeanSquare_" + attribute);
-        headerFields.add(sensor + "_standardDeviation_" + attribute);
-        headerFields.add(sensor + "_variance_" + attribute);
-        headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
+           headerFields.add(sensor + "_rootMeanSquare_" + attribute);
+           headerFields.add(sensor + "_standardDeviation_" + attribute);
+           headerFields.add(sensor + "_variance_" + attribute);
+            headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
         headerFields.add(sensor + "_interquartileRange_" + attribute);
 
         for (int i = 25; i < 100; i += 25) {
@@ -499,8 +499,8 @@ public class FrameDataReader {
     }
 
 
-    private static void writeOutputFeatureVectorToCSV(String
-                                                              filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
+    private static void writeOutputFeatureVectorToCSV(
+            String filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {
 
         // sort output by class
         // The Weka Gui is unable to deal with unordered classes, which makes sanity checks difficult

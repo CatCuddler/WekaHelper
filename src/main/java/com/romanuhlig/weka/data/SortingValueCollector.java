@@ -102,10 +102,15 @@ public class SortingValueCollector {
     }
 
     public double getRootMeanSquare() {
+        // sqrt of the average of all squared values
         double rootMeanSquare = 0;
+        // squares
         for (Double value : values) {
             rootMeanSquare += Math.pow(value, 2);
         }
+        // average
+        rootMeanSquare /= values.size();
+        // sqrt
         rootMeanSquare = Math.sqrt(rootMeanSquare);
         return scaledValue(rootMeanSquare);
     }
@@ -115,7 +120,7 @@ public class SortingValueCollector {
 
             unscaledAverage = 0;
             for (Double value : values) {
-                unscaledAverage *= value;
+                unscaledAverage += value;
             }
             unscaledAverage /= values.size();
 
@@ -124,6 +129,7 @@ public class SortingValueCollector {
     }
 
     public double getStandardDeviation() {
+        // sqrt of average squared distance from average
         computeVariance();
 
         double standardDeviation = Math.sqrt(variance);
@@ -131,6 +137,7 @@ public class SortingValueCollector {
     }
 
     public double getVariance() {
+        // average squared distance from average
         computeVariance();
 
         return scaledValue(variance);
@@ -153,6 +160,7 @@ public class SortingValueCollector {
     }
 
     public double getMeanAbsoluteDeviation() {
+        // average distance from average
         computeUnscaledAverage();
         double meanAbsoluteDeviation = 0;
         for (Double value : values) {
@@ -165,6 +173,7 @@ public class SortingValueCollector {
 
 
     public double getInterquartileRange() {
+        // q75 - q25
         sortValues();
 
         double quartile1 = values.get((int) ((values.size() - 1) * 0.25));
