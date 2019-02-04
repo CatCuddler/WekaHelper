@@ -75,7 +75,7 @@ public class CppDataClassifier {
 //                outputClassifierResultToCpp("b");
 
                 // create features
-                OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow, false);
+                OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
                 ArrayList<String> header = FrameDataReader.getHeaderForFrameDataSet(frameDataSetForWindow, false);
 
 //                outputClassifierResultToCpp("c");
@@ -124,11 +124,11 @@ public class CppDataClassifier {
                 // fill the attribute values for the instance
                 for (int i = 0; i < numberOfFeatures; i++) {
 //                    outputClassifierResultToCpp("trying to set value:   ");
-//                    outputClassifierResultToCpp("" + features.getFeatures().get(i));
+//                    outputClassifierResultToCpp("" + features.getFeaturesWithoutClassValue().get(i));
 //                    outputClassifierResultToCpp("" + attributes.get(i).name());
 
                     try {
-                        instance.setValue(attributes.get(i), Double.parseDouble(features.getFeatures().get(i)));
+                        instance.setValue(attributes.get(i), Double.parseDouble(features.getFeaturesWithoutClassValue().get(i)));
 //                        outputClassifierResultToCpp("success setting value:   ");
                     } catch (Exception e) {
 //                        outputClassifierResultToCpp(e.getLocalizedMessage());

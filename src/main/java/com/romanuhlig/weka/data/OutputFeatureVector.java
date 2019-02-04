@@ -4,36 +4,46 @@ import java.util.ArrayList;
 
 public class OutputFeatureVector {
 
-    ArrayList<String> features;
-    String subject;
+    ArrayList<Double> features;
+    final String classValue;
+    final String subject;
 
-    public OutputFeatureVector(String subject, ArrayList<String> features) {
-        this.features = features;
-        this.subject = subject;
-    }
-
-    public OutputFeatureVector(String subject) {
+    public OutputFeatureVector(String subject, String classValue) {
         this.features = new ArrayList<>();
         this.subject = subject;
+        this.classValue = classValue;
     }
 
-    public ArrayList<String> getFeatures() {
-        return features;
+    public ArrayList<String> getFeaturesWithoutClassValue() {
+
+        ArrayList<String> allFeatures = new ArrayList<>(features.size());
+        for (Double value : features) {
+            allFeatures.add(Double.toString(value));
+        }
+
+        return allFeatures;
     }
 
     public String getSubject() {
         return subject;
     }
 
-    public void addFeature(String newFeature) {
+    public void addFeature(Double newFeature) {
         features.add(newFeature);
     }
 
-    public String[] getFeaturesAsArray() {
-        return features.toArray(new String[features.size()]);
+    public String[] getFeaturesAndClassAsArray() {
+        String[] allFeaturesWithClass = new String[features.size() + 1];
+
+        for (int i = 0; i < features.size(); i++) {
+            allFeaturesWithClass[i] = Double.toString(features.get(i));
+        }
+        allFeaturesWithClass[allFeaturesWithClass.length - 1] = classValue;
+
+        return allFeaturesWithClass;
     }
 
     public String getClassValue() {
-        return features.get(features.size() - 1);
+        return classValue;
     }
 }

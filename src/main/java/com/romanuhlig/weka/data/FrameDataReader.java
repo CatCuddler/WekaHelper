@@ -137,7 +137,7 @@ public class FrameDataReader {
             windows.remove(i);
 
             // create new data line
-            OutputFeatureVector currentOutputFeatureVector = getFeaturesForFrameDataSet(singleWindow, true);
+            OutputFeatureVector currentOutputFeatureVector = getFeaturesForFrameDataSet(singleWindow);
             outputFeatureVectors.add(currentOutputFeatureVector);
 
         }
@@ -175,8 +175,8 @@ public class FrameDataReader {
 //            onlySubjectVectors.sort(new Comparator<OutputFeatureVector>() {
 //                @Override
 //                public int compare(OutputFeatureVector o1, OutputFeatureVector o2) {
-//                    String o1Class = o1.getFeatures().get(o1.getFeatures().size() - 1);
-//                    String o2Class = o2.getFeatures().get(o2.getFeatures().size() - 1);
+//                    String o1Class = o1.getFeaturesWithClassValue().get(o1.getFeaturesWithClassValue().size() - 1);
+//                    String o2Class = o2.getFeaturesWithClassValue().get(o2.getFeaturesWithClassValue().size() - 1);
 //                    return o1Class.compareTo(o2Class);
 //                }
 //            });
@@ -184,8 +184,8 @@ public class FrameDataReader {
 //            allButSubjectVectors.sort(new Comparator<OutputFeatureVector>() {
 //                @Override
 //                public int compare(OutputFeatureVector o1, OutputFeatureVector o2) {
-//                    String o1Class = o1.getFeatures().get(o1.getFeatures().size() - 1);
-//                    String o2Class = o2.getFeatures().get(o2.getFeatures().size() - 1);
+//                    String o1Class = o1.getFeaturesWithClassValue().get(o1.getFeaturesWithClassValue().size() - 1);
+//                    String o2Class = o2.getFeaturesWithClassValue().get(o2.getFeaturesWithClassValue().size() - 1);
 //                    return o1Class.compareTo(o2Class);
 //                }
 //            });
@@ -217,10 +217,10 @@ public class FrameDataReader {
     }
 
 
-    public static OutputFeatureVector getFeaturesForFrameDataSet(FrameDataSet dataSource, boolean includeClassForTraining) {
+    public static OutputFeatureVector getFeaturesForFrameDataSet(FrameDataSet dataSource) {
 
         // create new data line
-        OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject());
+        OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject(), dataSource.getActivity());
 
         ArrayList<List<FrameData>> frameDataSet = dataSource.getAllSensorLists();
 
@@ -317,16 +317,16 @@ public class FrameDataReader {
             }
 
             // output the calculated values
-            outputFeatureVector.addFeature(Double.toString(Position_Height.getMax()));
-            outputFeatureVector.addFeature(Double.toString(Position_Height.getMin()));
-            outputFeatureVector.addFeature(Double.toString(Position_Height.getRange()));
+            outputFeatureVector.addFeature(Position_Height.getMax());
+            outputFeatureVector.addFeature(Position_Height.getMin());
+            outputFeatureVector.addFeature(Position_Height.getRange());
 
             addStandardFeatures(outputFeatureVector, Position_Height);
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
                 //TODO: - add rangeXZ and rangeXYZ, which is harder to compute but independent of orientation
-                outputFeatureVector.addFeature(Double.toString(Position_X.getRange()));
-                outputFeatureVector.addFeature(Double.toString(Position_Z.getRange()));
+                outputFeatureVector.addFeature(Position_X.getRange());
+                outputFeatureVector.addFeature(Position_Z.getRange());
 
                 addStandardFeatures(outputFeatureVector, Velocity_X);
                 addStandardFeatures(outputFeatureVector, Velocity_Z);
@@ -406,17 +406,13 @@ public class FrameDataReader {
                     averageDistanceChangeXYZ /= singleSensorA.get(0).getScale();
 
 
-                    outputFeatureVector.addFeature(Double.toString(averageDistanceXYZ));
-                    outputFeatureVector.addFeature(Double.toString(averageDistanceChangeXYZ));
+                    outputFeatureVector.addFeature(averageDistanceXYZ);
+                    outputFeatureVector.addFeature(averageDistanceChangeXYZ);
 
                 }
             }
         }
 
-
-        if (includeClassForTraining) {
-            outputFeatureVector.addFeature(dataSource.getActivity());
-        }
 
         return outputFeatureVector;
     }
@@ -484,15 +480,15 @@ public class FrameDataReader {
     }
 
     private static void addStandardFeatures(OutputFeatureVector featureVector, SortingValueCollector valueCollector) {
-        featureVector.addFeature(Double.toString(valueCollector.getAverage()));
-        featureVector.addFeature(Double.toString(valueCollector.getRootMeanSquare()));
-        featureVector.addFeature(Double.toString(valueCollector.getStandardDeviation()));
-        featureVector.addFeature(Double.toString(valueCollector.getVariance()));
-        featureVector.addFeature(Double.toString(valueCollector.getMeanAbsoluteDeviation()));
-        featureVector.addFeature(Double.toString(valueCollector.getInterquartileRange()));
+        featureVector.addFeature(valueCollector.getAverage());
+        featureVector.addFeature(valueCollector.getRootMeanSquare());
+        featureVector.addFeature(valueCollector.getStandardDeviation());
+        featureVector.addFeature(valueCollector.getVariance());
+        featureVector.addFeature(valueCollector.getMeanAbsoluteDeviation());
+        featureVector.addFeature(valueCollector.getInterquartileRange());
 
         for (int i = 25; i < 100; i += 25) {
-            featureVector.addFeature(Double.toString(valueCollector.getPercentile(i / 100d)));
+            featureVector.addFeature(valueCollector.getPercentile(i / 100d));
         }
 
 
@@ -537,7 +533,7 @@ public class FrameDataReader {
             csvWriter.writeNext(headerFields.toArray(new String[headerFields.size()]));
 
             for (OutputFeatureVector outputFeatureVector : featureVectors) {
-                csvWriter.writeNext(outputFeatureVector.getFeaturesAsArray());
+                csvWriter.writeNext(outputFeatureVector.getFeaturesAndClassAsArray());
             }
 
         } catch (Exception e) {
