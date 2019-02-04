@@ -136,6 +136,9 @@ public class FrameDataSet {
                 // extract a new segment for all sensors
                 ArrayList<List<FrameData>> newFrameDataSegment = new ArrayList<>();
                 for (List<FrameData> sensorList : allSensorLists) {
+                    // if for any reason it becomes necessary to change the window lists afterwards,
+                    // this needs to be a normal ArrayList instead of a sublist
+                    // a sublist will change the original list when it changes
                     List<FrameData> sensorSegment = sensorList.subList(startIndex, endIndex);
                     newFrameDataSegment.add(sensorSegment);
                 }

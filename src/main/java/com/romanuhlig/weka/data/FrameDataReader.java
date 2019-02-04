@@ -112,6 +112,9 @@ public class FrameDataReader {
             subjectNames.add(originalFrameDataSet.getSubject());
         }
 
+        // free up memory
+        originalFrameDataSets = null;
+
         // prepare header for output file
         // identify sensors in original data
         ArrayList<String> sensorTypes = windows.get(0).getAllSensorPositions();
@@ -121,7 +124,17 @@ public class FrameDataReader {
 
         // extract features
         // for each window
-        for (FrameDataSet singleWindow : windows) {
+
+        int numberOfWindows = windows.size();
+
+        for (int i = windows.size() - 1; i >= 0; i--) {
+
+            System.out.println("window " + (numberOfWindows - i) + " / " + numberOfWindows);
+
+            // shorten list as we go, to save on memory
+            FrameDataSet singleWindow = windows.get(i);
+            windows.set(i, null);
+            windows.remove(i);
 
             // create new data line
             OutputFeatureVector currentOutputFeatureVector = getFeaturesForFrameDataSet(singleWindow, true);
@@ -487,10 +500,10 @@ public class FrameDataReader {
 
     private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute) {
         headerFields.add(sensor + "_average_" + attribute);
-           headerFields.add(sensor + "_rootMeanSquare_" + attribute);
-           headerFields.add(sensor + "_standardDeviation_" + attribute);
-           headerFields.add(sensor + "_variance_" + attribute);
-            headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
+        headerFields.add(sensor + "_rootMeanSquare_" + attribute);
+        headerFields.add(sensor + "_standardDeviation_" + attribute);
+        headerFields.add(sensor + "_variance_" + attribute);
+        headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
         headerFields.add(sensor + "_interquartileRange_" + attribute);
 
         for (int i = 25; i < 100; i += 25) {

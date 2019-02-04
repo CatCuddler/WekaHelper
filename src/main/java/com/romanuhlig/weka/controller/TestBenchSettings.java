@@ -47,7 +47,7 @@ public class TestBenchSettings {
 
     // input frame data
     static double windowSizeForFrameDataToFeatureConversion = 5;
-    static double windowSpacingForFrameDataToFeatureConversion = 1d;
+    static double windowSpacingForFrameDataToFeatureConversion = 0.1d;
 
 
     // result output
