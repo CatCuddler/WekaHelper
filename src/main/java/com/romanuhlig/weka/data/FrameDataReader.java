@@ -209,9 +209,9 @@ public class FrameDataReader {
         // create new data line
         OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject());
 
-        ArrayList<ArrayList<FrameData>> frameDataSet = dataSource.getAllSensorLists();
+        ArrayList<List<FrameData>> frameDataSet = dataSource.getAllSensorLists();
 
-        for (ArrayList<FrameData> singleSensor : frameDataSet) {
+        for (List<FrameData> singleSensor : frameDataSet) {
 
             // values that stay true for the whole window
             double overallTimePassed =
@@ -340,9 +340,9 @@ public class FrameDataReader {
         // collect features that depend on the relationship between two sensors
         if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
             for (int ssA = 0; ssA < frameDataSet.size(); ssA++) {
-                ArrayList<FrameData> singleSensorA = frameDataSet.get(ssA);
+                List<FrameData> singleSensorA = frameDataSet.get(ssA);
                 for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
-                    ArrayList<FrameData> singleSensorB = frameDataSet.get(ssB);
+                    List<FrameData> singleSensorB = frameDataSet.get(ssB);
 
 
                     double averageDistanceXYZ = 0;
