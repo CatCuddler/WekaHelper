@@ -129,11 +129,12 @@ public class FrameDataReader {
 
         for (int i = windows.size() - 1; i >= 0; i--) {
 
-            System.out.println("window " + (numberOfWindows - i) + " / " + numberOfWindows);
+            if ((numberOfWindows - i) % 100 == 0) {
+                System.out.println("window " + (numberOfWindows - i) + " / " + numberOfWindows);
+            }
 
             // shorten list as we go, to save on memory
             FrameDataSet singleWindow = windows.get(i);
-            windows.set(i, null);
             windows.remove(i);
 
             // create new data line
