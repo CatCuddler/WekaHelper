@@ -23,22 +23,22 @@ public class TestBenchSettings {
 
 
     // folders
-    static String inputBaseFolder = "./inputFrameData/currentInput";
-    static String outputBaseFolder = "./outputResults/";
-    static String outputFolderTag = "";
+    private static String inputBaseFolder = "./inputFrameData/currentInput";
+    private static String outputBaseFolder = "./outputResults/";
+    private static String outputFolderTag = "";
 
     // sensor permutations to use during evaluation
-    static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
-    static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
-    static boolean allowSingleHandController = false;
-    static int minimumNumberOfTrackers = -1;
-    static int maximumNumberOfTrackers = 2;
-    static int minimumNumberOfSensors = -1;
-    static int maximumNumberOfSensors = -1;
+    private static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
+    private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
+    private static boolean allowSingleHandController = false;
+    private static int minimumNumberOfTrackers = -1;
+    private static int maximumNumberOfTrackers = 2;
+    private static int minimumNumberOfSensors = -1;
+    private static int maximumNumberOfSensors = -1;
 
 
     // feature types to disallow
-    static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
+    private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
 //          FeatureTag.Angular
 //          FeatureTag.SubjectOrientationRelevant
 //          FeatureTag.DualSensorCombination
@@ -46,12 +46,24 @@ public class TestBenchSettings {
 
 
     // input frame data
-    static double windowSizeForFrameDataToFeatureConversion = 5;
-    static double windowSpacingForFrameDataToFeatureConversion = 1d;
+    private static double windowSizeForFrameDataToFeatureConversion = 5;
+    private static double windowSpacingForFrameDataToFeatureConversion = 1d;
 
 
     // result output
-    static boolean writeAllModelsToFolder = true;
+    private static boolean writeAllModelsToFolder = true;
+    private static boolean useIndividualFeatureFilesForEachSubject = false;
+
+
+
+
+
+
+
+
+
+
+
 
 
     public enum SensorUsage {
@@ -195,4 +207,7 @@ public class TestBenchSettings {
         return true;
     }
 
+    public static boolean useIndividualFeatureFilesForEachSubject() {
+        return useIndividualFeatureFilesForEachSubject;
+    }
 }

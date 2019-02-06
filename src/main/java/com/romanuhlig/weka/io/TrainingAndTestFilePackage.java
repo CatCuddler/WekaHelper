@@ -22,6 +22,12 @@ public class TrainingAndTestFilePackage {
         this.subject = subject;
     }
 
+    public TrainingAndTestFilePackage(String subject){
+        this.subject = subject;
+        this.testFilePath = "";
+        this.trainingFilePath = "";
+    }
+
     public String getTrainingFilePath() {
         return trainingFilePath;
     }

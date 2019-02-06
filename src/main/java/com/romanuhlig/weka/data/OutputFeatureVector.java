@@ -1,5 +1,7 @@
 package com.romanuhlig.weka.data;
 
+import com.romanuhlig.weka.controller.TestBenchSettings;
+
 import java.util.ArrayList;
 
 public class OutputFeatureVector {
@@ -14,7 +16,7 @@ public class OutputFeatureVector {
         this.classValue = classValue;
     }
 
-    public ArrayList<String> getFeaturesWithoutClassValue() {
+    public ArrayList<String> getFeaturesWithoutClassAndSubject() {
 
         ArrayList<String> allFeatures = new ArrayList<>(features.size());
         for (Double value : features) {
@@ -33,12 +35,23 @@ public class OutputFeatureVector {
     }
 
     public String[] getFeaturesAndClassAsArray() {
-        String[] allFeaturesWithClass = new String[features.size() + 1];
+        String[] allFeaturesWithClass;
+        if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
+            allFeaturesWithClass = new String[features.size() + 1];
+        } else {
+            allFeaturesWithClass = new String[features.size() + 2];
+        }
 
         for (int i = 0; i < features.size(); i++) {
             allFeaturesWithClass[i] = Double.toString(features.get(i));
         }
-        allFeaturesWithClass[allFeaturesWithClass.length - 1] = classValue;
+
+        if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
+            allFeaturesWithClass[allFeaturesWithClass.length - 1] = classValue;
+        } else {
+            allFeaturesWithClass[allFeaturesWithClass.length - 2] = subject;
+            allFeaturesWithClass[allFeaturesWithClass.length - 1] = classValue;
+        }
 
         return allFeaturesWithClass;
     }

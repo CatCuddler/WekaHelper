@@ -12,7 +12,9 @@ import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.filters.Filter;
+import weka.filters.Sourcable;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.instance.RemoveWithValues;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -132,7 +134,7 @@ public class TestBench {
 
         int numberOfEvaluationsInTotal =
                 sensorPermutations.size() * classifiers.size()
-                        * featureExtractionResults.getTrainingAndTestFilePackages().size();
+                        * featureExtractionResults.getIndividualTrainingAndTestFilePackages().size();
 
 
         // output information about test
@@ -155,39 +157,77 @@ public class TestBench {
 
                 String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
 
-                for (TrainingAndTestFilePackage filePackage : featureExtractionResults.getTrainingAndTestFilePackages()) {
+                for (int fp = 0; fp < featureExtractionResults.getIndividualTrainingAndTestFilePackages().size(); fp++) {
+
+
+                    TrainingAndTestFilePackage filePackage =
+                            featureExtractionResults.getIndividualTrainingAndTestFilePackages().get(fp);
 
                     String outputFolderSubject = outputFolderClassifier + filePackage.getSubject() + "/";
 
                     // setup data sources
-                    // training data
-                    Instances trainingDataUnfiltered = filePackage.getTrainingDataUnfiltered();
-                    // test data
-                    Instances testDataUnfiltered = filePackage.getTestDataUnfiltered();
+                    Instances trainingDataAllSensors;
+                    Instances testDataAllSensors;
+
+                    // when using individual files for test and training for each subject, just load them
+                    if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
+                        trainingDataAllSensors = filePackage.getTrainingDataUnfiltered();
+                        testDataAllSensors = filePackage.getTestDataUnfiltered();
+                    } else {
+                        // otherwise, load the complete data file and separate both parts
+                        Instances allFeaturesUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
+                        RemoveWithValues removeSubject = new RemoveWithValues();
+
+                        // determine nominal index of current subject within list of available subjects,
+                        // from the perspective of the loaded weka data set
+                        int subjectAttributeIndex = allFeaturesUnfiltered.numAttributes() - 2;
+                        Attribute subjectAttribute = allFeaturesUnfiltered.attribute(subjectAttributeIndex);
+                        int nominalIndexSubject = subjectAttribute.indexOfValue(filePackage.getSubject());
+
+                        removeSubject.setAttributeIndex("" + (allFeaturesUnfiltered.numAttributes() - 1));
+                        removeSubject.setNominalIndicesArr(new int[]{nominalIndexSubject});
+                        removeSubject.setInputFormat(allFeaturesUnfiltered);
+                        removeSubject.setModifyHeader(false);
+
+                        trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                        removeSubject.setInvertSelection(true);
+                        testDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                    }
 
 
-                    // remove attributes from sensors that should not be included in this sensor permutation
-                    Enumeration<Attribute> allAttributes = trainingDataUnfiltered.enumerateAttributes();
+                    // remove attributes from sensors that are not included in this sensor permutation
+                    // collect the wrong column indices
+                    Enumeration<Attribute> allAttributes = trainingDataAllSensors.enumerateAttributes();
                     ArrayList<Attribute> allAttributesList = Collections.list(allAttributes);
                     ArrayList<Integer> attributesToRemove = new ArrayList<>();
+
+
                     for (int i = 0; i < allAttributesList.size(); i++) {
                         if (sensorPermutation.attributeForbidden(allAttributesList.get(i))) {
                             attributesToRemove.add(i);
                         }
+
+                        // we also need to remove the subject name column, if it is still present due to using
+                        // a single data file for all features
+                        if (allAttributesList.get(i).name().contains("subject")) {
+                            attributesToRemove.add(i);
+                        }
+
                     }
+
 
                     int[] attributeIndicesToRemove = ConversionHelper.integerListToIntArray(attributesToRemove);
 
 
-                    Instances trainingData = trainingDataUnfiltered;
-                    Instances testData = testDataUnfiltered;
+                    Instances trainingData = trainingDataAllSensors;
+                    Instances testData = testDataAllSensors;
 
                     if (attributeIndicesToRemove.length > 0) {
                         Remove remove = new Remove();
                         remove.setAttributeIndicesArray(attributeIndicesToRemove);
                         remove.setInputFormat(trainingData);
-                        trainingData = Filter.useFilter(trainingDataUnfiltered, remove);
-                        testData = Filter.useFilter(testDataUnfiltered, remove);
+                        trainingData = Filter.useFilter(trainingDataAllSensors, remove);
+                        testData = Filter.useFilter(testDataAllSensors, remove);
                     }
 
 
@@ -202,7 +242,7 @@ public class TestBench {
                     ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // model
-                    if (TestBenchSettings.writeAllModelsToFolder) {
+                    if (TestBenchSettings.writeAllModelsToFolder()) {
                         SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
                     }
 

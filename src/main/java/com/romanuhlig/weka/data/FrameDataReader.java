@@ -71,7 +71,11 @@ public class FrameDataReader {
         File[] listOfInputFiles = inputFolder.listFiles();
 
         ArrayList<FrameDataSet> allFrameDataSets = new ArrayList<>();
-        for (File inputFile : listOfInputFiles) {
+        for (int i = 0; i < listOfInputFiles.length; i++) {
+
+            System.out.println("reading input file:   " + (i + 1) + " / " + listOfInputFiles.length);
+
+            File inputFile = listOfInputFiles[i];
             // exclude lock files
             if (inputFile.getName().startsWith(".~")) {
                 continue;
@@ -118,7 +122,10 @@ public class FrameDataReader {
         // prepare header for output file
         // identify sensors in original data
         ArrayList<String> sensorTypes = windows.get(0).getAllSensorPositions();
-        ArrayList<String> headerFields = getHeaderForSensorTypes(sensorTypes, true);
+        ArrayList<String> headerFields =
+                getHeaderForSensorTypes(
+                        sensorTypes, true,
+                        !TestBenchSettings.useIndividualFeatureFilesForEachSubject());
 
         ArrayList<OutputFeatureVector> outputFeatureVectors = new ArrayList<>();
 
@@ -130,7 +137,7 @@ public class FrameDataReader {
         for (int i = windows.size() - 1; i >= 0; i--) {
 
             if ((numberOfWindows - i) % 100 == 0) {
-                System.out.println("window " + (numberOfWindows - i) + " / " + numberOfWindows);
+                System.out.println("calculated features for window:   " + (numberOfWindows - i) + " / " + numberOfWindows);
             }
 
             // shorten list as we go, to save on memory
@@ -157,19 +164,23 @@ public class FrameDataReader {
 
         FeatureExtractionResults featureExtractionResults = new FeatureExtractionResults(sensorTypes);
 
-        // create training and test file for each subject
-        for (String subject : subjectNameList) {
+        // create training and test file for each subject individually
+        if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
 
-            // collect training and test examples
-            ArrayList<OutputFeatureVector> onlySubjectVectors = new ArrayList<>();
-            ArrayList<OutputFeatureVector> allButSubjectVectors = new ArrayList<>();
-            for (OutputFeatureVector originalVector : outputFeatureVectors) {
-                if (originalVector.subject.equals(subject)) {
-                    onlySubjectVectors.add(originalVector);
-                } else {
-                    allButSubjectVectors.add(originalVector);
+            System.out.println("writing features to individual files for each subject");
+
+            for (String subject : subjectNameList) {
+
+                // collect training and test examples
+                ArrayList<OutputFeatureVector> onlySubjectVectors = new ArrayList<>();
+                ArrayList<OutputFeatureVector> allButSubjectVectors = new ArrayList<>();
+                for (OutputFeatureVector originalVector : outputFeatureVectors) {
+                    if (originalVector.subject.equals(subject)) {
+                        onlySubjectVectors.add(originalVector);
+                    } else {
+                        allButSubjectVectors.add(originalVector);
+                    }
                 }
-            }
 
 
 //            // sort data by class value
@@ -192,29 +203,40 @@ public class FrameDataReader {
 //            });
 
 
-            // write and collect files
-            String trainingFilePath = outputFeaturesFilePath + subject + "/trainingDataSet.csv";
-            String testFilePath = outputFeaturesFilePath + subject + "/testDataSet.csv";
+                // write and collect files
+                String trainingFilePath = outputFeaturesFilePath + subject + "/trainingDataSet.csv";
+                String testFilePath = outputFeaturesFilePath + subject + "/testDataSet.csv";
 
-            writeOutputFeatureVectorToCSV(trainingFilePath, headerFields, allButSubjectVectors);
-            writeOutputFeatureVectorToCSV(testFilePath, headerFields, onlySubjectVectors);
+                writeOutputFeatureVectorToCSV(trainingFilePath, headerFields, allButSubjectVectors);
+                writeOutputFeatureVectorToCSV(testFilePath, headerFields, onlySubjectVectors);
 
-            featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(trainingFilePath, testFilePath, subject));
-
+                featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(trainingFilePath, testFilePath, subject));
+            }
+        } else {
+            // create dummy file packages if they are only needed as a reference to the subjects
+            for (String subject : subjectNameList) {
+                featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(subject));
+            }
         }
 
-        // write feature data in file
-        writeOutputFeatureVectorToCSV(outputFeaturesFilePath + "/allDataInOne.csv", headerFields, outputFeatureVectors);
+        System.out.println("writing all features into a single file");
+
+        // write all features in a single data file
+        String completeFeatureSetFilePath = outputFeaturesFilePath + "/allDataInOne.csv";
+        writeOutputFeatureVectorToCSV(completeFeatureSetFilePath, headerFields, outputFeatureVectors);
+        featureExtractionResults.setCompleteFeatureSet(new TrainingAndTestFilePackage(completeFeatureSetFilePath, completeFeatureSetFilePath, "completeFeatureSet"));
 
         return featureExtractionResults;
 
     }
 
 
-    public static ArrayList<String> getHeaderForFrameDataSet(FrameDataSet frameDataSet, boolean includeClassForTraining) {
+    public static ArrayList<String> getHeaderForFrameDataSet(FrameDataSet frameDataSet,
+                                                             boolean includeClassForTraining,
+                                                             boolean includeSubjectForTraining) {
 
         ArrayList<String> sensorTypes = frameDataSet.getAllSensorPositions();
-        return getHeaderForSensorTypes(sensorTypes, includeClassForTraining);
+        return getHeaderForSensorTypes(sensorTypes, includeClassForTraining, includeSubjectForTraining);
     }
 
 
@@ -420,9 +442,11 @@ public class FrameDataReader {
 
 
     public static ArrayList<String> getHeaderForSensorTypes(ArrayList<String> sensorTypes,
-                                                            boolean includeClassForTraining) {
+                                                            boolean includeClassForTraining,
+                                                            boolean includeSubjectForTraining) {
 
         ArrayList<String> headerFields = new ArrayList<>();
+
 
         for (String sensorType : sensorTypes) {
             headerFields.add(sensorType + "_maximum_Height");
@@ -473,9 +497,13 @@ public class FrameDataReader {
         }
 
 
+        if (includeSubjectForTraining) {
+            headerFields.add("subject");
+        }
         if (includeClassForTraining) {
             headerFields.add("activity");
         }
+
 
         return headerFields;
     }
