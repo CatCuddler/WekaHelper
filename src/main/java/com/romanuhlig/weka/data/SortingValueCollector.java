@@ -96,6 +96,7 @@ public class SortingValueCollector {
     }
 
     public double getRange() {
+        sortValues();
         double min = values.get(0);
         double max = values.get(values.size() - 1);
         return scaledValue(Math.abs(max - min));

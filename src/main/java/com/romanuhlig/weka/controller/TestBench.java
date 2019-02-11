@@ -43,67 +43,82 @@ public class TestBench {
 
             SensorPermutation sensorPermutation = sensorPermutations.get(i);
 
-            // check for hand controller inclusion
-            switch (TestBenchSettings.getSensorUsageHandControllers()) {
-                case CannotInclude:
-                    if (sensorPermutation.includesAtLeastOneHandController()) {
-                        sensorPermutations.remove(i);
-                        continue;
-                    }
-                    break;
-                case MustInclude:
-                    if (!sensorPermutation.includesBothHandControllers()) {
-                        sensorPermutations.remove(i);
-                        continue;
-                    }
-                    break;
-            }
-            if (!TestBenchSettings.allowSingleHandController()
-                    && sensorPermutation.includesAtLeastOneHandController()
-                    && !sensorPermutation.includesBothHandControllers()
-            ) {
-                continue;
+            // specific sensor requests override all other criteria
+            if (TestBenchSettings.specificSensorCombinationRequested()) {
+
+                // check for specific sensor inclusion
+                if (TestBenchSettings.isSensorCombinationBlocked(sensorPermutation)) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
+
+            } else {
+                // otherwise, check all individual criteria
+
+                // check for hand controller inclusion
+                switch (TestBenchSettings.getSensorUsageHandControllers()) {
+                    case CannotInclude:
+                        if (sensorPermutation.includesAtLeastOneHandController()) {
+                            sensorPermutations.remove(i);
+                            continue;
+                        }
+                        break;
+                    case MustInclude:
+                        if (!sensorPermutation.includesBothHandControllers()) {
+                            sensorPermutations.remove(i);
+                            continue;
+                        }
+                        break;
+                }
+                if (!TestBenchSettings.allowSingleHandController()
+                        && sensorPermutation.includesAtLeastOneHandController()
+                        && !sensorPermutation.includesBothHandControllers()
+                ) {
+                    continue;
+                }
+
+                // check for HMD inclusion
+                switch (TestBenchSettings.getSensorUsageHMD()) {
+                    case CannotInclude:
+                        if (sensorPermutation.includesHMD()) {
+                            sensorPermutations.remove(i);
+                            continue;
+                        }
+                        break;
+                    case MustInclude:
+                        if (!sensorPermutation.includesHMD()) {
+                            sensorPermutations.remove(i);
+                            continue;
+                        }
+                        break;
+                }
+
+                // check for tracker inclusion
+                if (TestBenchSettings.getMaximumNumberOfTrackers() >= 0 &&
+                        sensorPermutation.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
+                if (TestBenchSettings.getMinimumNumberOfTrackers() >= 0 &&
+                        sensorPermutation.getNumberOfTrackers() < TestBenchSettings.getMinimumNumberOfTrackers()) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
+
+                // check for overall sensor inclusion
+                if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
+                        sensorPermutation.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
+                if (TestBenchSettings.getMinimumNumberOfSensors() >= 0 &&
+                        sensorPermutation.getNumberOfSensors() < TestBenchSettings.getMinimumNumberOfSensors()) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
             }
 
-            // check for HMD inclusion
-            switch (TestBenchSettings.getSensorUsageHMD()) {
-                case CannotInclude:
-                    if (sensorPermutation.includesHMD()) {
-                        sensorPermutations.remove(i);
-                        continue;
-                    }
-                    break;
-                case MustInclude:
-                    if (!sensorPermutation.includesHMD()) {
-                        sensorPermutations.remove(i);
-                        continue;
-                    }
-                    break;
-            }
 
-            // check for tracker inclusion
-            if (TestBenchSettings.getMaximumNumberOfTrackers() >= 0 &&
-                    sensorPermutation.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
-                sensorPermutations.remove(i);
-                continue;
-            }
-            if (TestBenchSettings.getMinimumNumberOfTrackers() >= 0 &&
-                    sensorPermutation.getNumberOfTrackers() < TestBenchSettings.getMinimumNumberOfTrackers()) {
-                sensorPermutations.remove(i);
-                continue;
-            }
-
-            // check for overall sensor inclusion
-            if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
-                    sensorPermutation.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
-                sensorPermutations.remove(i);
-                continue;
-            }
-            if (TestBenchSettings.getMinimumNumberOfSensors() >= 0 &&
-                    sensorPermutation.getNumberOfSensors() < TestBenchSettings.getMinimumNumberOfSensors()) {
-                sensorPermutations.remove(i);
-                continue;
-            }
         }
 
         // System.out.println("permutations:     " + sensorPermutations.size());
@@ -263,11 +278,7 @@ public class TestBench {
                     numberOfEvaluationsCompleted++;
                     double timePerTask = stopWatchEvaluation.getTime(TimeUnit.MILLISECONDS) / numberOfEvaluationsCompleted;
                     float numberOfEvaluationsLeft = numberOfEvaluationsInTotal - numberOfEvaluationsCompleted;
-                    // due to decreasing number of sensors per evaluation, estimated time is off by about 50% at the start
-                    // correctionFactor will be about 2 at the start, and about 1 at the end
-                    float correctionFactor = 1 + (numberOfEvaluationsLeft / numberOfEvaluationsInTotal);
-                    int approximateTimeLeft =
-                            (int) (timePerTask * numberOfEvaluationsLeft * (1 / correctionFactor) / 1000);
+                    int approximateTimeLeft = (int) ((timePerTask * numberOfEvaluationsLeft) / 1000);
 
 
                     System.out.println(

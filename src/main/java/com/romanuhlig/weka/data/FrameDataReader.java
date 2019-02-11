@@ -249,6 +249,11 @@ public class FrameDataReader {
 
         for (List<FrameData> singleSensor : frameDataSet) {
 
+            // leave out blocked sensors
+            if (TestBenchSettings.isSensorBlocked(singleSensor.get(0).getSensorPosition())) {
+                continue;
+            }
+
             // values that stay true for the whole window
             double overallTimePassed =
                     singleSensor.get(singleSensor.size() - 1).getTime()
@@ -256,6 +261,8 @@ public class FrameDataReader {
             double bodySize = singleSensor.get(0).getScale();
 
             // calculate features for sensor
+            // logic says that average velocity and height / range will be more affected by body size than acceleration,
+            // testing shows that this corresponds to the "best" setting for detection
             SortingValueCollector Position_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
             SortingValueCollector Position_X = new SortingValueCollector(true, true, overallTimePassed, bodySize);
             SortingValueCollector Position_Z = new SortingValueCollector(true, true, overallTimePassed, bodySize);
@@ -264,11 +271,11 @@ public class FrameDataReader {
             SortingValueCollector Velocity_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
             SortingValueCollector Velocity_XZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
             SortingValueCollector Velocity_XYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-            SortingValueCollector Acceleration_X = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-            SortingValueCollector Acceleration_Z = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-            SortingValueCollector Acceleration_Height = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-            SortingValueCollector Acceleration_XZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-            SortingValueCollector Acceleration_XYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_X = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_Z = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_Height = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_XZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+            SortingValueCollector Acceleration_XYZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
             SortingValueCollector AngularVelocity = new SortingValueCollector(true, false, overallTimePassed, bodySize);
             SortingValueCollector AngularAcceleration = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
@@ -373,17 +380,38 @@ public class FrameDataReader {
 
         }
 
+
         // collect features that depend on the relationship between two sensors
         if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
             for (int ssA = 0; ssA < frameDataSet.size(); ssA++) {
                 List<FrameData> singleSensorA = frameDataSet.get(ssA);
+
+                // values that stay true for the whole window
+                double overallTimePassed =
+                        singleSensorA.get(singleSensorA.size() - 1).getTime()
+                                - singleSensorA.get(0).getTime();
+                double bodySize = singleSensorA.get(0).getScale();
+
+
                 for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
                     List<FrameData> singleSensorB = frameDataSet.get(ssB);
 
+                    SortingValueCollector averageDistanceX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceChangeX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceChangeZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceChangeHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceChangeXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector averageDistanceChangeXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
 
-                    double averageDistanceXYZ = 0;
-                    double averageDistanceChangeXYZ = 0;
-                    double averageDistanceLastFrame = 0;
+                    double averageDistanceLastFrameX = 0;
+                    double averageDistanceLastFrameZ = 0;
+                    double averageDistanceLastFrameHeight = 0;
+                    double averageDistanceLastFrameXZ = 0;
+                    double averageDistanceLastFrameXYZ = 0;
 
                     for (int i = 0; i < singleSensorA.size(); i++) {
 
@@ -391,7 +419,25 @@ public class FrameDataReader {
                         FrameData frameDataA = singleSensorA.get(i);
                         FrameData frameDataB = singleSensorB.get(i);
 
-                        double averageDistanceCurrentFrame =
+                        double averageDistanceCurrentFrameX =
+                                MathHelper.distance(
+                                        frameDataA.getCalPosX(),
+                                        frameDataB.getCalPosX());
+                        double averageDistanceCurrentFrameZ =
+                                MathHelper.distance(
+                                        frameDataA.getCalPosZ(),
+                                        frameDataB.getCalPosZ());
+                        double averageDistanceCurrentFrameHeight =
+                                MathHelper.distance(
+                                        frameDataA.getCalPosY(),
+                                        frameDataB.getCalPosY());
+                        double averageDistanceCurrentFrameXZ =
+                                MathHelper.distance(
+                                        frameDataA.getCalPosX(),
+                                        frameDataA.getCalPosZ(),
+                                        frameDataB.getCalPosX(),
+                                        frameDataB.getCalPosZ());
+                        double averageDistanceCurrentFrameXYZ =
                                 MathHelper.distance(
                                         frameDataA.getCalPosX(),
                                         frameDataA.getCalPosY(),
@@ -404,39 +450,40 @@ public class FrameDataReader {
                         if (i > 0) {
                             double timeSinceLastFrame = frameDataA.getTime() - singleSensorA.get(i - 1).getTime();
 
-                            averageDistanceXYZ += timeSinceLastFrame
-                                    * averageDistanceCurrentFrame;
-                            averageDistanceChangeXYZ +=
-                                    //timeSinceLastFrame *
-                                    (Math.abs(averageDistanceCurrentFrame - averageDistanceLastFrame));
-
+                            averageDistanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
+                            averageDistanceChangeX.addValue(Math.abs(averageDistanceCurrentFrameX - averageDistanceLastFrameX), timeSinceLastFrame);
+                            averageDistanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
+                            averageDistanceChangeZ.addValue(Math.abs(averageDistanceCurrentFrameZ - averageDistanceLastFrameZ), timeSinceLastFrame);
+                            averageDistanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
+                            averageDistanceChangeHeight.addValue(Math.abs(averageDistanceCurrentFrameHeight - averageDistanceLastFrameHeight), timeSinceLastFrame);
+                            averageDistanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
+                            averageDistanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
+                            averageDistanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
+                            averageDistanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
                         }
 
                         // prepare next frame
-                        averageDistanceLastFrame = averageDistanceCurrentFrame;
+                        averageDistanceLastFrameX = averageDistanceCurrentFrameX;
+                        averageDistanceLastFrameZ = averageDistanceCurrentFrameZ;
+                        averageDistanceLastFrameHeight = averageDistanceCurrentFrameHeight;
+                        averageDistanceLastFrameXZ = averageDistanceCurrentFrameXZ;
+                        averageDistanceLastFrameXYZ = averageDistanceCurrentFrameXYZ;
                     }
 
-                    double overallTimePassed =
-                            singleSensorA.get(singleSensorA.size() - 1).getTime()
-                                    - singleSensorA.get(0).getTime();
-
-//                    System.out.println(overallTimePassed);
-
-                    averageDistanceXYZ /= overallTimePassed;
-                    averageDistanceChangeXYZ /= overallTimePassed;
-
-                    averageDistanceXYZ /= singleSensorA.get(0).getScale();
-                    averageDistanceChangeXYZ /= singleSensorA.get(0).getScale();
-
-
-                    outputFeatureVector.addFeature(averageDistanceXYZ);
-                    outputFeatureVector.addFeature(averageDistanceChangeXYZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceX);
+                    addStandardFeatures(outputFeatureVector, averageDistanceChangeX);
+                    addStandardFeatures(outputFeatureVector, averageDistanceZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceChangeZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceHeight);
+                    addStandardFeatures(outputFeatureVector, averageDistanceChangeHeight);
+                    addStandardFeatures(outputFeatureVector, averageDistanceXZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceChangeXZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceXYZ);
+                    addStandardFeatures(outputFeatureVector, averageDistanceChangeXYZ);
 
                 }
             }
         }
-
-
         return outputFeatureVector;
     }
 
@@ -449,6 +496,12 @@ public class FrameDataReader {
 
 
         for (String sensorType : sensorTypes) {
+
+            // leave out blocked sensors
+            if (TestBenchSettings.isSensorBlocked(sensorType)) {
+                continue;
+            }
+
             headerFields.add(sensorType + "_maximum_Height");
             headerFields.add(sensorType + "_minimum_Height");
             headerFields.add(sensorType + "_range_Height");
@@ -489,8 +542,16 @@ public class FrameDataReader {
                 for (int ssB = ssA + 1; ssB < sensorTypes.size(); ssB++) {
                     String singleSensorB = sensorTypes.get(ssB);
 
-                    headerFields.add(singleSensorA + "_" + singleSensorB + "_averageDistance");
-                    headerFields.add(singleSensorA + "_" + singleSensorB + "_averageDistanceChange");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_X");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Z");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Height");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XZ");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XYZ");
 
                 }
             }

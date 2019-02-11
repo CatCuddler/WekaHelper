@@ -1,15 +1,17 @@
 package com.romanuhlig.weka.controller;
 
 import com.romanuhlig.weka.classification.ClassifierFactory;
+import com.romanuhlig.weka.io.SensorPermutation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 
 public class TestBenchSettings {
 
 
     // algorithms to test
-    static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
+    private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
 //            ClassifierFactory.ClassifierType.J48
 //          ,
 //            ClassifierFactory.ClassifierType.RandomForest
@@ -22,6 +24,12 @@ public class TestBenchSettings {
     ));
 
 
+    private static String[][] onlyAllowSensorPermutations = new String[][]{
+//            {"rForeArm", "lLeg"},
+//            {"rForeArm", "rLeg"}
+    };
+
+
     // folders
     private static String inputBaseFolder = "./inputFrameData/currentInput";
     private static String outputBaseFolder = "./outputResults/";
@@ -31,39 +39,28 @@ public class TestBenchSettings {
     private static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
     private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
     private static boolean allowSingleHandController = false;
-    private static int minimumNumberOfTrackers = -1;
+    private static int minimumNumberOfTrackers = -111;
     private static int maximumNumberOfTrackers = 2;
-    private static int minimumNumberOfSensors = -1;
-    private static int maximumNumberOfSensors = -1;
+    private static int minimumNumberOfSensors = -111;
+    private static int maximumNumberOfSensors = -111;
 
 
     // feature types to disallow
     private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
-//          FeatureTag.Angular
-//          FeatureTag.SubjectOrientationRelevant
-//          FeatureTag.DualSensorCombination
+//            FeatureTag.Angular
+//            FeatureTag.SubjectOrientationRelevant
+//            FeatureTag.DualSensorCombination
     ));
 
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 5;
-    private static double windowSpacingForFrameDataToFeatureConversion = 1d;
+    private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
 
     // result output
     private static boolean writeAllModelsToFolder = true;
     private static boolean useIndividualFeatureFilesForEachSubject = false;
-
-
-
-
-
-
-
-
-
-
-
 
 
     public enum SensorUsage {
@@ -210,4 +207,59 @@ public class TestBenchSettings {
     public static boolean useIndividualFeatureFilesForEachSubject() {
         return useIndividualFeatureFilesForEachSubject;
     }
+
+    public static boolean isSensorCombinationBlocked(SensorPermutation sensorPermutation) {
+        // do not block any combination if no specific combination was requested
+        if (onlyAllowSensorPermutations.length == 0) {
+            return false;
+            // otherwise, search for a fitting combination
+        } else {
+
+            ArrayList<String> sensorsInPermutation = sensorPermutation.getIncludedSensors();
+
+            for (int i = 0; i < onlyAllowSensorPermutations.length; i++) {
+
+                String[] allowedSensorPermutation = onlyAllowSensorPermutations[i];
+
+                if (allowedSensorPermutation.length == sensorsInPermutation.size()) {
+                    HashSet<String> sensorsAllowed = new HashSet<>(Arrays.asList(allowedSensorPermutation));
+                    HashSet<String> sensorsIncluded = new HashSet<>(sensorsInPermutation);
+                    if (sensorsAllowed.equals(sensorsIncluded)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // if no fitting combination was found, this combination is blocked
+        return true;
+
+    }
+
+    public static boolean isSensorBlocked(String sensor) {
+        // do not block sensor if no specific combination was requested
+        if (onlyAllowSensorPermutations.length == 0) {
+            return false;
+            // otherwise, search for a fitting combination
+        } else {
+            for (int i = 0; i < onlyAllowSensorPermutations.length; i++) {
+
+                String[] allowedSensorPermutation = onlyAllowSensorPermutations[i];
+
+                for (int k = 0; k < allowedSensorPermutation.length; k++) {
+                    if (allowedSensorPermutation[k].equals(sensor)) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // if no fitting combination was found, this combination is blocked
+        return true;
+    }
+
+    public static boolean specificSensorCombinationRequested(){
+        return onlyAllowSensorPermutations.length > 0;
+    }
+
 }
