@@ -3,6 +3,8 @@ package com.romanuhlig.weka.data;
 import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import com.romanuhlig.weka.ConvexHull.ConvexHull;
+import com.romanuhlig.weka.ConvexHull.ConvexHullPoint;
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.io.FeatureExtractionResults;
 import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
@@ -19,6 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
+import com.romanuhlig.weka.quickhull3d.Point3d;
+import com.romanuhlig.weka.quickhull3d.QuickHull3D;
+
+import javax.sound.midi.Soundbank;
 
 
 public class FrameDataReader {
@@ -279,32 +285,18 @@ public class FrameDataReader {
             SortingValueCollector AngularVelocity = new SortingValueCollector(true, false, overallTimePassed, bodySize);
             SortingValueCollector AngularAcceleration = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
-            double rangeXZ = 0;
-            double rangeXYZ = 0;
+            // collect points in order to calculate maximum range in different dimensions
+            ArrayList<ConvexHullPoint> rangePointsXZ = new ArrayList<>(singleSensor.size());
+            Point3d[] rangePointsXYZ = new Point3d[singleSensor.size()];
 
 
             for (int i = 0; i < singleSensor.size(); i++) {
 
                 FrameData frameData = singleSensor.get(i);
 
-                // use brute force to calculate maximum distance in multiple dimensions at once
-                for (int k = i + 1; k < singleSensor.size(); k++) {
-                    FrameData frameData2 = singleSensor.get(k);
-
-                    double distanceXZ = MathHelper.distance(
-                            frameData.getCalPosX(), frameData.getCalPosZ(),
-                            frameData2.getCalPosX(), frameData2.getCalPosZ());
-                    if (distanceXZ > rangeXZ) {
-                        rangeXZ = distanceXZ;
-                    }
-
-                    double distanceXYZ = MathHelper.distance(
-                            frameData.getCalPosX(), frameData.getCalPosY(), frameData.getCalPosZ(),
-                            frameData2.getCalPosX(), frameData2.getCalPosY(), frameData2.getCalPosZ());
-                    if (distanceXYZ > rangeXYZ) {
-                        rangeXYZ = distanceXYZ;
-                    }
-                }
+                // collect points in order to calculate maximum range in different dimensions
+                rangePointsXZ.add(new ConvexHullPoint(frameData.getCalPosX(), frameData.getCalPosZ()));
+                rangePointsXYZ[i] = new Point3d(frameData.getCalPosX(), frameData.getCalPosY(), frameData.getCalPosZ());
 
                 // collect other values over time for future analysis
                 double timeSinceLastFrame;
@@ -369,11 +361,45 @@ public class FrameDataReader {
                 Position_Height.addValue(frameData.getCalPosY(), timeSinceLastFrame);
             }
 
+
             // adjust individual values that do not use the collector class
+            List<ConvexHullPoint> rangeXZouterPoints = ConvexHull.makeHull(rangePointsXZ);
+            double rangeXZ = 0;
+            for (int a = 0; a < rangeXZouterPoints.size(); a++) {
+                ConvexHullPoint pointA = rangeXZouterPoints.get(a);
+                for (int b = a + 1; b < rangeXZouterPoints.size(); b++) {
+                    ConvexHullPoint pointB = rangeXZouterPoints.get(b);
+                    double distance = MathHelper.distance(
+                            pointA.x, pointA.y,
+                            pointB.x, pointB.y);
+                    if (distance > rangeXZ) {
+                        rangeXZ = distance;
+                    }
+                }
+            }
             rangeXZ /= bodySize;
+
+            double rangeXYZ = 0;
+            try {
+                QuickHull3D hull = new QuickHull3D(rangePointsXYZ);
+                Point3d[] rangeXYZouterPoints = hull.getVertices();
+                for (int a = 0; a < rangeXYZouterPoints.length; a++) {
+                    Point3d pointA = rangeXYZouterPoints[a];
+                    for (int b = a + 1; b < rangeXYZouterPoints.length; b++) {
+                        Point3d pointB = rangeXYZouterPoints[b];
+                        double distance = MathHelper.distance(
+                                pointA.x, pointA.y, pointA.z,
+                                pointB.x, pointB.y, pointB.z);
+                        if (distance > rangeXYZ) {
+                            rangeXYZ = distance;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // if there is an exception, it is because the points were to similar
+                // if this is the case, we can just keep the maximum distance value at 0
+            }
             rangeXYZ /= bodySize;
-
-
 
 
             // output the calculated values
