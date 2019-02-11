@@ -456,21 +456,29 @@ public class FrameDataReader {
                     List<FrameData> singleSensorB = frameDataSet.get(ssB);
 
                     SortingValueCollector distanceX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector distanceChangeX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector distanceZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector distanceChangeZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector distanceHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector distanceChangeHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector distanceXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector distanceChangeXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector distanceXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector distanceChangeXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
 
-                    double averageDistanceLastFrameX = 0;
-                    double averageDistanceLastFrameZ = 0;
-                    double averageDistanceLastFrameHeight = 0;
-                    double averageDistanceLastFrameXZ = 0;
-                    double averageDistanceLastFrameXYZ = 0;
+//                    SortingValueCollector distanceChangeX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+//                    SortingValueCollector distanceChangeZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+//                    SortingValueCollector distanceChangeHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+//                    SortingValueCollector distanceChangeXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+//                    SortingValueCollector distanceChangeXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+
+                    SortingValueCollector differenceVelocityX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector differenceVelocityZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector differenceVelocityHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector differenceVelocityXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector differenceVelocityXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+
+
+//                    double averageDistanceLastFrameX = 0;
+//                    double averageDistanceLastFrameZ = 0;
+//                    double averageDistanceLastFrameHeight = 0;
+//                    double averageDistanceLastFrameXZ = 0;
+//                    double averageDistanceLastFrameXYZ = 0;
 
                     for (int i = 0; i < singleSensorA.size(); i++) {
 
@@ -510,35 +518,66 @@ public class FrameDataReader {
                             double timeSinceLastFrame = frameDataA.getTime() - singleSensorA.get(i - 1).getTime();
 
                             distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
-                            distanceChangeX.addValue(Math.abs(averageDistanceCurrentFrameX - averageDistanceLastFrameX), timeSinceLastFrame);
                             distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
-                            distanceChangeZ.addValue(Math.abs(averageDistanceCurrentFrameZ - averageDistanceLastFrameZ), timeSinceLastFrame);
                             distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
-                            distanceChangeHeight.addValue(Math.abs(averageDistanceCurrentFrameHeight - averageDistanceLastFrameHeight), timeSinceLastFrame);
                             distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
-                            distanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
                             distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
-                            distanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
+
+//                            distanceChangeX.addValue(Math.abs(averageDistanceCurrentFrameX - averageDistanceLastFrameX), timeSinceLastFrame);
+//                            distanceChangeZ.addValue(Math.abs(averageDistanceCurrentFrameZ - averageDistanceLastFrameZ), timeSinceLastFrame);
+//                            distanceChangeHeight.addValue(Math.abs(averageDistanceCurrentFrameHeight - averageDistanceLastFrameHeight), timeSinceLastFrame);
+//                            distanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
+//                            distanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
+
+                            differenceVelocityX.addValue(Math.abs(frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
+                            differenceVelocityZ.addValue(Math.abs(frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
+                            differenceVelocityHeight.addValue(Math.abs(frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
+                            double velocityXZa = MathHelper.EuclideanNorm(
+                                    frameDataA.getLinVelX(),
+                                    frameDataA.getLinVelZ());
+                            double velocityXZb = MathHelper.EuclideanNorm(
+                                    frameDataB.getLinVelX(),
+                                    frameDataB.getLinVelZ());
+                            double velocityXYZa = MathHelper.EuclideanNorm(
+                                    frameDataA.getLinVelX(),
+                                    frameDataA.getLinVelY(),
+                                    frameDataA.getLinVelZ());
+                            double velocityXYZb = MathHelper.EuclideanNorm(
+                                    frameDataB.getLinVelX(),
+                                    frameDataB.getLinVelY(),
+                                    frameDataB.getLinVelZ());
+                            differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
+                            differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
+
                         }
 
-                        // prepare next frame
-                        averageDistanceLastFrameX = averageDistanceCurrentFrameX;
-                        averageDistanceLastFrameZ = averageDistanceCurrentFrameZ;
-                        averageDistanceLastFrameHeight = averageDistanceCurrentFrameHeight;
-                        averageDistanceLastFrameXZ = averageDistanceCurrentFrameXZ;
-                        averageDistanceLastFrameXYZ = averageDistanceCurrentFrameXYZ;
+////                         prepare next frame
+//                        averageDistanceLastFrameX = averageDistanceCurrentFrameX;
+//                        averageDistanceLastFrameZ = averageDistanceCurrentFrameZ;
+//                        averageDistanceLastFrameHeight = averageDistanceCurrentFrameHeight;
+//                        averageDistanceLastFrameXZ = averageDistanceCurrentFrameXZ;
+//                        averageDistanceLastFrameXYZ = averageDistanceCurrentFrameXYZ;
                     }
 
                     addStandardFeatures(outputFeatureVector, distanceX);
-                    addStandardFeatures(outputFeatureVector, distanceChangeX);
                     addStandardFeatures(outputFeatureVector, distanceZ);
-                    addStandardFeatures(outputFeatureVector, distanceChangeZ);
                     addStandardFeatures(outputFeatureVector, distanceHeight);
-                    addStandardFeatures(outputFeatureVector, distanceChangeHeight);
                     addStandardFeatures(outputFeatureVector, distanceXZ);
-                    addStandardFeatures(outputFeatureVector, distanceChangeXZ);
                     addStandardFeatures(outputFeatureVector, distanceXYZ);
-                    addStandardFeatures(outputFeatureVector, distanceChangeXYZ);
+
+
+//                    addStandardFeatures(outputFeatureVector, distanceChangeX);
+//                    addStandardFeatures(outputFeatureVector, distanceChangeZ);
+//                    addStandardFeatures(outputFeatureVector, distanceChangeHeight);
+//                    addStandardFeatures(outputFeatureVector, distanceChangeXZ);
+//                    addStandardFeatures(outputFeatureVector, distanceChangeXYZ);
+
+
+                    addStandardFeatures(outputFeatureVector, differenceVelocityX);
+                    addStandardFeatures(outputFeatureVector, differenceVelocityZ);
+                    addStandardFeatures(outputFeatureVector, differenceVelocityHeight);
+                    addStandardFeatures(outputFeatureVector, differenceVelocityXZ);
+                    addStandardFeatures(outputFeatureVector, differenceVelocityXYZ);
 
                 }
             }
@@ -606,15 +645,24 @@ public class FrameDataReader {
                     String singleSensorB = sensorTypes.get(ssB);
 
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_X");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Z");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Height");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XZ");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XYZ");
+
+
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_X");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Z");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Height");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XZ");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XYZ");
+
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_X");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Z");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Height");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XZ");
+                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XYZ");
+
 
                 }
             }
