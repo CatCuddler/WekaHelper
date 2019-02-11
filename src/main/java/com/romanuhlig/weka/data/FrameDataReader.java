@@ -279,11 +279,34 @@ public class FrameDataReader {
             SortingValueCollector AngularVelocity = new SortingValueCollector(true, false, overallTimePassed, bodySize);
             SortingValueCollector AngularAcceleration = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
+            double rangeXZ = 0;
+            double rangeXYZ = 0;
+
 
             for (int i = 0; i < singleSensor.size(); i++) {
 
                 FrameData frameData = singleSensor.get(i);
 
+                // use brute force to calculate maximum distance in multiple dimensions at once
+                for (int k = i + 1; k < singleSensor.size(); k++) {
+                    FrameData frameData2 = singleSensor.get(k);
+
+                    double distanceXZ = MathHelper.distance(
+                            frameData.getCalPosX(), frameData.getCalPosZ(),
+                            frameData2.getCalPosX(), frameData2.getCalPosZ());
+                    if (distanceXZ > rangeXZ) {
+                        rangeXZ = distanceXZ;
+                    }
+
+                    double distanceXYZ = MathHelper.distance(
+                            frameData.getCalPosX(), frameData.getCalPosY(), frameData.getCalPosZ(),
+                            frameData2.getCalPosX(), frameData2.getCalPosY(), frameData2.getCalPosZ());
+                    if (distanceXYZ > rangeXYZ) {
+                        rangeXYZ = distanceXYZ;
+                    }
+                }
+
+                // collect other values over time for future analysis
                 double timeSinceLastFrame;
                 if (i > 0) {
                     timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
@@ -346,6 +369,13 @@ public class FrameDataReader {
                 Position_Height.addValue(frameData.getCalPosY(), timeSinceLastFrame);
             }
 
+            // adjust individual values that do not use the collector class
+            rangeXZ /= bodySize;
+            rangeXYZ /= bodySize;
+
+
+
+
             // output the calculated values
             outputFeatureVector.addFeature(Position_Height.getMax());
             outputFeatureVector.addFeature(Position_Height.getMin());
@@ -354,13 +384,16 @@ public class FrameDataReader {
             addStandardFeatures(outputFeatureVector, Position_Height);
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                //TODO: - add rangeXZ and rangeXYZ, which is harder to compute but independent of orientation
                 outputFeatureVector.addFeature(Position_X.getRange());
                 outputFeatureVector.addFeature(Position_Z.getRange());
 
                 addStandardFeatures(outputFeatureVector, Velocity_X);
                 addStandardFeatures(outputFeatureVector, Velocity_Z);
             }
+
+            outputFeatureVector.addFeature(rangeXZ);
+            outputFeatureVector.addFeature(rangeXYZ);
+
             addStandardFeatures(outputFeatureVector, Velocity_Height);
             addStandardFeatures(outputFeatureVector, Velocity_XZ);
             addStandardFeatures(outputFeatureVector, Velocity_XYZ);
@@ -396,16 +429,16 @@ public class FrameDataReader {
                 for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
                     List<FrameData> singleSensorB = frameDataSet.get(ssB);
 
-                    SortingValueCollector averageDistanceX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceChangeX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceChangeZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceChangeHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceChangeXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
-                    SortingValueCollector averageDistanceChangeXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceChangeX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceChangeZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceChangeHeight = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceChangeXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
+                    SortingValueCollector distanceChangeXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
 
                     double averageDistanceLastFrameX = 0;
                     double averageDistanceLastFrameZ = 0;
@@ -450,16 +483,16 @@ public class FrameDataReader {
                         if (i > 0) {
                             double timeSinceLastFrame = frameDataA.getTime() - singleSensorA.get(i - 1).getTime();
 
-                            averageDistanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
-                            averageDistanceChangeX.addValue(Math.abs(averageDistanceCurrentFrameX - averageDistanceLastFrameX), timeSinceLastFrame);
-                            averageDistanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
-                            averageDistanceChangeZ.addValue(Math.abs(averageDistanceCurrentFrameZ - averageDistanceLastFrameZ), timeSinceLastFrame);
-                            averageDistanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
-                            averageDistanceChangeHeight.addValue(Math.abs(averageDistanceCurrentFrameHeight - averageDistanceLastFrameHeight), timeSinceLastFrame);
-                            averageDistanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
-                            averageDistanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
-                            averageDistanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
-                            averageDistanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
+                            distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
+                            distanceChangeX.addValue(Math.abs(averageDistanceCurrentFrameX - averageDistanceLastFrameX), timeSinceLastFrame);
+                            distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
+                            distanceChangeZ.addValue(Math.abs(averageDistanceCurrentFrameZ - averageDistanceLastFrameZ), timeSinceLastFrame);
+                            distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
+                            distanceChangeHeight.addValue(Math.abs(averageDistanceCurrentFrameHeight - averageDistanceLastFrameHeight), timeSinceLastFrame);
+                            distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
+                            distanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
+                            distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
+                            distanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
                         }
 
                         // prepare next frame
@@ -470,16 +503,16 @@ public class FrameDataReader {
                         averageDistanceLastFrameXYZ = averageDistanceCurrentFrameXYZ;
                     }
 
-                    addStandardFeatures(outputFeatureVector, averageDistanceX);
-                    addStandardFeatures(outputFeatureVector, averageDistanceChangeX);
-                    addStandardFeatures(outputFeatureVector, averageDistanceZ);
-                    addStandardFeatures(outputFeatureVector, averageDistanceChangeZ);
-                    addStandardFeatures(outputFeatureVector, averageDistanceHeight);
-                    addStandardFeatures(outputFeatureVector, averageDistanceChangeHeight);
-                    addStandardFeatures(outputFeatureVector, averageDistanceXZ);
-                    addStandardFeatures(outputFeatureVector, averageDistanceChangeXZ);
-                    addStandardFeatures(outputFeatureVector, averageDistanceXYZ);
-                    addStandardFeatures(outputFeatureVector, averageDistanceChangeXYZ);
+                    addStandardFeatures(outputFeatureVector, distanceX);
+                    addStandardFeatures(outputFeatureVector, distanceChangeX);
+                    addStandardFeatures(outputFeatureVector, distanceZ);
+                    addStandardFeatures(outputFeatureVector, distanceChangeZ);
+                    addStandardFeatures(outputFeatureVector, distanceHeight);
+                    addStandardFeatures(outputFeatureVector, distanceChangeHeight);
+                    addStandardFeatures(outputFeatureVector, distanceXZ);
+                    addStandardFeatures(outputFeatureVector, distanceChangeXZ);
+                    addStandardFeatures(outputFeatureVector, distanceXYZ);
+                    addStandardFeatures(outputFeatureVector, distanceChangeXYZ);
 
                 }
             }
@@ -509,13 +542,17 @@ public class FrameDataReader {
             addStandardFeatures(headerFields, sensorType, "Height");
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                //TODO: - add rangeXZ and rangeXYZ, which is harder to compute but independent of orientation
                 headerFields.add(sensorType + "_range_X");
                 headerFields.add(sensorType + "_range_Z");
 
                 addStandardFeatures(headerFields, sensorType, "Velocity_X");
                 addStandardFeatures(headerFields, sensorType, "Velocity_Z");
             }
+
+            headerFields.add(sensorType + "_range_XZ");
+            headerFields.add(sensorType + "_range_XYZ");
+
+
             addStandardFeatures(headerFields, sensorType, "Velocity_Height");
             addStandardFeatures(headerFields, sensorType, "Velocity_XZ");
             addStandardFeatures(headerFields, sensorType, "Velocity_XYZ");
