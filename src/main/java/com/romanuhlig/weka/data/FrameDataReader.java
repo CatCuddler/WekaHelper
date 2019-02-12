@@ -24,8 +24,6 @@ import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
 import com.romanuhlig.weka.quickhull3d.Point3d;
 import com.romanuhlig.weka.quickhull3d.QuickHull3D;
 
-import javax.sound.midi.Soundbank;
-
 
 public class FrameDataReader {
 
@@ -403,15 +401,15 @@ public class FrameDataReader {
 
 
             // output the calculated values
-            outputFeatureVector.addFeature(Position_Height.getMax());
-            outputFeatureVector.addFeature(Position_Height.getMin());
-            outputFeatureVector.addFeature(Position_Height.getRange());
+            outputFeatureVector.addFeature(Position_Height.sort_getMax());
+            outputFeatureVector.addFeature(Position_Height.sort_getMin());
+            outputFeatureVector.addFeature(Position_Height.sort_getRange());
 
             addStandardFeatures(outputFeatureVector, Position_Height);
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                outputFeatureVector.addFeature(Position_X.getRange());
-                outputFeatureVector.addFeature(Position_Z.getRange());
+                outputFeatureVector.addFeature(Position_X.sort_getRange());
+                outputFeatureVector.addFeature(Position_Z.sort_getRange());
 
                 addStandardFeatures(outputFeatureVector, Velocity_X);
                 addStandardFeatures(outputFeatureVector, Velocity_Z);
@@ -686,10 +684,10 @@ public class FrameDataReader {
         featureVector.addFeature(valueCollector.getStandardDeviation());
         featureVector.addFeature(valueCollector.getVariance());
         featureVector.addFeature(valueCollector.getMeanAbsoluteDeviation());
-        featureVector.addFeature(valueCollector.getInterquartileRange());
+        featureVector.addFeature(valueCollector.sort_getInterquartileRange());
 
         for (int i = 25; i < 100; i += 25) {
-            featureVector.addFeature(valueCollector.getPercentile(i / 100d));
+            featureVector.addFeature(valueCollector.sort_getPercentile(i / 100d));
         }
 
 

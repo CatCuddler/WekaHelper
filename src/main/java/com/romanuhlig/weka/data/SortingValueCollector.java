@@ -1,6 +1,5 @@
 package com.romanuhlig.weka.data;
 
-import javax.swing.text.StyledEditorKit;
 import java.util.ArrayList;
 import java.util.Comparator;
 
@@ -8,6 +7,7 @@ public class SortingValueCollector {
 
 
     private final ArrayList<Double> values = new ArrayList<>();
+    private ArrayList<Double> sortedValues = new ArrayList<>();
 
     private final double totalTimeForAllFrames;
     private final boolean scaleRunningTotalByFrameDuration;
@@ -22,8 +22,7 @@ public class SortingValueCollector {
     private final boolean scaleValuesByBodySize;
     private final double bodySize;
 
-    private boolean sortedByIncomeDate = true;
-    private boolean sortedByValue = false;
+    private boolean createdSortedValues = false;
 
     private final static Comparator<Double> valueComparator = new Comparator<Double>() {
         @Override
@@ -50,26 +49,26 @@ public class SortingValueCollector {
             runningTotal += value;
         }
 
-        sortedByValue = false;
+        createdSortedValues = false;
         unscaledAverageComputed = false;
         varianceComputed = false;
     }
 
 
-    void sortValues() {
-        if (!sortedByValue) {
-            values.sort(valueComparator);
-            sortedByValue = true;
-            sortedByIncomeDate = false;
+    void createSortedValues() {
+        if (!createdSortedValues) {
+            sortedValues = new ArrayList<>(values);
+            sortedValues.sort(valueComparator);
+            createdSortedValues = true;
         }
     }
 
 
-    public double getPercentile(double percentile) {
-        sortValues();
+    public double sort_getPercentile(double percentile) {
+        createSortedValues();
 
-        int index = (int) ((values.size() - 1) * percentile);
-        double value = values.get(index);
+        int index = (int) ((sortedValues.size() - 1) * percentile);
+        double value = sortedValues.get(index);
         return scaledValue(value);
     }
 
@@ -85,20 +84,27 @@ public class SortingValueCollector {
         return scaledValue(runningTotal / totalTimeForAllFrames);
     }
 
-    public double getMin() {
-        sortValues();
-        return scaledValue(values.get(0));
+    public double sort_getMin() {
+        createSortedValues();
+        return scaledValue(sortedValues.get(0));
     }
 
-    public double getMax() {
-        sortValues();
-        return scaledValue(values.get(values.size() - 1));
+    public double sort_getMax() {
+        createSortedValues();
+        return scaledValue(sortedValues.get(sortedValues.size() - 1));
     }
 
-    public double getRange() {
-        sortValues();
-        double min = values.get(0);
-        double max = values.get(values.size() - 1);
+    public double sort_getMaxAbsolute() {
+        createSortedValues();
+        return Math.max(Math.abs(sort_getMin()), Math.abs(sort_getMax()));
+    }
+
+
+
+    public double sort_getRange() {
+        createSortedValues();
+        double min = sortedValues.get(0);
+        double max = sortedValues.get(sortedValues.size() - 1);
         return scaledValue(Math.abs(max - min));
     }
 
@@ -173,12 +179,12 @@ public class SortingValueCollector {
     }
 
 
-    public double getInterquartileRange() {
+    public double sort_getInterquartileRange() {
         // q75 - q25
-        sortValues();
+        createSortedValues();
 
-        double quartile1 = values.get((int) ((values.size() - 1) * 0.25));
-        double quartile3 = values.get((int) ((values.size() - 1) * 0.75));
+        double quartile1 = sortedValues.get((int) ((sortedValues.size() - 1) * 0.25));
+        double quartile3 = sortedValues.get((int) ((sortedValues.size() - 1) * 0.75));
 
         return scaledValue(quartile3 - quartile1);
 
@@ -187,7 +193,7 @@ public class SortingValueCollector {
 
     // TODO: -needs another unsorted array to work, always one crossing in sorted version...
     public double getMeanCrossingRate() {
-        sortValues();
+        createSortedValues();
         double mean = values.get((int) ((values.size() - 1) * 0.5));
 
         double crossingRate = 0;
