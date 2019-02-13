@@ -11,11 +11,13 @@ import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
+import weka.core.Stopwords;
 import weka.filters.Filter;
 import weka.filters.Sourcable;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.RemoveWithValues;
 
+import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -32,7 +34,13 @@ public class TestBench {
         String startTime = TimeHelper.getDateWithSeconds();
         String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine() + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
 
-        FeatureExtractionResults featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
+
+        FeatureExtractionResults featureExtractionResults;
+//        if (TestBenchSettings.useExistingFeatureFile()) {
+//            featureExtractionResults = FrameDataReader.readExistingFeatureSet(TestBenchSettings.getExistingFeaturesInputFolder());
+//        } else {
+        featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
+//        }
 
         ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
         GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
@@ -136,6 +144,8 @@ public class TestBench {
 
         StopWatch stopWatchEvaluation = new StopWatch();
         stopWatchEvaluation.start();
+        StopWatch singleTestStopWatch = new StopWatch();
+        HashMap<Classifier, Long> classifierTimeUsage = new HashMap<>();
 
         int numberOfEvaluationsCompleted = 0;
 
@@ -246,10 +256,23 @@ public class TestBench {
                     }
 
 
+                    // measure time for single evaluation
+                    singleTestStopWatch.reset();
+                    singleTestStopWatch.start();
                     // actual evaluation
                     classifier.buildClassifier(trainingData);
                     Evaluation eval = new Evaluation(trainingData);
                     eval.evaluateModel(classifier, testData);
+                    // measure time for single evaluation
+                    singleTestStopWatch.stop();
+                    if (classifierTimeUsage.containsKey(classifier)) {
+                        long overallTimeForClassifier = classifierTimeUsage.get(classifier);
+                        classifierTimeUsage.put(
+                                classifier,
+                                overallTimeForClassifier + singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
+                    } else {
+                        classifierTimeUsage.put(classifier, singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
+                    }
 
 
                     // file output
@@ -372,6 +395,11 @@ public class TestBench {
         System.out.println();
         System.out.println("duration of evaluation:   " + TimeHelper.secondsToTimeOutput(stopWatchEvaluation.getTime(TimeUnit.SECONDS)));
         System.out.println("duration overall:         " + TimeHelper.secondsToTimeOutput(stopwatchFullProcess.getTime(TimeUnit.SECONDS)));
+        System.out.println("Classifier time usage:");
+        for (Classifier classifier : classifierTimeUsage.keySet()) {
+            System.out.println(classifierTimeUsage.get(classifier) + "     " + classifier.getClass().getSimpleName());
+        }
+
     }
 
 

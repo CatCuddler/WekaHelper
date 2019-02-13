@@ -100,7 +100,6 @@ public class SortingValueCollector {
     }
 
 
-
     public double sort_getRange() {
         createSortedValues();
         double min = sortedValues.get(0);
@@ -191,10 +190,10 @@ public class SortingValueCollector {
     }
 
 
-    // TODO: -needs another unsorted array to work, always one crossing in sorted version...
     public double getMeanCrossingRate() {
         createSortedValues();
-        double mean = values.get((int) ((values.size() - 1) * 0.5));
+
+        double mean = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
 
         double crossingRate = 0;
 
@@ -208,7 +207,7 @@ public class SortingValueCollector {
             }
         }
 
-        crossingRate /= values.size();
+        crossingRate /= (values.size() - 1);
         return crossingRate;
     }
 

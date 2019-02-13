@@ -1,37 +1,103 @@
 package com.romanuhlig.weka.controller;
 
 import com.romanuhlig.weka.classification.ClassifierFactory;
+import com.romanuhlig.weka.classification.ClassifierFactory.ClassifierType;
 import com.romanuhlig.weka.io.SensorPermutation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 
+
 public class TestBenchSettings {
 
 
-    // algorithms to test
-    private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
-//            ClassifierFactory.ClassifierType.J48
-//          ,
-//            ClassifierFactory.ClassifierType.RandomForest
-//            ,
-//            ClassifierFactory.ClassifierType.NaiveBayes
-//            ,
-            ClassifierFactory.ClassifierType.SMO
-//            ,
-//            ClassifierFactory.ClassifierType.OneR
+    private static boolean useExistingFeatureFile = true;
+    private static ArrayList<String> sensorsInExistingFeatureFile = new ArrayList<>(Arrays.asList(
+            "rForearm"
+            ,
+            "lLeg"
+            ,
+            "rLeg"
+            ,
+            "rArm"
+            ,
+            "lForeArm"
     ));
 
 
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-//            {"rForeArm", "lLeg"},
-//            {"rForeArm", "rLeg"}
+            {"rForeArm", "lLeg"}
+            ,
+            {"rForeArm", "rLeg"}
+            ,
+            {"rArm", "lLeg"}
+            ,
+            {"rArm", "rLeg"}
+            ,
+            {"lForeArm", "lLeg"}
+            ,
+            {"lForeArm", "rLeg"}
     };
+
+
+    // algorithms to test
+    private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
+//            ClassifierType.J48
+//            ,
+//            ClassifierType.RandomForest,
+//            ,
+            ClassifierType.NaiveBayes
+            ,
+            ClassifierType.SMO
+//            ,
+//            ClassifierType.OneR
+//            ,
+//            ClassifierType.ZeroR
+//            ,
+//            ClassifierType.LMT
+//            ,
+//            ClassifierType.JRip
+//            ,
+//            ClassifierType.SimpleLogistic
+//            ,
+//            ClassifierType.VotedPerceptron        // (originally for binary class, adapted via multiclass classifier)
+//            ,
+//            ClassifierType.SGD                    // (originally for binary class, adapted via multiclass classifier)
+//            ,
+//            ClassifierType.Logistic               // preeeetty slow
+//            ,
+//            ClassifierType.REPTree
+//            ,
+//            ClassifierType.RandomTree
+//            ,
+//            ClassifierType.IBk                    // lazy -> slow + needs to keep data -> not viable for actual usage
+//            ,
+//            ClassifierType.BayesNet                 // bin problems (too similar, scaling does not always help)
+//            ,
+//            ClassifierType.DecisionTable          // bin problems (too similar, scaling does not always help)
+//            ,
+//            ClassifierType.KStar                  // lazy -> slow + needs to keep data -> not viable for actual usage
+//            ,
+//            ClassifierType.MultilayerPerceptron   // very, very slow in training (deep neural network)
+//            ,
+//            ClassifierType.LinearRegression       // - regression
+//            ,
+//            ClassifierType.SMOreg                 // - regression
+//            ,
+//            ClassifierType.GaussianProcess        // - regression
+//            ,
+//            ClassifierType.M5P                    // - regression
+    ));
+
+
+    // value scaling required by some classifiers
+    private static double scaleAllFeaturesBy = 1000;
 
 
     // folders
     private static String inputBaseFolder = "./inputFrameData/currentInput";
+    private static String existingFeaturesInputFolder = "./inputFrameData/existingFeatures";
     private static String outputBaseFolder = "./outputResults/";
     private static String outputFolderTag = "";
 
@@ -59,7 +125,7 @@ public class TestBenchSettings {
 
 
     // result output
-    private static boolean writeAllModelsToFolder = true;
+    private static boolean writeAllModelsToFolder = false;
     private static boolean useIndividualFeatureFilesForEachSubject = false;
 
 
@@ -77,10 +143,10 @@ public class TestBenchSettings {
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("C");
-        for (ClassifierFactory.ClassifierType classifier : classifiersToUse) {
-            stringBuilder.append("_");
-            stringBuilder.append(classifier.toString());
-        }
+//        for (ClassifierFactory.ClassifierType classifier : classifiersToUse) {
+//            stringBuilder.append("_");
+//            stringBuilder.append(classifier.toString());
+//        }
 
         stringBuilder.append("   ws_" + windowSizeForFrameDataToFeatureConversion);
         stringBuilder.append("   wsp_" + windowSpacingForFrameDataToFeatureConversion);
@@ -258,8 +324,26 @@ public class TestBenchSettings {
         return true;
     }
 
-    public static boolean specificSensorCombinationRequested(){
+    public static boolean specificSensorCombinationRequested() {
         return onlyAllowSensorPermutations.length > 0;
     }
 
+
+    public static double scaleAllFeaturesBy() {
+        return scaleAllFeaturesBy;
+    }
+
+
+    public static boolean useExistingFeatureFile() {
+        return useExistingFeatureFile;
+    }
+
+    public static String getExistingFeaturesInputFolder() {
+        return existingFeaturesInputFolder;
+    }
+
+
+    public static ArrayList<String> getSensorsInExistingFeatureFile() {
+        return sensorsInExistingFeatureFile;
+    }
 }

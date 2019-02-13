@@ -5,6 +5,7 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.romanuhlig.weka.ConvexHull.ConvexHull;
 import com.romanuhlig.weka.ConvexHull.ConvexHullPoint;
+import com.romanuhlig.weka.controller.TestBench;
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.io.FeatureExtractionResults;
 import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
@@ -15,10 +16,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
 import com.romanuhlig.weka.quickhull3d.Point3d;
@@ -103,6 +101,24 @@ public class FrameDataReader {
 
         return windows;
     }
+
+//    public static FeatureExtractionResults readExistingFeatureSet(String existingFeaturesInputFolder) {
+//        File inputFolder = new File(existingFeaturesInputFolder);
+//        File[] listOfInputFiles = inputFolder.listFiles();
+//        String filepath = listOfInputFiles[0].getPath();
+//
+//        TrainingAndTestFilePackage filePackage = new TrainingAndTestFilePackage(filepath, filepath, "");
+//
+//        ArrayList<String> sensors = TestBenchSettings.getSensorsInExistingFeatureFile();
+//        Collections.sort(sensors);
+//        FeatureExtractionResults results = new FeatureExtractionResults(sensors);
+//
+//        for (String sensor : sensors) {
+//            results.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage());
+//        }
+//
+//
+//    }
 
     public static FeatureExtractionResults createFeatureSets(String inputFilePath, String outputFilePath) {
 
@@ -401,10 +417,6 @@ public class FrameDataReader {
 
 
             // output the calculated values
-            outputFeatureVector.addFeature(Position_Height.sort_getMax());
-            outputFeatureVector.addFeature(Position_Height.sort_getMin());
-            outputFeatureVector.addFeature(Position_Height.sort_getRange());
-
             addStandardFeatures(outputFeatureVector, Position_Height);
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
@@ -443,6 +455,10 @@ public class FrameDataReader {
             for (int ssA = 0; ssA < frameDataSet.size(); ssA++) {
                 List<FrameData> singleSensorA = frameDataSet.get(ssA);
 
+                if (TestBenchSettings.isSensorBlocked(singleSensorA.get(0).getSensorPosition())) {
+                    continue;
+                }
+
                 // values that stay true for the whole window
                 double overallTimePassed =
                         singleSensorA.get(singleSensorA.size() - 1).getTime()
@@ -452,6 +468,10 @@ public class FrameDataReader {
 
                 for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
                     List<FrameData> singleSensorB = frameDataSet.get(ssB);
+
+                    if (TestBenchSettings.isSensorBlocked(singleSensorB.get(0).getSensorPosition())) {
+                        continue;
+                    }
 
                     SortingValueCollector distanceX = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector distanceZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
@@ -598,9 +618,9 @@ public class FrameDataReader {
                 continue;
             }
 
-            headerFields.add(sensorType + "_maximum_Height");
-            headerFields.add(sensorType + "_minimum_Height");
-            headerFields.add(sensorType + "_range_Height");
+//            headerFields.add(sensorType + "_maximum_Height");
+//            headerFields.add(sensorType + "_minimum_Height");
+//            headerFields.add(sensorType + "_range_Height");
 
             addStandardFeatures(headerFields, sensorType, "Height");
 
@@ -639,8 +659,17 @@ public class FrameDataReader {
         if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
             for (int ssA = 0; ssA < sensorTypes.size(); ssA++) {
                 String singleSensorA = sensorTypes.get(ssA);
+
+                if (TestBenchSettings.isSensorBlocked(singleSensorA)) {
+                    continue;
+                }
+
                 for (int ssB = ssA + 1; ssB < sensorTypes.size(); ssB++) {
                     String singleSensorB = sensorTypes.get(ssB);
+
+                    if (TestBenchSettings.isSensorBlocked(singleSensorB)) {
+                        continue;
+                    }
 
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
@@ -685,6 +714,10 @@ public class FrameDataReader {
         featureVector.addFeature(valueCollector.getVariance());
         featureVector.addFeature(valueCollector.getMeanAbsoluteDeviation());
         featureVector.addFeature(valueCollector.sort_getInterquartileRange());
+        featureVector.addFeature(valueCollector.sort_getMax());
+        featureVector.addFeature(valueCollector.sort_getMin());
+        featureVector.addFeature(valueCollector.sort_getRange());
+        featureVector.addFeature(valueCollector.getMeanCrossingRate());
 
         for (int i = 25; i < 100; i += 25) {
             featureVector.addFeature(valueCollector.sort_getPercentile(i / 100d));
@@ -700,6 +733,11 @@ public class FrameDataReader {
         headerFields.add(sensor + "_variance_" + attribute);
         headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
         headerFields.add(sensor + "_interquartileRange_" + attribute);
+        headerFields.add(sensor + "_max_" + attribute);
+        headerFields.add(sensor + "_min_" + attribute);
+        headerFields.add(sensor + "_range_" + attribute);
+        headerFields.add(sensor + "_meanCrossingRate_" + attribute);
+
 
         for (int i = 25; i < 100; i += 25) {
             headerFields.add(sensor + "_percentile" + i + "_" + attribute);

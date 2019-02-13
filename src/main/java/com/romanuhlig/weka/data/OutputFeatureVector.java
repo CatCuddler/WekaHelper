@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class OutputFeatureVector {
 
-    ArrayList<Double> features;
+    private final ArrayList<Double> features;
     final String classValue;
     final String subject;
 
@@ -31,7 +31,7 @@ public class OutputFeatureVector {
     }
 
     public void addFeature(Double newFeature) {
-        features.add(newFeature);
+        features.add(newFeature * TestBenchSettings.scaleAllFeaturesBy());
     }
 
     public String[] getFeaturesAndClassAsArray() {
