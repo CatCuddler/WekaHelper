@@ -1,14 +1,10 @@
 package com.romanuhlig.weka.io;
 
 import com.opencsv.CSVWriter;
-import com.opencsv.bean.StatefulBeanToCsv;
-import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.romanuhlig.weka.classification.ClassificationResult;
 import weka.core.Instances;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.Writer;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -18,6 +14,8 @@ public class FileWriter {
 
 
     public static void writeClassificationResult(ClassificationResult result, String folder, String filename) {
+
+        ensureFolderExists(folder);
 
         List<ClassificationResult> results = new ArrayList<>();
         results.add(result);
@@ -52,8 +50,7 @@ public class FileWriter {
     public static void writeClassificationResults(List<ClassificationResult> results, String folder, String
             filename) {
 
-        // make sure folder exists
-        new File(folder).mkdirs();
+        ensureFolderExists(folder);
 
         String fullFilePath = folder + filename + ".csv";
 
@@ -80,6 +77,7 @@ public class FileWriter {
     }
 
     public static void writeTextFile(String text, String folder, String filename) {
+        ensureFolderExists(folder);
 
         File logFile = new File(folder + filename);
 
@@ -95,6 +93,8 @@ public class FileWriter {
     }
 
     public static void writeFeaturesUsed(Instances trainingData, Instances testData, String folder, String filename) {
+
+        ensureFolderExists(folder);
 
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -117,5 +117,61 @@ public class FileWriter {
 
     }
 
+    public static void writeNewFeatureExtractionResults(FeatureExtractionResults results, String currentFolder, String existingFeaturesInputFolder, String filename) {
 
+        // get rid of any existing feature extraction result
+        File inputFolder = new File(existingFeaturesInputFolder);
+        File[] listOfInputFiles = inputFolder.listFiles();
+        if (listOfInputFiles != null) {
+            for (int i = listOfInputFiles.length - 1; i >= 0; i--) {
+                listOfInputFiles[i].delete();
+            }
+        }
+
+
+        // save new file
+        serializeObject(results, currentFolder, filename);
+        serializeObject(results, existingFeaturesInputFolder, filename);
+    }
+
+    private static void serializeObject(FeatureExtractionResults results, String folder, String filename) {
+
+        ensureFolderExists(folder);
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(folder + "/" + filename);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(results);
+            objectOutputStream.flush();
+            objectOutputStream.close();
+        } catch (Exception e) {
+            System.out.println("unable to write serialize object");
+        }
+
+    }
+
+
+    public static FeatureExtractionResults readExistingFeatureSet(String existingFeaturesInputFolder) {
+
+        File inputFolder = new File(existingFeaturesInputFolder);
+        File[] listOfInputFiles = inputFolder.listFiles();
+
+        try {
+            FileInputStream fileInputStream = new FileInputStream(listOfInputFiles[0].getPath());
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+            FeatureExtractionResults result = (FeatureExtractionResults) objectInputStream.readObject();
+            objectInputStream.close();
+            return result;
+        } catch (Exception e) {
+            System.out.println("unable to load existing feature extraction result");
+            e.printStackTrace();
+            return new FeatureExtractionResults(new ArrayList<>());
+        }
+
+
+    }
+
+    private static void ensureFolderExists(String folder){
+        new File(folder).mkdirs();
+    }
 }

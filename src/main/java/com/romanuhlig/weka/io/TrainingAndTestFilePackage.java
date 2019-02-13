@@ -5,9 +5,10 @@ import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class TrainingAndTestFilePackage {
+public class TrainingAndTestFilePackage implements Serializable {
 
     private final String trainingFilePath;
     private final String testFilePath;
@@ -22,7 +23,7 @@ public class TrainingAndTestFilePackage {
         this.subject = subject;
     }
 
-    public TrainingAndTestFilePackage(String subject){
+    public TrainingAndTestFilePackage(String subject) {
         this.subject = subject;
         this.testFilePath = "";
         this.trainingFilePath = "";

@@ -13,17 +13,6 @@ public class TestBenchSettings {
 
 
     private static boolean useExistingFeatureFile = true;
-    private static ArrayList<String> sensorsInExistingFeatureFile = new ArrayList<>(Arrays.asList(
-            "rForearm"
-            ,
-            "lLeg"
-            ,
-            "rLeg"
-            ,
-            "rArm"
-            ,
-            "lForeArm"
-    ));
 
 
     private static String[][] onlyAllowSensorPermutations = new String[][]{
@@ -342,8 +331,4 @@ public class TestBenchSettings {
         return existingFeaturesInputFolder;
     }
 
-
-    public static ArrayList<String> getSensorsInExistingFeatureFile() {
-        return sensorsInExistingFeatureFile;
-    }
 }

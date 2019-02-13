@@ -777,8 +777,6 @@ public class FrameDataReader {
             System.err.println("unable to write file " + featureVectors);
         }
     }
-
-
 }
 
 

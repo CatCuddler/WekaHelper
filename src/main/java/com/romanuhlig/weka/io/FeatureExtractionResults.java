@@ -1,8 +1,9 @@
 package com.romanuhlig.weka.io;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class FeatureExtractionResults {
+public class FeatureExtractionResults implements Serializable {
 
     private final ArrayList<TrainingAndTestFilePackage> trainingAndTestFilePackages = new ArrayList<>();
     private final ArrayList<String> allSensorPositions;

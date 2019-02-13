@@ -11,13 +11,10 @@ import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
-import weka.core.Stopwords;
 import weka.filters.Filter;
-import weka.filters.Sourcable;
 import weka.filters.unsupervised.attribute.Remove;
 import weka.filters.unsupervised.instance.RemoveWithValues;
 
-import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -36,11 +33,13 @@ public class TestBench {
 
 
         FeatureExtractionResults featureExtractionResults;
-//        if (TestBenchSettings.useExistingFeatureFile()) {
-//            featureExtractionResults = FrameDataReader.readExistingFeatureSet(TestBenchSettings.getExistingFeaturesInputFolder());
-//        } else {
-        featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
-//        }
+        if (TestBenchSettings.useExistingFeatureFile()) {
+            featureExtractionResults = FileWriter.readExistingFeatureSet(TestBenchSettings.getExistingFeaturesInputFolder());
+        } else {
+            featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
+            FileWriter.writeNewFeatureExtractionResults(featureExtractionResults, outputFolderPath, TestBenchSettings.getExistingFeaturesInputFolder(), "featureExtractionResults_" + startTime);
+        }
+
 
         ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
         GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
