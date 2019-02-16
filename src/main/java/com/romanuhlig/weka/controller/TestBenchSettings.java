@@ -19,16 +19,16 @@ public class TestBenchSettings {
 
     private static String[][] onlyAllowSensorPermutations = new String[][]{
             {"rForeArm", "lLeg"}
-            ,
-            {"rForeArm", "rLeg"}
-            ,
-            {"rArm", "lLeg"}
-            ,
-            {"rArm", "rLeg"}
-            ,
-            {"lForeArm", "lLeg"}
-            ,
-            {"lForeArm", "rLeg"}
+//            ,
+//            {"rForeArm", "rLeg"}
+//            ,
+//            {"rArm", "lLeg"}
+//            ,
+//            {"rArm", "rLeg"}
+//            ,
+//            {"lForeArm", "lLeg"}
+//            ,
+//            {"lForeArm", "rLeg"}
     };
 
     // feature types to disallow
@@ -60,22 +60,22 @@ public class TestBenchSettings {
 //            ,
 //            ClassifierType.NaiveBayes
 //            ,
-//            ClassifierType.SMO
+            ClassifierType.SMO
 //            ,
 //            ClassifierType.OneR
 //            ,
 //            ClassifierType.ZeroR
 //            ,
 //            ClassifierType.LMT                      // slow (345 / 6p), unsuited for brute forcing all permutations
-//            , // only tested at 1000 scale
+//            , // results average, all < 1.0
 //            ClassifierType.JRip
 //            , // all NAN or 0, not fast (ca. 2h / 6p)
 //            ClassifierType.SimpleLogistic
 //            , // all with values, but none great and none 1, not fast (ca. 2h / 6p)
 //            ClassifierType.VotedPerceptron        // (originally for binary class, adapted via multiclass classifier)
 //            , // terrible results (all < .4 average, NAN min), slow (5h / 6p)
-            ClassifierType.SGD                    // (originally for binary class, adapted via multiclass classifier)
-//            ,
+//            ClassifierType.SGD                    // (originally for binary class, adapted via multiclass classifier)
+//            , // 3h / 6p, results .8-.95
 //            ClassifierType.Logistic               // preeeetty slow
 //            ,
 //            ClassifierType.REPTree
@@ -110,7 +110,7 @@ public class TestBenchSettings {
 
 
     // result output
-    private static boolean writeAllModelsToFolder = false;
+    private static boolean writeAllModelsToFolder = true;
     private static boolean useIndividualFeatureFilesForEachSubject = false;
 
 

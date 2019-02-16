@@ -74,33 +74,44 @@ public class CppDataClassifier {
 
 //                outputClassifierResultToCpp("b");
 
-                // create features
-                OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
-                ArrayList<String> header = FrameDataReader.getHeaderForFrameDataSet(frameDataSetForWindow, false, false);
+
+                // run the feature computation and execution within a separate thread, to avoid slowdowns
+                Thread recognitionThread = new Thread() {
+                    public void run() {
+
+                        // create features
+                        OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
+                        ArrayList<String> header = FrameDataReader.getHeaderForFrameDataSet(frameDataSetForWindow, false, false);
 
 //                outputClassifierResultToCpp("c");
 
-                // create weka data instance from features
-                // ---------------- Instance creation -------------------------
-                // Create empty instance with three attribute values
-                int numberOfFeatures = header.size();
-                Instance instance = new DenseInstance(numberOfFeatures);
-                ArrayList<Attribute> attributes = new ArrayList<>(numberOfFeatures);
-                for (int i = 0; i < numberOfFeatures; i++) {
-                    Attribute newAttribute = new Attribute(header.get(i));
-                    attributes.add(newAttribute);
+                        // create weka data instance from features
+                        // ---------------- Instance creation -------------------------
+                        // Create empty instance with three attribute values
+                        int numberOfFeatures = header.size();
+                        Instance instance = new DenseInstance(numberOfFeatures);
+                        ArrayList<Attribute> attributes = new ArrayList<>(numberOfFeatures);
+                        for (int i = 0; i < numberOfFeatures; i++) {
+                            Attribute newAttribute = new Attribute(header.get(i));
+                            attributes.add(newAttribute);
 //                    outputClassifierResultToCpp("attribute added:   " + header.get(i));
-                }
+                        }
 
 
-                // add class attribute
-                ArrayList<String> classVal = new ArrayList<>();
-                classVal.add("BackStep");
-                classVal.add("CircleWalk");
-                classVal.add("Kiks");
-                classVal.add("Squat");
-                Attribute classAttribute = new Attribute("activity", classVal);
-                attributes.add(classAttribute);
+                        // add class attribute
+                        ArrayList<String> classVal = new ArrayList<>();
+                        classVal.add("jogging");
+                        classVal.add("kick");
+                        classVal.add("kickPunch");
+                        classVal.add("lateralBounding");
+                        classVal.add("lunges");
+                        classVal.add("punch");
+                        classVal.add("sitting");
+                        classVal.add("squats");
+                        classVal.add("standing");
+                        classVal.add("walking");
+                        Attribute classAttribute = new Attribute("activity", classVal);
+                        attributes.add(classAttribute);
 //                try {
 //                    attributes.add(new Attribute("@@class@@", classVal));
 //
@@ -111,30 +122,30 @@ public class CppDataClassifier {
 
 //                outputClassifierResultToCpp("d");
 
-                // create an Instances Object to house the instance (as its single entry)
-                Instances instances = new Instances("LifeInstances", attributes, 0);
-                instances.setClass(classAttribute);
+                        // create an Instances Object to house the instance (as its single entry)
+                        Instances instances = new Instances("LifeInstances", attributes, 0);
+                        instances.setClass(classAttribute);
 
-                // make them known to each other
-                instances.add(instance);
-                instance.setDataset(instances);
+                        // make them known to each other
+                        instances.add(instance);
+                        instance.setDataset(instances);
 
 //                outputClassifierResultToCpp("e");
 
-                // fill the attribute values for the instance
-                for (int i = 0; i < numberOfFeatures; i++) {
+                        // fill the attribute values for the instance
+                        for (int i = 0; i < numberOfFeatures; i++) {
 //                    outputClassifierResultToCpp("trying to set value:   ");
 //                    outputClassifierResultToCpp("" + features.getFeaturesWithoutClassAndSubject().get(i));
 //                    outputClassifierResultToCpp("" + attributes.get(i).name());
 
-                    try {
-                        instance.setValue(attributes.get(i), Double.parseDouble(features.getFeaturesWithoutClassAndSubject().get(i)));
+                            try {
+                                instance.setValue(attributes.get(i), Double.parseDouble(features.getFeaturesWithoutClassAndSubject().get(i)));
 //                        outputClassifierResultToCpp("success setting value:   ");
-                    } catch (Exception e) {
+                            } catch (Exception e) {
 //                        outputClassifierResultToCpp(e.getLocalizedMessage());
 //                        outputClassifierResultToCpp("error setting value:   ");
-                    }
-                }
+                            }
+                        }
 
 
 //                outputClassifierResultToCpp("f");
@@ -147,14 +158,15 @@ public class CppDataClassifier {
 //                }
 
 
-                // predict the class
-                try {
-                    double prediction = classifier.classifyInstance(instance);
-                    outputClassifierResultToCpp("prediction:   " + prediction + "   " + classVal.get((int) prediction));
-                } catch (Exception e) {
-                    outputClassifierResultToCpp(e.getLocalizedMessage());
-                    outputClassifierResultToCpp("classification failed !!!");
-                }
+                        // predict the class
+                        try {
+                            double prediction = classifier.classifyInstance(instance);
+                            // outputClassifierResultToCpp("prediction:   " + prediction + "   " + classVal.get((int) prediction));
+                            outputClassifierResultToCpp(classVal.get((int) prediction));
+                        } catch (Exception e) {
+                            outputClassifierResultToCpp(e.getLocalizedMessage());
+                            outputClassifierResultToCpp("classification failed !!!");
+                        }
 
 //                outputClassifierResultToCpp("g");
 
@@ -162,6 +174,10 @@ public class CppDataClassifier {
 //                outputClassifierResultToCpp("first list data = " + frameDataSetForWindow.getAllSensorLists().get(0).size());
 //                outputClassifierResultToCpp("classifier Result = " + frameDataSet.getAllSensorLists().get(0).size());
 //                outputClassifierResultToCpp(sensorPosition);
+                    }
+                };
+
+                recognitionThread.start();
 
             }
 
