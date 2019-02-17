@@ -12,26 +12,45 @@ import java.util.HashSet;
 public class TestBenchSettings {
 
 
-    private static boolean useExistingFeatureFile = true;
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    //////////////////                                //////////////////
+    //////////////////            Settings            //////////////////
+    //////////////////                                //////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
-    // value scaling required by some classifiers
+
+    // do not generate new features, read old file instead
+    private static boolean useExistingFeatureFile = false;
+
+    // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
 
+    // whether to allow the test data for any person to be included in the training data
+    // WARNING: only meant for debugging, using the exact same data for training and testing is not realistic,
+    //          even for a subject dependant model
+    private static boolean includeTestDataInTrainingData = false;
+
+    // force usage of exactly these sensor combinations, not more or less
+    // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
             {"rForeArm", "lLeg"}
-//            ,
-//            {"rForeArm", "rLeg"}
-//            ,
-//            {"rArm", "lLeg"}
-//            ,
-//            {"rArm", "rLeg"}
-//            ,
-//            {"lForeArm", "lLeg"}
-//            ,
-//            {"lForeArm", "rLeg"}
+            ,
+            {"rForeArm", "rLeg"}
+            ,
+            {"rArm", "lLeg"}
+            ,
+            {"rArm", "rLeg"}
+            ,
+            {"lForeArm", "lLeg"}
+            ,
+            {"lForeArm", "rLeg"}
     };
 
-    // feature types to disallow
+    // types of features to disallow
     private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
 //            FeatureTag.Angular
 //            FeatureTag.SubjectOrientationRelevant
@@ -39,55 +58,55 @@ public class TestBenchSettings {
     ));
 
     // sensor permutations to use during evaluation
-    private static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
-    private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
-    private static boolean allowSingleHandController = false;
+    private static SensorUsage sensorUsageHMD = SensorUsage.MayInclude;
+    private static SensorUsage sensorUsageHandControllers = SensorUsage.MayInclude;
+    private static boolean allowSingleHandController = true;
     private static int minimumNumberOfTrackers = -111;
-    private static int maximumNumberOfTrackers = 2;
+    private static int maximumNumberOfTrackers = 1;
     private static int minimumNumberOfSensors = -111;
-    private static int maximumNumberOfSensors = -111;
+    private static int maximumNumberOfSensors = 1;
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 5;
-    private static double windowSpacingForFrameDataToFeatureConversion = 1;
+    private static double windowSpacingForFrameDataToFeatureConversion = 0.4;
 
 
     // algorithms to test
     private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
 //            ClassifierType.J48
-//            ,
-//            ClassifierType.RandomForest,
-//            ,
+//            , // 20min  , NAN-.25
+//            ClassifierType.RandomForest
+//            , //  < 1h  , .60-ALL_1 (most > .90)
 //            ClassifierType.NaiveBayes
-//            ,
+//            , // 4min   , results NAN-0.58
             ClassifierType.SMO
-//            ,
-//            ClassifierType.OneR
-//            ,
-//            ClassifierType.ZeroR
-//            ,
-//            ClassifierType.LMT                      // slow (345 / 6p), unsuited for brute forcing all permutations
-//            , // results average, all < 1.0
+//            , // < 10min, results .93-ALL_2
+//            ClassifierType.LMT
+//            , // 6h / 6p, results .11-.93
 //            ClassifierType.JRip
-//            , // all NAN or 0, not fast (ca. 2h / 6p)
+//            , // 2h / 6p, results NAN-00
 //            ClassifierType.SimpleLogistic
-//            , // all with values, but none great and none 1, not fast (ca. 2h / 6p)
+//            , // 2h / 6p, results .11-.93
 //            ClassifierType.VotedPerceptron        // (originally for binary class, adapted via multiclass classifier)
-//            , // terrible results (all < .4 average, NAN min), slow (5h / 6p)
+//            , // 5h / 6p, results terrible (all < .4 average, NAN min)
 //            ClassifierType.SGD                    // (originally for binary class, adapted via multiclass classifier)
-//            , // 3h / 6p, results .8-.95
-//            ClassifierType.Logistic               // preeeetty slow
-//            ,
+//            , // 3h / 6p, results .80-.95
+//            ClassifierType.Logistic
+//            , // 14h / 6p, results .73-.96
 //            ClassifierType.REPTree
-//            ,
+//            , // 10min/6p, results NAN-00
 //            ClassifierType.RandomTree
+//            , // 2min / 6p, results NAN-.03
+//            ClassifierType.OneR                   // only useful for sanity checks
+//            ,
+//            ClassifierType.ZeroR                  // only useful for sanity checks
 //            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data -> not viable for actual usage
 //            ,
 //            ClassifierType.KStar                  // lazy -> slow + needs to keep data -> not viable for actual usage
 //            ,
 //            ClassifierType.MultilayerPerceptron   // very, very slow in training (deep neural network)
-//            ,
+//            , // 1h not enough to train a single case
 //            ClassifierType.BayesNet               // - bin problems (too similar, scaling does not always help)
 //            ,
 //            ClassifierType.DecisionTable          // - bin problems (too similar, scaling does not always help)
@@ -102,6 +121,11 @@ public class TestBenchSettings {
     ));
 
 
+    // result output
+    private static boolean writeAllModelsToFolder = true;
+    private static boolean useIndividualFeatureFilesForEachSubject = false;
+
+
     // folders
     private static String inputBaseFolder = "./inputFrameData/currentInput";
     private static String existingFeaturesInputFolder = "./inputFrameData/existingFeatures";
@@ -109,9 +133,15 @@ public class TestBenchSettings {
     private static String outputFolderTag = "";
 
 
-    // result output
-    private static boolean writeAllModelsToFolder = true;
-    private static boolean useIndividualFeatureFilesForEachSubject = false;
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    /////////////////                                 //////////////////
+    /////////////////         End of Settings         //////////////////
+    /////////////////                                 //////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
 
 
     public enum SensorUsage {
@@ -133,6 +163,7 @@ public class TestBenchSettings {
             stringBuilder.append(classifier.toString());
         }
 
+        stringBuilder.append("   itd_" + includeTestDataInTrainingData);
         stringBuilder.append("   s_" + scaleAllFeaturesBy);
         stringBuilder.append("   ws_" + windowSizeForFrameDataToFeatureConversion);
         stringBuilder.append("   wsp_" + windowSpacingForFrameDataToFeatureConversion);
@@ -332,4 +363,7 @@ public class TestBenchSettings {
         return existingFeaturesInputFolder;
     }
 
+    public static boolean includeTestDataInTrainingData() {
+        return includeTestDataInTrainingData;
+    }
 }

@@ -34,7 +34,7 @@ public class ClassifierFactory {
                     break;
                 case NaiveBayes:
                     classifiers.add(getNaiveBayes());
-                    break; // optional
+                    break;
                 case RandomForest:
                     classifiers.add(getRandomForest());
                     break;
@@ -184,14 +184,12 @@ public class ClassifierFactory {
     private Classifier getVotedPerceptron() {
         MultiClassClassifier classifier = new MultiClassClassifier();
         classifier.setClassifier(new VotedPerceptron());
-//        Classifier classifier = new VotedPerceptron();
         return classifier;
     }
 
     private Classifier getSGD() {
         MultiClassClassifier classifier = new MultiClassClassifier();
         classifier.setClassifier(new SGD());
-//        Classifier classifier = new SGD();
         return classifier;
     }
 

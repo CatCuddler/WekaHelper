@@ -213,7 +213,11 @@ public class TestBench {
                         removeSubject.setInputFormat(allFeaturesUnfiltered);
                         removeSubject.setModifyHeader(false);
 
-                        trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                        if (TestBenchSettings.includeTestDataInTrainingData()) {
+                            trainingDataAllSensors = allFeaturesUnfiltered;
+                        } else {
+                            trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                        }
                         removeSubject.setInvertSelection(true);
                         testDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
                     }
@@ -243,15 +247,15 @@ public class TestBench {
                     int[] attributeIndicesToRemove = ConversionHelper.integerListToIntArray(attributesToRemove);
 
 
-                    Instances trainingData = trainingDataAllSensors;
-                    Instances testData = testDataAllSensors;
+                    Instances trainingDataFinal = trainingDataAllSensors;
+                    Instances testDataFinal = testDataAllSensors;
 
                     if (attributeIndicesToRemove.length > 0) {
                         Remove remove = new Remove();
                         remove.setAttributeIndicesArray(attributeIndicesToRemove);
-                        remove.setInputFormat(trainingData);
-                        trainingData = Filter.useFilter(trainingDataAllSensors, remove);
-                        testData = Filter.useFilter(testDataAllSensors, remove);
+                        remove.setInputFormat(trainingDataFinal);
+                        trainingDataFinal = Filter.useFilter(trainingDataAllSensors, remove);
+                        testDataFinal = Filter.useFilter(testDataAllSensors, remove);
                     }
 
 
@@ -259,9 +263,9 @@ public class TestBench {
                     singleTestStopWatch.reset();
                     singleTestStopWatch.start();
                     // actual evaluation
-                    classifier.buildClassifier(trainingData);
-                    Evaluation eval = new Evaluation(trainingData);
-                    eval.evaluateModel(classifier, testData);
+                    classifier.buildClassifier(trainingDataFinal);
+                    Evaluation eval = new Evaluation(trainingDataFinal);
+                    eval.evaluateModel(classifier, testDataFinal);
                     // measure time for single evaluation
                     singleTestStopWatch.stop();
                     if (classifierTimeUsage.containsKey(classifier)) {
@@ -276,7 +280,7 @@ public class TestBench {
 
                     // file output
                     // current result
-                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson(eval, classifier, trainingData, filePackage.getSubject(), sensorPermutation);
+                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson(eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorPermutation);
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // model
                     if (TestBenchSettings.writeAllModelsToFolder()) {
@@ -284,7 +288,7 @@ public class TestBench {
                     }
 
                     // features used
-                    FileWriter.writeFeaturesUsed(trainingData, testData, outputFolderSubject, "features used.txt");
+                    FileWriter.writeFeaturesUsed(trainingDataFinal, testDataFinal, outputFolderSubject, "features used.txt");
 
 
                     // confusion matrix
