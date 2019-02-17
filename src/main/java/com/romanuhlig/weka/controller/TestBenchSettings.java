@@ -24,7 +24,7 @@ public class TestBenchSettings {
 
 
     // do not generate new features, read old file instead
-    private static boolean useExistingFeatureFile = false;
+    private static boolean useExistingFeatureFile = true;
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
@@ -68,7 +68,7 @@ public class TestBenchSettings {
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 5;
-    private static double windowSpacingForFrameDataToFeatureConversion = 0.4;
+    private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
 
     // algorithms to test
@@ -79,8 +79,10 @@ public class TestBenchSettings {
 //            , //  < 1h  , .60-ALL_1 (most > .90)
 //            ClassifierType.NaiveBayes
 //            , // 4min   , results NAN-0.58
-            ClassifierType.SMO
+//            ClassifierType.SMO
 //            , // < 10min, results .93-ALL_2
+            ClassifierType.LibSVM
+//            ,
 //            ClassifierType.LMT
 //            , // 6h / 6p, results .11-.93
 //            ClassifierType.JRip

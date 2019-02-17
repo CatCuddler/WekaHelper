@@ -9,7 +9,10 @@ import weka.classifiers.lazy.KStar;
 import weka.classifiers.meta.MultiClassClassifier;
 import weka.classifiers.rules.*;
 import weka.classifiers.trees.*;
+import weka.core.SelectedTag;
+import weka.core.WekaEnumeration;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +21,7 @@ public class ClassifierFactory {
     public enum ClassifierType {
         J48, NaiveBayes, RandomForest, ZeroR, OneR, SMO, DecisionTable, GaussianProcess, M5P, KStar, LMT, BayesNet,
         JRip, SimpleLogistic, LinearRegression, VotedPerceptron, SGD, Logistic, MultilayerPerceptron, REPTree,
-        IBk, RandomTree, SMOreg
+        IBk, RandomTree, SMOreg, LibSVM
     }
 
 
@@ -43,6 +46,9 @@ public class ClassifierFactory {
                     break;
                 case OneR:
                     classifiers.add(getOneR());
+                    break;
+                case LibSVM:
+                    classifiers.add(getLibSVM());
                     break;
                 case SMO:
                     classifiers.add(getSMO());
@@ -221,6 +227,11 @@ public class ClassifierFactory {
     private Classifier getSMOreg() {
         Classifier classifier = new SMOreg();
         return classifier;
+    }
+
+    private Classifier getLibSVM() {
+        LibSVM libSVM = new LibSVM();
+        return libSVM;
     }
 
 }

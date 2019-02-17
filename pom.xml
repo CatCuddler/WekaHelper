@@ -12,7 +12,7 @@
 
     <build>
         <plugins>
-            <!-- makes sure that java 8 is used, without reverting when the project changes -->
+            <!-- makes sure that at least java 8 is used, without reverting when the project changes -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -54,6 +54,18 @@
             <groupId>nz.ac.waikato.cms.weka</groupId>
             <artifactId>weka-stable</artifactId>
             <version>3.8.3</version>
+        </dependency>
+        <!-- include LibSVM wrapper for Weka -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>LibSVM</artifactId>
+            <version>1.0.10</version>
+        </dependency>
+        <!-- include LibSVM -->
+        <dependency>
+            <groupId>tw.edu.ntu.csie</groupId>
+            <artifactId>libsvm</artifactId>
+            <version>3.23</version>
         </dependency>
         <!-- include OpenCSV, for csv file input/output -->
         <dependency>
