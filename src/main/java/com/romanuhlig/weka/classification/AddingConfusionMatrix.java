@@ -22,14 +22,15 @@ public class AddingConfusionMatrix {
                 tasks[i] = trainingData.classAttribute().value(i);
             }
 
-        }
-
-
-        for (int i = 0; i < values.length; i++) {
-            for (int k = 0; k < values.length; k++) {
-                values[i][k] += newValues[i][k];
+        } else {
+            for (int i = 0; i < values.length; i++) {
+                for (int k = 0; k < values.length; k++) {
+                    values[i][k] += newValues[i][k];
+                }
             }
         }
+
+
     }
 
     public String toOutputString() {
@@ -112,7 +113,7 @@ public class AddingConfusionMatrix {
 
     private String prependToLength(double original, int goalLength) {
         if (original != 0) {
-            return prependToLength((int)original, goalLength);
+            return prependToLength((int) original, goalLength);
         } else {
             return prependToLength(".", goalLength);
         }
