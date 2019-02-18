@@ -2,6 +2,7 @@ package com.romanuhlig.weka.controller;
 
 import com.romanuhlig.weka.classification.ClassificationResult;
 import com.romanuhlig.weka.classification.ClassifierFactory;
+import com.romanuhlig.weka.classification.AddingConfusionMatrix;
 import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
@@ -166,6 +167,7 @@ public class TestBench {
 
 
         // Weka evaluation
+        // ... sensor permutations
         for (SensorPermutation sensorPermutation : sensorPermutations) {
 
 
@@ -173,7 +175,7 @@ public class TestBench {
 
             String outputFolderSensorPermutation = resultsBaseFolder + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
 
-
+            // ... classifiers
             for (Classifier classifier : classifiers) {
 
                 ArrayList<ClassificationResult> classifierResults = new ArrayList<>();
@@ -181,6 +183,9 @@ public class TestBench {
 
                 String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
 
+                AddingConfusionMatrix classifierAddingConfusionMatrix = new AddingConfusionMatrix();
+
+                // ... test subjects
                 for (int fp = 0; fp < featureExtractionResults.getIndividualTrainingAndTestFilePackages().size(); fp++) {
 
 
@@ -294,6 +299,7 @@ public class TestBench {
                     // confusion matrix
 //                    System.out.println(eval.toMatrixString());
                     FileWriter.writeTextFile(eval.toMatrixString(), outputFolderSubject, "confusion matrix.txt");
+                    classifierAddingConfusionMatrix.addResults(eval.confusionMatrix(), trainingDataFinal);
 
                     // collect result for summaries
                     classifierResults.add(classificationResult);
@@ -349,6 +355,8 @@ public class TestBench {
                     */
 
                 }
+
+                FileWriter.writeTextFile(classifierAddingConfusionMatrix.toOutputString(), outputFolderClassifier, "confusion matrix.txt");
 
                 ClassificationResult classifierResultSummary = ClassificationResult.summarizeClassifierResults(classifierResults);
                 classifierResults.add(classifierResultSummary);
