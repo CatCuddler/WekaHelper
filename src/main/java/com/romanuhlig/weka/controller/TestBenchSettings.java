@@ -79,9 +79,11 @@ public class TestBenchSettings {
 //            , //  < 1h  , .60-ALL_1 (most > .90)
 //            ClassifierType.NaiveBayes
 //            , // 4min   , results NAN-0.58
-//            ClassifierType.SMO
-//            , // < 10min, results .93-ALL_2
-            ClassifierType.LibSVM
+            ClassifierType.SMO
+//            , // 3 min  , results .93-ALL_2
+//            ClassifierType.LibSVM
+//            ,
+//            ClassifierType.LibLinear
 //            ,
 //            ClassifierType.LMT
 //            , // 6h / 6p, results .11-.93

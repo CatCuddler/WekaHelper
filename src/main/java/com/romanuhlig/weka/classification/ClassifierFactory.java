@@ -21,7 +21,7 @@ public class ClassifierFactory {
     public enum ClassifierType {
         J48, NaiveBayes, RandomForest, ZeroR, OneR, SMO, DecisionTable, GaussianProcess, M5P, KStar, LMT, BayesNet,
         JRip, SimpleLogistic, LinearRegression, VotedPerceptron, SGD, Logistic, MultilayerPerceptron, REPTree,
-        IBk, RandomTree, SMOreg, LibSVM
+        IBk, RandomTree, SMOreg, LibSVM, LibLinear
     }
 
 
@@ -49,6 +49,9 @@ public class ClassifierFactory {
                     break;
                 case LibSVM:
                     classifiers.add(getLibSVM());
+                    break;
+                case LibLinear:
+                    classifiers.add(getLibLinear());
                     break;
                 case SMO:
                     classifiers.add(getSMO());
@@ -231,7 +234,36 @@ public class ClassifierFactory {
 
     private Classifier getLibSVM() {
         LibSVM libSVM = new LibSVM();
+        libSVM.setNormalize(true);
+//        libSVM.setEps(0.000000000001);
+//        libSVM.setSVMType(new SelectedTag(LibSVM.SVMTYPE_NU_SVC, LibSVM.TAGS_SVMTYPE));
+//        libSVM.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_LINEAR, LibSVM.TAGS_KERNELTYPE));
+//        libSVM.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_POLYNOMIAL, LibSVM.TAGS_KERNELTYPE));
+//        libSVM.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_SIGMOID, LibSVM.TAGS_KERNELTYPE));
+
+
+        // normalize: 2-3h, 0.92 - ALL_1 (lLeg-rForearm)
+        // normalize, linear kernel: 10min, 0.93-ALL_2 (identical to SMO results)
+        // normalize, polynomial kernel: expected 15 hours, ~.35 in first two test subject, aborted
+        // normalize, nu, eps=0.000000000001: over-night-long, ~.82 in first two complete tests, aborted
+        // normalize, sigmoid kernel: 3h, .91-All_1
+
         return libSVM;
+    }
+
+    private Classifier getLibLinear() {
+        LibLINEAR libLinear = new LibLINEAR();
+        libLinear.setNormalize(true);
+//        String[] options = {"-S", "4", "-C", "1.0", "-E", "0.001", "-B 1.0", "-Z", "-L", "0.1", "-I", "1000"};
+//        try {
+//            libLinear.setOptions(options);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+        // normalize, Cramer/Singer SVM: 13min, .91-.99
+        // normalize: 10min, .84-ALL_1
+        return libLinear;
     }
 
 }
