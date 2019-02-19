@@ -4,6 +4,10 @@ import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.*;
+import weka.classifiers.functions.supportVector.NormalizedPolyKernel;
+import weka.classifiers.functions.supportVector.Puk;
+import weka.classifiers.functions.supportVector.RBFKernel;
+import weka.classifiers.functions.supportVector.StringKernel;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.lazy.KStar;
 import weka.classifiers.meta.MultiClassClassifier;
@@ -141,7 +145,19 @@ public class ClassifierFactory {
     }
 
     private Classifier getSMO() {
-        Classifier classifier = new SMO();
+        SMO classifier = new SMO();
+
+        // fit calibration models to the SVMs output (for proper probability estimates)
+//        classifier.setBuildCalibrationModels(true);
+
+//        classifier.setKernel(new NormalizedPolyKernel());
+//        classifier.setNumDecimalPlaces(8);
+//        try {
+//            classifier.setOptions(new String[]{"-C", "0.5"});
+//        } catch (Exception e) {
+//            System.out.println("unable to set options for SMO classifier");
+//        }
+
         return classifier;
     }
 
