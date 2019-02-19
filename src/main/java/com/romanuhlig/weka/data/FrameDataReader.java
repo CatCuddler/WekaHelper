@@ -327,12 +327,7 @@ public class FrameDataReader {
                 rangePointsXYZ[i] = new Point3d(frameData.getCalPosX(), frameData.getCalPosY(), frameData.getCalPosZ());
 
                 // collect other values over time for future analysis
-                double timeSinceLastFrame;
-                if (i > 0) {
-                    timeSinceLastFrame = frameData.getTime() - singleSensorList.get(i - 1).getTime();
-                } else {
-                    timeSinceLastFrame = 0;
-                }
+                double timeSinceLastFrame = frameData.getFrameDuration();
 
                 Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
                 Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
@@ -566,15 +561,10 @@ public class FrameDataReader {
                                         frameDataB.getCalPosY(),
                                         frameDataB.getCalPosZ());
 
+
                         // calculate current frame
+                        double timeSinceLastFrame = frameDataA.getFrameDuration();
 
-                        double timeSinceLastFrame;
-
-                        if (i > 0) {
-                            timeSinceLastFrame = frameDataA.getTime() - singleSensorA.get(i - 1).getTime();
-                        } else {
-                            timeSinceLastFrame = 0;
-                        }
 
                         distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
                         distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);

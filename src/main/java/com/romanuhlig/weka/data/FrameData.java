@@ -55,11 +55,10 @@ public class FrameData {
     @CsvBindByName
     private double time;
 
-    // acceleration and (currently) velocity have to be calculated from the previous frame,
+    // acceleration has to be calculated from the previous frame,
     // which leaves data points where that data can not be accurate
-    //TODO: - remove velocity checks, and this attribute, once properly retrieved from actual sensor
-    //boolean velocityCalculated = false;
-    boolean accelerationCalculated = false;
+    boolean derivedDataCalculated = false;
+    private double frameDuration = 0;
 
     /**
      * Empty constructor, DO NOT USE
@@ -95,24 +94,7 @@ public class FrameData {
         this.time = time;
     }
 
-    public void setAccelerationBasedOnPreviousFrame(FrameData previousFrame) {
-
-        //TODO: - remove linear velocity computation, once that data is collected live
-        // linear velocity
-        //this.linVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosX, this.calPosX, previousFrame.time, this.time);
-        //this.linVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosY, this.calPosY, previousFrame.time, this.time);
-        //this.linVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calPosZ, this.calPosZ, previousFrame.time, this.time);
-
-        //TODO: - remove angular velocity computation, once that data is collected live
-        // angular velocity
-        //this.angVelX = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotX, this.calRotX, previousFrame.time, this.time);
-        //this.angVelY = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotY, this.calRotY, previousFrame.time, this.time);
-        //this.angVelZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.calRotZ, this.calRotZ, previousFrame.time, this.time);
-
-        //this.velocityCalculated = true;
-
-
-        //if (previousFrame.velocityCalculated) {
+    public void computeAdditionalDataBasedOnPreviousFrame(FrameData previousFrame) {
 
         // linear acceleration
         this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
@@ -124,9 +106,9 @@ public class FrameData {
         this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
         this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
 
-        accelerationCalculated = true;
-        //}
+        this.frameDuration = this.time - previousFrame.time;
 
+        derivedDataCalculated = true;
     }
 
     public String getSensorPosition() {
@@ -227,9 +209,10 @@ public class FrameData {
 
 
     public boolean derivedDataWasCalculated() {
-        return
-                //velocityCalculated &&
-                accelerationCalculated;
+        return derivedDataCalculated;
     }
 
+    public double getFrameDuration() {
+        return frameDuration;
+    }
 }

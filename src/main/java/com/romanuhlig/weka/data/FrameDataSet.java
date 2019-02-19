@@ -55,7 +55,7 @@ public class FrameDataSet {
                 // compute acceleration
                 if (sensorList.size() > 1) {
                     FrameData previousFrameData = sensorList.get(sensorList.size() - 2);
-                    newFrameData.setAccelerationBasedOnPreviousFrame(previousFrameData);
+                    newFrameData.computeAdditionalDataBasedOnPreviousFrame(previousFrameData);
 
                     // remove the first pieces of data, where acceleration could not yet have been set correctly
                     if (!previousFrameData.derivedDataWasCalculated()) {
