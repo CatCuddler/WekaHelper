@@ -21,6 +21,8 @@ import java.util.*;
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
 import com.romanuhlig.weka.quickhull3d.Point3d;
 import com.romanuhlig.weka.quickhull3d.QuickHull3D;
+import com.sun.xml.internal.rngom.ast.builder.Include;
+import org.apache.commons.collections.bag.SynchronizedSortedBag;
 
 
 public class FrameDataReader {
@@ -265,20 +267,32 @@ public class FrameDataReader {
         // create new data line
         OutputFeatureVector outputFeatureVector = new OutputFeatureVector(dataSource.getSubject(), dataSource.getActivity());
 
-        ArrayList<List<FrameData>> frameDataSet = dataSource.getAllSensorLists();
+        ArrayList<List<FrameData>> allSensorLists = dataSource.getAllSensorLists();
 
-        for (List<FrameData> singleSensor : frameDataSet) {
+
+//        // collect data that can be reused for dual sensor combinations
+//        double[] rangeXforSensor = new double[allSensorLists.size()];
+//        double[] rangeZforSensor = new double[allSensorLists.size()];
+//        double[] rangeHeightforSensor = new double[allSensorLists.size()];
+//        double[] rangeXZforSensor = new double[allSensorLists.size()];
+//        double[] rangeXYZforSensor = new double[allSensorLists.size()];
+
+
+        // collect features that are calculated from the data of a single sensor
+        for (int sensorID = 0; sensorID < allSensorLists.size(); sensorID++) {
+
+            List<FrameData> singleSensorList = allSensorLists.get(sensorID);
 
             // leave out blocked sensors
-            if (TestBenchSettings.isSensorBlocked(singleSensor.get(0).getSensorPosition())) {
+            if (TestBenchSettings.isSensorBlocked(singleSensorList.get(0).getSensorPosition())) {
                 continue;
             }
 
             // values that stay true for the whole window
             double overallTimePassed =
-                    singleSensor.get(singleSensor.size() - 1).getTime()
-                            - singleSensor.get(0).getTime();
-            double bodySize = singleSensor.get(0).getScale();
+                    singleSensorList.get(singleSensorList.size() - 1).getTime()
+                            - singleSensorList.get(0).getTime();
+            double bodySize = singleSensorList.get(0).getScale();
 
             // calculate features for sensor
             // logic says that average velocity and height / range will be more affected by body size than acceleration,
@@ -300,13 +314,13 @@ public class FrameDataReader {
             SortingValueCollector AngularAcceleration = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
             // collect points in order to calculate maximum range in different dimensions
-            ArrayList<ConvexHullPoint> rangePointsXZ = new ArrayList<>(singleSensor.size());
-            Point3d[] rangePointsXYZ = new Point3d[singleSensor.size()];
+            ArrayList<ConvexHullPoint> rangePointsXZ = new ArrayList<>(singleSensorList.size());
+            Point3d[] rangePointsXYZ = new Point3d[singleSensorList.size()];
 
 
-            for (int i = 0; i < singleSensor.size(); i++) {
+            for (int i = 0; i < singleSensorList.size(); i++) {
 
-                FrameData frameData = singleSensor.get(i);
+                FrameData frameData = singleSensorList.get(i);
 
                 // collect points in order to calculate maximum range in different dimensions
                 rangePointsXZ.add(new ConvexHullPoint(frameData.getCalPosX(), frameData.getCalPosZ()));
@@ -315,7 +329,7 @@ public class FrameDataReader {
                 // collect other values over time for future analysis
                 double timeSinceLastFrame;
                 if (i > 0) {
-                    timeSinceLastFrame = frameData.getTime() - singleSensor.get(i - 1).getTime();
+                    timeSinceLastFrame = frameData.getTime() - singleSensorList.get(i - 1).getTime();
                 } else {
                     timeSinceLastFrame = 0;
                 }
@@ -420,8 +434,13 @@ public class FrameDataReader {
             addStandardFeatures(outputFeatureVector, Position_Height);
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                outputFeatureVector.addFeature(Position_X.sort_getRange());
-                outputFeatureVector.addFeature(Position_Z.sort_getRange());
+//                outputFeatureVector.addFeature(Position_X.sort_getRange());
+//                outputFeatureVector.addFeature(Position_Z.sort_getRange());
+                Position_X.adjustToLowestValueAsZero();
+                Position_Z.adjustToLowestValueAsZero();
+                addStandardFeatures(outputFeatureVector, Position_X, false, false);
+                addStandardFeatures(outputFeatureVector, Position_Z, false, false);
+
 
                 addStandardFeatures(outputFeatureVector, Velocity_X);
                 addStandardFeatures(outputFeatureVector, Velocity_Z);
@@ -447,13 +466,21 @@ public class FrameDataReader {
                 addStandardFeatures(outputFeatureVector, AngularAcceleration);
             }
 
+////             collect data for dual sensor combination features
+//            rangeXforSensor[sensorID] = Position_X.sort_getRange();
+//            rangeZforSensor[sensorID] = Position_Z.sort_getRange();
+//            rangeHeightforSensor[sensorID] = Position_Height.sort_getRange();
+//            rangeXZforSensor[sensorID] = rangeXZ;
+//            rangeXYZforSensor[sensorID] = rangeXYZ;
+
+
         }
 
 
         // collect features that depend on the relationship between two sensors
         if (TestBenchSettings.featureTagsAllowed(FeatureTag.DualSensorCombination)) {
-            for (int ssA = 0; ssA < frameDataSet.size(); ssA++) {
-                List<FrameData> singleSensorA = frameDataSet.get(ssA);
+            for (int ssA = 0; ssA < allSensorLists.size(); ssA++) {
+                List<FrameData> singleSensorA = allSensorLists.get(ssA);
 
                 if (TestBenchSettings.isSensorBlocked(singleSensorA.get(0).getSensorPosition())) {
                     continue;
@@ -466,8 +493,8 @@ public class FrameDataReader {
                 double bodySize = singleSensorA.get(0).getScale();
 
 
-                for (int ssB = ssA + 1; ssB < frameDataSet.size(); ssB++) {
-                    List<FrameData> singleSensorB = frameDataSet.get(ssB);
+                for (int ssB = ssA + 1; ssB < allSensorLists.size(); ssB++) {
+                    List<FrameData> singleSensorB = allSensorLists.get(ssB);
 
                     if (TestBenchSettings.isSensorBlocked(singleSensorB.get(0).getSensorPosition())) {
                         continue;
@@ -491,6 +518,14 @@ public class FrameDataReader {
                     SortingValueCollector differenceVelocityXZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
                     SortingValueCollector differenceVelocityXYZ = new SortingValueCollector(true, true, overallTimePassed, bodySize);
 
+//                    SortingValueCollector differenceAngularVelocityXYZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+
+
+//                    SortingValueCollector differenceAccelerationX = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+//                    SortingValueCollector differenceAccelerationZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+//                    SortingValueCollector differenceAccelerationHeight = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+//                    SortingValueCollector differenceAccelerationXZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
+//                    SortingValueCollector differenceAccelerationXYZ = new SortingValueCollector(true, false, overallTimePassed, bodySize);
 
 //                    double averageDistanceLastFrameX = 0;
 //                    double averageDistanceLastFrameZ = 0;
@@ -567,6 +602,38 @@ public class FrameDataReader {
                             differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
                             differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
 
+
+//                            differenceAccelerationX.addValue(Math.abs(frameDataA.getLinAccelerationX() - frameDataB.getLinAccelerationX()), timeSinceLastFrame);
+//                            differenceAccelerationZ.addValue(Math.abs(frameDataA.getLinAccelerationZ() - frameDataB.getLinAccelerationZ()), timeSinceLastFrame);
+//                            differenceAccelerationHeight.addValue(Math.abs(frameDataA.getLinAccelerationY() - frameDataB.getLinAccelerationY()), timeSinceLastFrame);
+//                            double AccelerationXZa = MathHelper.EuclideanNorm(
+//                                    frameDataA.getLinAccelerationX(),
+//                                    frameDataA.getLinAccelerationZ());
+//                            double AccelerationXZb = MathHelper.EuclideanNorm(
+//                                    frameDataB.getLinAccelerationX(),
+//                                    frameDataB.getLinAccelerationZ());
+//                            double AccelerationXYZa = MathHelper.EuclideanNorm(
+//                                    frameDataA.getLinAccelerationX(),
+//                                    frameDataA.getLinAccelerationY(),
+//                                    frameDataA.getLinAccelerationZ());
+//                            double AccelerationXYZb = MathHelper.EuclideanNorm(
+//                                    frameDataB.getLinAccelerationX(),
+//                                    frameDataB.getLinAccelerationY(),
+//                                    frameDataB.getLinAccelerationZ());
+//                            differenceAccelerationXZ.addValue(Math.abs(AccelerationXZa - AccelerationXZb), timeSinceLastFrame);
+//                            differenceAccelerationXYZ.addValue(Math.abs(AccelerationXYZa - AccelerationXYZb), timeSinceLastFrame);
+
+//                            double AngularVelocityXYZa =
+//                                    MathHelper.EuclideanNorm(
+//                                            frameDataA.getAngVelX(),
+//                                            frameDataA.getAngVelY(),
+//                                            frameDataA.getAngVelZ());
+//                            double AngularVelocityXYZb =
+//                                    MathHelper.EuclideanNorm(
+//                                            frameDataB.getAngVelX(),
+//                                            frameDataB.getAngVelY(),
+//                                            frameDataB.getAngVelZ());
+//                            differenceAngularVelocityXYZ.addValue((Math.abs(AngularVelocityXYZa - AngularVelocityXYZb)), timeSinceLastFrame);
                         }
 
 ////                         prepare next frame
@@ -577,25 +644,47 @@ public class FrameDataReader {
 //                        averageDistanceLastFrameXYZ = averageDistanceCurrentFrameXYZ;
                     }
 
-                    addStandardFeatures(outputFeatureVector, distanceX);
-                    addStandardFeatures(outputFeatureVector, distanceZ);
+                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                        addStandardFeatures(outputFeatureVector, distanceX);
+                        addStandardFeatures(outputFeatureVector, distanceZ);
+                    }
                     addStandardFeatures(outputFeatureVector, distanceHeight);
                     addStandardFeatures(outputFeatureVector, distanceXZ);
                     addStandardFeatures(outputFeatureVector, distanceXYZ);
 
-
+//                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
 //                    addStandardFeatures(outputFeatureVector, distanceChangeX);
 //                    addStandardFeatures(outputFeatureVector, distanceChangeZ);
+//                    }
 //                    addStandardFeatures(outputFeatureVector, distanceChangeHeight);
 //                    addStandardFeatures(outputFeatureVector, distanceChangeXZ);
 //                    addStandardFeatures(outputFeatureVector, distanceChangeXYZ);
 
-
-                    addStandardFeatures(outputFeatureVector, differenceVelocityX);
-                    addStandardFeatures(outputFeatureVector, differenceVelocityZ);
+                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                        addStandardFeatures(outputFeatureVector, differenceVelocityX);
+                        addStandardFeatures(outputFeatureVector, differenceVelocityZ);
+                    }
                     addStandardFeatures(outputFeatureVector, differenceVelocityHeight);
                     addStandardFeatures(outputFeatureVector, differenceVelocityXZ);
                     addStandardFeatures(outputFeatureVector, differenceVelocityXYZ);
+
+//                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+//                    addStandardFeatures(outputFeatureVector, differenceAccelerationX);
+//                    addStandardFeatures(outputFeatureVector, differenceAccelerationZ);
+//                    }
+//                    addStandardFeatures(outputFeatureVector, differenceAccelerationHeight);
+//                    addStandardFeatures(outputFeatureVector, differenceAccelerationXZ);
+//                    addStandardFeatures(outputFeatureVector, differenceAccelerationXYZ);
+
+//                    addStandardFeatures(outputFeatureVector, differenceAngularVelocityXYZ);
+
+
+//                    outputFeatureVector.addFeature(Math.abs(rangeXforSensor[ssA] - rangeXforSensor[ssB]));
+//                    outputFeatureVector.addFeature(Math.abs(rangeZforSensor[ssA] - rangeZforSensor[ssB]));
+//                    outputFeatureVector.addFeature(Math.abs(rangeHeightforSensor[ssA] - rangeHeightforSensor[ssB]));
+//                    outputFeatureVector.addFeature(Math.abs(rangeXZforSensor[ssA] - rangeXZforSensor[ssB]));
+//                    outputFeatureVector.addFeature(Math.abs(rangeXYZforSensor[ssA] - rangeXYZforSensor[ssB]));
+
 
                 }
             }
@@ -622,11 +711,13 @@ public class FrameDataReader {
 //            headerFields.add(sensorType + "_minimum_Height");
 //            headerFields.add(sensorType + "_range_Height");
 
-            addStandardFeatures(headerFields, sensorType, "Height");
+            addStandardFeatures(headerFields, sensorType, "Position_Height");
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                headerFields.add(sensorType + "_range_X");
-                headerFields.add(sensorType + "_range_Z");
+//                headerFields.add(sensorType + "_range_X");
+//                headerFields.add(sensorType + "_range_Z");
+                addStandardFeatures(headerFields, sensorType, "Position_X", false, false);
+                addStandardFeatures(headerFields, sensorType, "Position_Z", false, false);
 
                 addStandardFeatures(headerFields, sensorType, "Velocity_X");
                 addStandardFeatures(headerFields, sensorType, "Velocity_Z");
@@ -671,24 +762,45 @@ public class FrameDataReader {
                         continue;
                     }
 
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
+                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                        addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
+                        addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
+                    }
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
 
-
+//                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
 //                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_X");
 //                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Z");
+//                    }
 //                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_Height");
 //                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XZ");
 //                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistanceChange_XYZ");
 
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_X");
-                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Z");
+                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+                        addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_X");
+                        addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Z");
+                    }
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Height");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XZ");
                     addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XYZ");
+
+//                    if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAcceleration_X");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAcceleration_Z");
+//                    }
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAcceleration_Height");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAcceleration_XZ");
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAcceleration_XYZ");
+
+//                    addStandardFeatures(headerFields, singleSensorA + "_" + singleSensorB, "differenceAngularVelocity_XYZ");
+
+//                    headerFields.add(singleSensorA + "_" + singleSensorB + "_rangeDifference_X");
+//                    headerFields.add(singleSensorA + "_" + singleSensorB + "_rangeDifference_Z");
+//                    headerFields.add(singleSensorA + "_" + singleSensorB + "_rangeDifference_Height");
+//                    headerFields.add(singleSensorA + "_" + singleSensorB + "_rangeDifference_XZ");
+//                    headerFields.add(singleSensorA + "_" + singleSensorB + "_rangeDifference_XYZ");
 
 
                 }
@@ -707,15 +819,22 @@ public class FrameDataReader {
         return headerFields;
     }
 
-    private static void addStandardFeatures(OutputFeatureVector featureVector, SortingValueCollector valueCollector) {
+    private static void addStandardFeatures(
+            OutputFeatureVector featureVector, SortingValueCollector valueCollector,
+            boolean includeMin, boolean includeMax) {
         featureVector.addFeature(valueCollector.getAverage());
         featureVector.addFeature(valueCollector.getRootMeanSquare());
         featureVector.addFeature(valueCollector.getStandardDeviation());
         featureVector.addFeature(valueCollector.getVariance());
         featureVector.addFeature(valueCollector.getMeanAbsoluteDeviation());
         featureVector.addFeature(valueCollector.sort_getInterquartileRange());
-        featureVector.addFeature(valueCollector.sort_getMax());
-        featureVector.addFeature(valueCollector.sort_getMin());
+        if (includeMax) {
+            featureVector.addFeature(valueCollector.sort_getMax());
+        }
+        if (includeMin) {
+            featureVector.addFeature(valueCollector.sort_getMin());
+        }
+
         featureVector.addFeature(valueCollector.sort_getRange());
         featureVector.addFeature(valueCollector.getMeanCrossingRate());
 
@@ -726,15 +845,20 @@ public class FrameDataReader {
 
     }
 
-    private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute) {
+    private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute,
+                                            boolean includeMin, boolean includeMax) {
         headerFields.add(sensor + "_average_" + attribute);
         headerFields.add(sensor + "_rootMeanSquare_" + attribute);
         headerFields.add(sensor + "_standardDeviation_" + attribute);
         headerFields.add(sensor + "_variance_" + attribute);
         headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
         headerFields.add(sensor + "_interquartileRange_" + attribute);
-        headerFields.add(sensor + "_max_" + attribute);
-        headerFields.add(sensor + "_min_" + attribute);
+        if (includeMax) {
+            headerFields.add(sensor + "_max_" + attribute);
+        }
+        if (includeMin) {
+            headerFields.add(sensor + "_min_" + attribute);
+        }
         headerFields.add(sensor + "_range_" + attribute);
         headerFields.add(sensor + "_meanCrossingRate_" + attribute);
 
@@ -744,6 +868,14 @@ public class FrameDataReader {
         }
     }
 
+    private static void addStandardFeatures(ArrayList<String> headerFields, String sensor, String attribute) {
+        addStandardFeatures(headerFields, sensor, attribute, true, true);
+    }
+
+    private static void addStandardFeatures(
+            OutputFeatureVector featureVector, SortingValueCollector valueCollector) {
+        addStandardFeatures(featureVector, valueCollector, true, true);
+    }
 
     private static void writeOutputFeatureVectorToCSV(
             String filePath, ArrayList<String> headerFields, ArrayList<OutputFeatureVector> featureVectors) {

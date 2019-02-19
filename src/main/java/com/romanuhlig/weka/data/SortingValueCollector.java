@@ -55,12 +55,28 @@ public class SortingValueCollector {
     }
 
 
-    void createSortedValues() {
+    private void createSortedValues() {
         if (!createdSortedValues) {
             sortedValues = new ArrayList<>(values);
             sortedValues.sort(valueComparator);
             createdSortedValues = true;
         }
+    }
+
+
+    public void adjustToLowestValueAsZero() {
+
+        double lowestValue = Double.MAX_VALUE;
+        for (Double value : values) {
+            if (value < lowestValue) {
+                lowestValue = value;
+            }
+        }
+        for (int i = 0; i < values.size(); i++) {
+            values.set(i, values.get(i) - lowestValue);
+        }
+
+
     }
 
 

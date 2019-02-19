@@ -24,7 +24,7 @@ public class TestBenchSettings {
 
 
     // do not generate new features, read old file instead
-    private static boolean useExistingFeatureFile = true;
+    private static boolean useExistingFeatureFile = false;
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
