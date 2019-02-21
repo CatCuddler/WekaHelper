@@ -1,17 +1,46 @@
 package com.romanuhlig.weka.classification;
 
-import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AddingConfusionMatrix {
 
-    double[][] values;
-    String[] tasks;
-    Instances instances;
+    private double[][] values;
+    private String[] tasks;
+    private Instances instances;
+
+    private static HashMap<String, String> taskNameForLines = new HashMap<>();
+    private static HashMap<String, String> taskNameForColumns = new HashMap<>();
 
     private static final char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
+
+
+    static {
+        taskNameForLines.put("jogging", "Jogging");
+        taskNameForLines.put("kick", "Kick");
+        taskNameForLines.put("kickPunch", "Kick-Punch");
+        taskNameForLines.put("lateralBounding", "Lateral Bounding");
+        taskNameForLines.put("lunges", "Lunges");
+        taskNameForLines.put("punch", "Punch");
+        taskNameForLines.put("sitting", "Sitting");
+        taskNameForLines.put("squats", "Squats");
+        taskNameForLines.put("standing", "Standing");
+        taskNameForLines.put("walking", "Walking");
+        taskNameForLines.put("punch", "Punch");
+
+        taskNameForColumns.put("jogging", "Jogging");
+        taskNameForColumns.put("kick", "Kick");
+        taskNameForColumns.put("kickPunch", "Kick-Punch");
+        taskNameForColumns.put("lateralBounding", "Lat. Bound.");
+        taskNameForColumns.put("lunges", "Lunges");
+        taskNameForColumns.put("punch", "Punch");
+        taskNameForColumns.put("sitting", "Sitting");
+        taskNameForColumns.put("squats", "Squats");
+        taskNameForColumns.put("standing", "Standing");
+        taskNameForColumns.put("walking", "Walking");
+        taskNameForColumns.put("punch", "Punch");
+    }
 
 
     public void addResults(double[][] newValues, Instances trainingData) {
@@ -33,6 +62,14 @@ public class AddingConfusionMatrix {
         }
 
 
+    }
+
+    private String lineTaskName(String standardName) {
+        return taskNameForLines.get(standardName);
+    }
+
+    private String columnTaskName(String standardName) {
+        return taskNameForColumns.get(standardName);
     }
 
     public String toOutputString() {
@@ -84,18 +121,18 @@ public class AddingConfusionMatrix {
         stringBuilder.append(System.lineSeparator());
 
 //    \begin{tabular}{c|l|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
-        stringBuilder.append("\\begin{tabular}{c|l|");
+        stringBuilder.append("\\begin{tabularx}{\\textwidth}{c|l|");
         for (int i = 0; i < tasks.length; i++) {
             stringBuilder.append("C{0.8cm}|");
         }
         stringBuilder.append("}");
         stringBuilder.append(System.lineSeparator());
 
-//    \multicolumn{1}{l}{}             & \multicolumn{1}{l}{} & \multicolumn{6}{c}{predicted class}                       \\
+//    \multicolumn{1}{l}{}             & \multicolumn{1}{l}{} & \multicolumn{6}{c}{Predicted Class}                       \\
         stringBuilder.append(
                 "\\multicolumn{1}{l}{} & \\multicolumn{1}{l}{} & \\multicolumn{"
                         + tasks.length
-                        + "}{c}{\\textbf{predicted class}}");
+                        + "}{c}{\\textbf{Predicted Class}}");
         stringBuilder.append("\\\\");
         stringBuilder.append(System.lineSeparator());
 
@@ -108,7 +145,7 @@ public class AddingConfusionMatrix {
 //    \multicolumn{1}{l}{}             &                      & \rotatebox{90}{Lying\hspace{8pt}} & \rotatebox{90}{Standing\hspace{8pt}} & \rotatebox{90}{Sitting\hspace{8pt}} & \rotatebox{90}{Walking\hspace{8pt}} & \rotatebox{90}{Running\hspace{8pt}} & \rotatebox{90}{Cycling\hspace{8pt}}  \\
         stringBuilder.append("\\multicolumn{1}{l}{} & ");
         for (int i = 0; i < tasks.length; i++) {
-            stringBuilder.append("& \\rotatebox{90}{" + tasks[i] + "\\hspace{8pt}}");
+            stringBuilder.append("& \\rotatebox{90}{" + columnTaskName(tasks[i]) + "\\hspace{8pt}}");
         }
         stringBuilder.append("\\\\");
         stringBuilder.append(System.lineSeparator());
@@ -120,7 +157,7 @@ public class AddingConfusionMatrix {
         stringBuilder.append(System.lineSeparator());
 
 //    \multirow{6}{*}{\rotatebox{90}{actual class\hspace{8pt}}} & Lying                & 95   & 5       &         &         &         &          \\
-        stringBuilder.append("\\multirow{" + tasks.length + "}{*}{\\rotatebox{90}{\\textbf{actual class}\\hspace{8pt}}} ");
+        stringBuilder.append("\\multirow{" + tasks.length + "}{*}{\\rotatebox{90}{\\textbf{Actual Class}\\hspace{8pt}}} ");
         stringBuilder.append(System.lineSeparator());
 
 
@@ -136,7 +173,7 @@ public class AddingConfusionMatrix {
 //                                     & Cycling              &       &          & 20      &         &         & 80       \\
 //    \cline{2-8}
         for (int i = 0; i < tasks.length; i++) {
-            stringBuilder.append(" & " + tasks[i]);
+            stringBuilder.append(" & " + lineTaskName(tasks[i]));
 
             // determine overall number of data points for this task
             double taskSum = 0;
@@ -165,7 +202,6 @@ public class AddingConfusionMatrix {
                         stringBuilder.append("\\cellcolor{cmBadHigh!" + colorProgression + "!cmBadLow}");
                     }
 
-                    String.fo
                     stringBuilder.append((int) value);
 
                 }
@@ -178,7 +214,7 @@ public class AddingConfusionMatrix {
 
 
 //    \end{tabular}
-        stringBuilder.append("\\end{tabular}");
+        stringBuilder.append("\\end{tabularx}");
         stringBuilder.append(System.lineSeparator());
 
 //    \caption{Confusion matrix example}
