@@ -150,7 +150,12 @@ public class ClassifierFactory {
         // fit calibration models to the SVMs output (for proper probability estimates)
 //        classifier.setBuildCalibrationModels(true);
 
-//        classifier.setKernel(new NormalizedPolyKernel());
+
+        // npk slight downgrade, a bit slower
+        // RBF slower ~x15, better on lowest two but worse on 4 others, only ALL_2 instead of ALL_3
+        // Puk very slow
+//        classifier.setKernel(new RBFKernel());
+
 //        classifier.setNumDecimalPlaces(8);
 //        try {
 //            classifier.setOptions(new String[]{"-C", "0.5"});

@@ -70,6 +70,104 @@ public class AddingConfusionMatrix {
 
     }
 
+    public String toOutputStringLatex() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+//    \begin{table}
+        stringBuilder.append("\\begin{table}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \centering
+        stringBuilder.append("\\centering");
+        stringBuilder.append(System.lineSeparator());
+
+//    \begin{tabular}{c|l|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
+        stringBuilder.append("\\begin{tabular}{c|l|");
+        for (int i = 0; i < tasks.length; i++) {
+            stringBuilder.append("C{0.8cm}|");
+        }
+        stringBuilder.append("}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \multicolumn{1}{l}{}             & \multicolumn{1}{l}{} & \multicolumn{6}{c}{predicted class}                       \\
+        stringBuilder.append(
+                "\\multicolumn{1}{l}{} & \\multicolumn{1}{l}{} & \\multicolumn{"
+                        + tasks.length
+                        + "}{c}{predicted class}");
+        stringBuilder.append("\\\\");
+        stringBuilder.append(System.lineSeparator());
+
+//    \cline{3-8}
+//        \hhline{*{2}{~}|*{10}{-|}}
+
+        stringBuilder.append("\\hhline{*{2}{~}|*{" + tasks.length + "}{-|}}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \multicolumn{1}{l}{}             &                      & \rotatebox{90}{Lying\hspace{8pt}} & \rotatebox{90}{Standing\hspace{8pt}} & \rotatebox{90}{Sitting\hspace{8pt}} & \rotatebox{90}{Walking\hspace{8pt}} & \rotatebox{90}{Running\hspace{8pt}} & \rotatebox{90}{Cycling\hspace{8pt}}  \\
+        stringBuilder.append("\\multicolumn{1}{l}{} & ");
+        for (int i = 0; i < tasks.length; i++) {
+            stringBuilder.append("& \\rotatebox{90}{" + tasks[i] + "\\hspace{8pt}}");
+        }
+        stringBuilder.append("\\\\");
+        stringBuilder.append(System.lineSeparator());
+
+//    \cline{2-8}
+//        \hhline{*{1}{~|}*{11}{-|}}
+
+        stringBuilder.append("\\hhline{*{1}{~}|*{" + (tasks.length + 1) + "}{-|}}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \multirow{6}{*}{\rotatebox{90}{actual class\hspace{8pt}}} & Lying                & 95   & 5       &         &         &         &          \\
+        stringBuilder.append("\\multirow{" + tasks.length + "}{*}{\\rotatebox{90}{actual class\\hspace{8pt}}} ");
+        stringBuilder.append(System.lineSeparator());
+
+
+//    \cline{2-8}
+//                                     & Standing             & 10   & 75      & 10     & 5      &         &          \\
+//    \cline{2-8}
+//                                     & Sitting              & 500    &          & 8500     &         &         & 1000      \\
+//    \cline{2-8}
+//                                     & Walking              &       & 25       &         & 75      &         &          \\
+//    \cline{2-8}
+//                                     & Running              &       & 10       &         & 40      & 50      &          \\
+//    \cline{2-8}
+//                                     & Cycling              &       &          & 20      &         &         & 80       \\
+//    \cline{2-8}
+        for (int i = 0; i < tasks.length; i++) {
+            stringBuilder.append(" & " + tasks[i]);
+            for (int v = 0; v < values[i].length; v++) {
+                int value = (int) values[i][v];
+                if (value == 0) {
+                    stringBuilder.append(" & ");
+                } else {
+                    stringBuilder.append(" & " + value);
+                }
+            }
+            stringBuilder.append("\\\\");
+            stringBuilder.append("\\hhline{*{1}{~}|*{" + (tasks.length + 1) + "}{-|}}");
+            stringBuilder.append(System.lineSeparator());
+        }
+
+
+//    \end{tabular}
+        stringBuilder.append("\\end{tabular}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \caption{Confusion matrix example}
+        stringBuilder.append("\\caption{Confusion matrix example}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \label{confusionMatrixExample}
+        stringBuilder.append("\\label{confusionMatrixExample}");
+        stringBuilder.append(System.lineSeparator());
+
+//    \end{table}
+        stringBuilder.append("\\end{table}");
+
+
+        return stringBuilder.toString();
+    }
+
 
     private int getDigitsInHighestNumber() {
         double highestNumber = 0;

@@ -297,8 +297,15 @@ public class TestBench {
 
 
                     // confusion matrix
-//                    System.out.println(eval.toMatrixString());
-                    FileWriter.writeTextFile(eval.toMatrixString(), outputFolderSubject, "confusion matrix.txt");
+                    // output normal confusion matrix
+                    FileWriter.writeTextFile(eval.toMatrixString(),
+                            outputFolderSubject, "confusion matrix.txt");
+                    // output confusion matrix for latex
+                    AddingConfusionMatrix tasksAddingConfusionMatrix = new AddingConfusionMatrix();
+                    tasksAddingConfusionMatrix.addResults(eval.confusionMatrix(), trainingDataFinal);
+                    FileWriter.writeTextFile(tasksAddingConfusionMatrix.toOutputStringLatex(),
+                            outputFolderSubject, "confusion matrix latex.txt");
+                    // add confusion matrix to classifier summary
                     classifierAddingConfusionMatrix.addResults(eval.confusionMatrix(), trainingDataFinal);
 
                     // collect result for summaries
@@ -357,6 +364,7 @@ public class TestBench {
                 }
 
                 FileWriter.writeTextFile(classifierAddingConfusionMatrix.toOutputString(), outputFolderClassifier, "confusion matrix.txt");
+                FileWriter.writeTextFile(classifierAddingConfusionMatrix.toOutputStringLatex(), outputFolderClassifier, "confusion matrix latex.txt");
 
                 ClassificationResult classifierResultSummary = ClassificationResult.summarizeClassifierResults(classifierResults);
                 classifierResults.add(classifierResultSummary);
