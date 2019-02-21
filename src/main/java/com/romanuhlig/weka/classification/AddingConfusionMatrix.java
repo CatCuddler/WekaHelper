@@ -3,6 +3,8 @@ package com.romanuhlig.weka.classification;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
+import java.util.ArrayList;
+
 public class AddingConfusionMatrix {
 
     double[][] values;
@@ -93,7 +95,7 @@ public class AddingConfusionMatrix {
         stringBuilder.append(
                 "\\multicolumn{1}{l}{} & \\multicolumn{1}{l}{} & \\multicolumn{"
                         + tasks.length
-                        + "}{c}{predicted class}");
+                        + "}{c}{\\textbf{predicted class}}");
         stringBuilder.append("\\\\");
         stringBuilder.append(System.lineSeparator());
 
@@ -118,7 +120,7 @@ public class AddingConfusionMatrix {
         stringBuilder.append(System.lineSeparator());
 
 //    \multirow{6}{*}{\rotatebox{90}{actual class\hspace{8pt}}} & Lying                & 95   & 5       &         &         &         &          \\
-        stringBuilder.append("\\multirow{" + tasks.length + "}{*}{\\rotatebox{90}{actual class\\hspace{8pt}}} ");
+        stringBuilder.append("\\multirow{" + tasks.length + "}{*}{\\rotatebox{90}{\\textbf{actual class}\\hspace{8pt}}} ");
         stringBuilder.append(System.lineSeparator());
 
 
@@ -135,13 +137,39 @@ public class AddingConfusionMatrix {
 //    \cline{2-8}
         for (int i = 0; i < tasks.length; i++) {
             stringBuilder.append(" & " + tasks[i]);
+
+            // determine overall number of data points for this task
+            double taskSum = 0;
             for (int v = 0; v < values[i].length; v++) {
-                int value = (int) values[i][v];
-                if (value == 0) {
-                    stringBuilder.append(" & ");
-                } else {
-                    stringBuilder.append(" & " + value);
+                taskSum += values[i][v];
+            }
+
+
+            for (int v = 0; v < values[i].length; v++) {
+
+                stringBuilder.append(" & ");
+
+                double value = values[i][v];
+
+                if (value != 0) {
+
+                    // change color based on the fraction of the data for this task
+                    double colorProgression = 100 * (value / taskSum);
+
+//                    \color{blue!20!black}
+
+
+                    if (i == v) {
+                        stringBuilder.append("\\cellcolor{cmGoodHigh!" + colorProgression + "!cmGoodLow}");
+                    } else {
+                        stringBuilder.append("\\cellcolor{cmBadHigh!" + colorProgression + "!cmBadLow}");
+                    }
+
+                    String.fo
+                    stringBuilder.append((int) value);
+
                 }
+
             }
             stringBuilder.append("\\\\");
             stringBuilder.append("\\hhline{*{1}{~}|*{" + (tasks.length + 1) + "}{-|}}");
