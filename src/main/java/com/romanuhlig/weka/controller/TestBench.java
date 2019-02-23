@@ -285,7 +285,8 @@ public class TestBench {
 
                     // file output
                     // current result
-                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson(eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorPermutation);
+                    ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson
+                            (eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorPermutation, singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // model
                     if (TestBenchSettings.writeAllModelsToFolder()) {
