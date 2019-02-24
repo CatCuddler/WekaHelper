@@ -28,13 +28,14 @@ public class ClassificationResult {
     private String[] dataForCSV;
     private String sensorSummary;
     private final long timeTaken;
+    private final double accuracy;
 
 
     private ClassificationResult(String classifier, String testDataSubject,
                                  int numberOfSensors, List<String> sensorList, String sensorSummary,
                                  double averageF1Score, double averageF1zeroNAN,
                                  double minimumF1Person, double minimumF1Task,
-                                 long timeTaken) {
+                                 double accuracy, long timeTaken) {
 
         // create header for CSV writing later on, MIND THE ORDER, has to stay the same as below
         if (headerForCSV == null) {
@@ -52,6 +53,7 @@ public class ClassificationResult {
             }
             headerList.add("Sensor Summary");
             headerList.add("Subject");
+            headerList.add("Accuracy");
             headerList.add("Time Taken");
             headerForCSV = headerList.toArray(new String[headerList.size()]);
         }
@@ -74,6 +76,7 @@ public class ClassificationResult {
         }
         dataForCSVList.add(sensorSummary);
         dataForCSVList.add(testDataSubject);
+        dataForCSVList.add(Double.toString(accuracy));
         dataForCSVList.add(Long.toString(timeTaken));
         dataForCSV = dataForCSVList.toArray(new String[dataForCSVList.size()]);
 
@@ -88,6 +91,7 @@ public class ClassificationResult {
         this.minimumF1Task = minimumF1Task;
         this.sensorSummary = sensorSummary;
         this.timeTaken = timeTaken;
+        this.accuracy = accuracy;
     }
 
     public static ClassificationResult constructClassificationResultForSinglePerson(
@@ -122,7 +126,9 @@ public class ClassificationResult {
         _averageF1 /= instances.numClasses();
         _averageF1zeroNAN /= instances.numClasses();
 
-//        System.out.println("fmeasure avg: " + averageF1Score);
+        double _accuracy = evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
+
+        //        System.out.println("fmeasure avg: " + averageF1Score);
 //        System.out.println("fmeasure Wei: " + evaluation.weightedFMeasure());
 //        System.out.println("fmeasure uMA: " + evaluation.unweightedMacroFmeasure());
 //        System.out.println("fmeasure uMI: " + evaluation.unweightedMicroFmeasure());
@@ -130,7 +136,7 @@ public class ClassificationResult {
 
         ClassificationResult classificationResult = new ClassificationResult
                 (_classifier, _testDataSubject, _numberOfSensors, _sensorList, _sensorSummary,
-                        _averageF1, _averageF1zeroNAN, _averageF1, _minimumF1, timeTaken);
+                        _averageF1, _averageF1zeroNAN, _averageF1, _minimumF1, _accuracy, timeTaken);
         return classificationResult;
 
     }
@@ -145,15 +151,18 @@ public class ClassificationResult {
         double _minAvgF1Person = Double.POSITIVE_INFINITY;
         double _minimumF1Task = Double.POSITIVE_INFINITY;
         long _timeTaken = 0;
+        double _averageAccuracy = 0;
         for (ClassificationResult result : classifierResults) {
             _averageClassifierF1 += result.averageF1Score;
             _averageClassifierF1zeroNAN += result.averageF1zeroNAN;
             _minAvgF1Person = MathHelper.getMinimumWithNAN(_minAvgF1Person, result.minAvgF1Person);
             _minimumF1Task = MathHelper.getMinimumWithNAN(_minimumF1Task, result.minimumF1Task);
             _timeTaken += result.timeTaken;
+            _averageAccuracy += result.accuracy;
         }
         _averageClassifierF1 /= classifierResults.size();
         _averageClassifierF1zeroNAN /= classifierResults.size();
+        _averageAccuracy /= classifierResults.size();
 
         ClassificationResult old = classifierResults.get(0);
         String testDataSubject = "summary";
@@ -161,7 +170,7 @@ public class ClassificationResult {
         ClassificationResult summaryResult = new ClassificationResult
                 (old.classifier, testDataSubject, old.numberOfSensors, old.sensorList, old.sensorSummary,
                         _averageClassifierF1, _averageClassifierF1zeroNAN, _minAvgF1Person, _minimumF1Task,
-                        _timeTaken);
+                        _averageAccuracy, _timeTaken);
         return summaryResult;
 
     }
