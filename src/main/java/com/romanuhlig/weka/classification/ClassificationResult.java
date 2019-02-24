@@ -23,18 +23,19 @@ public class ClassificationResult {
     private final double averageF1Score;
     private final double averageF1zeroNAN;
     private final double minAvgF1Person;
-    private final double minimumF1Task;
+    private final double minimumF1PersonTask;
     private static String[] headerForCSV;
     private String[] dataForCSV;
     private String sensorSummary;
     private final long timeTaken;
     private final double accuracy;
-
+    private final double[] averageF1PerTask;
 
     private ClassificationResult(String classifier, String testDataSubject,
                                  int numberOfSensors, List<String> sensorList, String sensorSummary,
                                  double averageF1Score, double averageF1zeroNAN,
-                                 double minimumF1Person, double minimumF1Task,
+                                 double minimumF1Person, double[] averageF1PerTask,
+                                 double minimumAverageF1perTask, double minimumF1PersonTask,
                                  double accuracy, long timeTaken) {
 
         // create header for CSV writing later on, MIND THE ORDER, has to stay the same as below
@@ -44,8 +45,9 @@ public class ClassificationResult {
             headerList.add("Classifier");
             headerList.add("F1 average");
             headerList.add("F1 average (NAN as Zero)");
-            headerList.add("F1 min Person");
-            headerList.add("F1 min Task single Person");
+            headerList.add("F1 min Subject avg");
+            headerList.add("F1 min Task avg");
+            headerList.add("F1 min single Task & Subject");
             headerList.add("Number of Sensors");
             //            headerList.add("sensorList");
             for (String sensor : GlobalData.getAllAvailableSensors()) {
@@ -58,13 +60,15 @@ public class ClassificationResult {
             headerForCSV = headerList.toArray(new String[headerList.size()]);
         }
 
+
         // collect data for CSV writing later on, MIND THE ORDER
         LinkedList<String> dataForCSVList = new LinkedList<>();
         dataForCSVList.add(classifier);
         dataForCSVList.add(Double.toString(averageF1Score));
         dataForCSVList.add(Double.toString(averageF1zeroNAN));
         dataForCSVList.add(Double.toString(minimumF1Person));
-        dataForCSVList.add(Double.toString(minimumF1Task));
+        dataForCSVList.add(Double.toString(minimumAverageF1perTask));
+        dataForCSVList.add(Double.toString(minimumF1PersonTask));
         dataForCSVList.add(Integer.toString(numberOfSensors));
         //        dataForCSVList.add(sensorList);
         for (String sensor : GlobalData.getAllAvailableSensors()) {
@@ -88,10 +92,11 @@ public class ClassificationResult {
         this.averageF1Score = averageF1Score;
         this.averageF1zeroNAN = averageF1zeroNAN;
         this.minAvgF1Person = minimumF1Person;
-        this.minimumF1Task = minimumF1Task;
+        this.minimumF1PersonTask = minimumF1PersonTask;
         this.sensorSummary = sensorSummary;
         this.timeTaken = timeTaken;
         this.accuracy = accuracy;
+        this.averageF1PerTask = averageF1PerTask;
     }
 
     public static ClassificationResult constructClassificationResultForSinglePerson(
@@ -110,11 +115,12 @@ public class ClassificationResult {
         double _averageF1 = 0;
         double _averageF1zeroNAN = 0;
         double _minimumF1 = Double.POSITIVE_INFINITY;
+        double[] _averageF1perTask = new double[instances.numClasses()];
         for (int i = 0; i < instances.numClasses(); i++) {
             _averageF1 += evaluation.fMeasure(i);
             _averageF1zeroNAN += MathHelper.getZeroIfNAN(evaluation.fMeasure(i));
             _minimumF1 = MathHelper.getMinimumWithNAN(_minimumF1, evaluation.fMeasure(i));
-
+            _averageF1perTask[i] = evaluation.fMeasure(i);
 //            System.out.println("recall " + i + " " + evaluation.recall(i));
 //            System.out.println("precision " + i + " " + evaluation.precision(i));
 //            System.out.println("fmeasure " + i + " " + evaluation.fMeasure(i));
@@ -136,7 +142,8 @@ public class ClassificationResult {
 
         ClassificationResult classificationResult = new ClassificationResult
                 (_classifier, _testDataSubject, _numberOfSensors, _sensorList, _sensorSummary,
-                        _averageF1, _averageF1zeroNAN, _averageF1, _minimumF1, _accuracy, timeTaken);
+                        _averageF1, _averageF1zeroNAN, _averageF1, _averageF1perTask, _minimumF1, _minimumF1,
+                        _accuracy, timeTaken);
         return classificationResult;
 
     }
@@ -149,27 +156,41 @@ public class ClassificationResult {
         double _averageClassifierF1 = 0;
         double _averageClassifierF1zeroNAN = 0;
         double _minAvgF1Person = Double.POSITIVE_INFINITY;
-        double _minimumF1Task = Double.POSITIVE_INFINITY;
+        double _minimumF1PersonTask = Double.POSITIVE_INFINITY;
         long _timeTaken = 0;
         double _averageAccuracy = 0;
+        double[] _averageF1perTask = new double[classifierResults.get(0).averageF1PerTask.length];
         for (ClassificationResult result : classifierResults) {
             _averageClassifierF1 += result.averageF1Score;
             _averageClassifierF1zeroNAN += result.averageF1zeroNAN;
             _minAvgF1Person = MathHelper.getMinimumWithNAN(_minAvgF1Person, result.minAvgF1Person);
-            _minimumF1Task = MathHelper.getMinimumWithNAN(_minimumF1Task, result.minimumF1Task);
+            _minimumF1PersonTask = MathHelper.getMinimumWithNAN(_minimumF1PersonTask, result.minimumF1PersonTask);
             _timeTaken += result.timeTaken;
             _averageAccuracy += result.accuracy;
+            for (int i = 0; i < _averageF1perTask.length; i++) {
+                _averageF1perTask[i] += result.averageF1PerTask[i];
+            }
         }
         _averageClassifierF1 /= classifierResults.size();
         _averageClassifierF1zeroNAN /= classifierResults.size();
         _averageAccuracy /= classifierResults.size();
+        for (int i = 0; i < _averageF1perTask.length; i++) {
+            _averageF1perTask[i] /= classifierResults.size();
+        }
+
+        // determine minimum average F1 per task
+        double _minimumAverageF1PerTask = Double.MAX_VALUE;
+        for (int i = 0; i < _averageF1perTask.length; i++) {
+            _minimumAverageF1PerTask = MathHelper.getMinimumWithNAN(_minimumAverageF1PerTask, _averageF1perTask[i]);
+        }
 
         ClassificationResult old = classifierResults.get(0);
         String testDataSubject = "summary";
 
         ClassificationResult summaryResult = new ClassificationResult
                 (old.classifier, testDataSubject, old.numberOfSensors, old.sensorList, old.sensorSummary,
-                        _averageClassifierF1, _averageClassifierF1zeroNAN, _minAvgF1Person, _minimumF1Task,
+                        _averageClassifierF1, _averageClassifierF1zeroNAN, _minAvgF1Person,
+                        _averageF1perTask, _minimumAverageF1PerTask, _minimumF1PersonTask,
                         _averageAccuracy, _timeTaken);
         return summaryResult;
 
@@ -204,8 +225,8 @@ public class ClassificationResult {
         return minAvgF1Person;
     }
 
-    public double getMinimumF1Task() {
-        return minimumF1Task;
+    public double getMinimumF1PersonTask() {
+        return minimumF1PersonTask;
     }
 
     public static ClassificationResultF1Comparator getF1Comparator() {
@@ -216,8 +237,8 @@ public class ClassificationResult {
     public static class ClassificationResultF1Comparator implements Comparator<ClassificationResult> {
         public int compare(ClassificationResult c1, ClassificationResult c2) {
 
-            if (Double.isNaN(c1.getMinimumF1Task())) {
-                if (Double.isNaN(c2.getMinimumF1Task())) {
+            if (Double.isNaN(c1.getMinimumF1PersonTask())) {
+                if (Double.isNaN(c2.getMinimumF1PersonTask())) {
 
                     // if min f1 is NAN for both, do the same test for non-NAN-f1 instead
                     if (Double.isNaN(c1.getAverageF1zeroNAN())) {
@@ -235,10 +256,10 @@ public class ClassificationResult {
                 } else {
                     return 1;
                 }
-            } else if (Double.isNaN(c2.getMinimumF1Task())) {
+            } else if (Double.isNaN(c2.getMinimumF1PersonTask())) {
                 return -1;
             } else {
-                return Double.compare(c2.getMinimumF1Task(), c1.getMinimumF1Task());
+                return Double.compare(c2.getMinimumF1PersonTask(), c1.getMinimumF1PersonTask());
             }
 
         }
