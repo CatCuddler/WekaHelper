@@ -39,6 +39,7 @@ public class ClassificationResult {
         dfs.setDecimalSeparator('.');
         tableDoubleFormatter.setDecimalFormatSymbols(dfs);
 
+        // use shorter identifiers for table output of sensors
         sensorNamesForTable = new HashMap<>();
         sensorNamesForTable.put("head", "He");
         sensorNamesForTable.put("hip", "Hi");

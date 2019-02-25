@@ -117,13 +117,13 @@ public class AddingConfusionMatrix {
         stringBuilder.append(System.lineSeparator());
 
 //    \centering
-        stringBuilder.append("\\centering");
+        stringBuilder.append("\\begin{adjustbox}{max width=\\confusionMatrixWidth,center}");
         stringBuilder.append(System.lineSeparator());
 
 //    \begin{tabular}{c|l|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|C{1cm}|}
         stringBuilder.append("\\begin{tabularx}{\\textwidth}{c|l|");
         for (int i = 0; i < tasks.length; i++) {
-            stringBuilder.append("C{0.8cm}|");
+            stringBuilder.append("C{\\confusionMatrixColumnWidth}|");
         }
         stringBuilder.append("}");
         stringBuilder.append(System.lineSeparator());
@@ -145,7 +145,7 @@ public class AddingConfusionMatrix {
 //    \multicolumn{1}{l}{}             &                      & \rotatebox{90}{Lying\hspace{8pt}} & \rotatebox{90}{Standing\hspace{8pt}} & \rotatebox{90}{Sitting\hspace{8pt}} & \rotatebox{90}{Walking\hspace{8pt}} & \rotatebox{90}{Running\hspace{8pt}} & \rotatebox{90}{Cycling\hspace{8pt}}  \\
         stringBuilder.append("\\multicolumn{1}{l}{} & ");
         for (int i = 0; i < tasks.length; i++) {
-            stringBuilder.append("& \\rotatebox{90}{" + columnTaskName(tasks[i]) + "\\hspace{8pt}}");
+            stringBuilder.append("& \\rotatebox{90}{\\hspace{1pt}" + columnTaskName(tasks[i]) + "\\hspace{6pt}}");
         }
         stringBuilder.append("\\\\");
         stringBuilder.append(System.lineSeparator());
@@ -215,6 +215,9 @@ public class AddingConfusionMatrix {
 
 //    \end{tabular}
         stringBuilder.append("\\end{tabularx}");
+        stringBuilder.append(System.lineSeparator());
+
+        stringBuilder.append(" \\end{adjustbox}");
         stringBuilder.append(System.lineSeparator());
 
 //    \caption{Confusion matrix example}
