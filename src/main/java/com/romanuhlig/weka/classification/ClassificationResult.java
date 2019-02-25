@@ -316,7 +316,7 @@ public class ClassificationResult {
 
     private String f1ResultForTable(double value) {
         if (Double.isNaN(value)) {
-            return "invalid"; //"incalculable";
+            return "\\tableIncalculable"; //"incalculable";
         } else if (value == 1) {
             return "1.0";
         } else {
