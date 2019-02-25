@@ -7,10 +7,9 @@ import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.*;
 
 public class ClassificationResult {
 
@@ -30,6 +29,31 @@ public class ClassificationResult {
     private final long timeTaken;
     private final double accuracy;
     private final double[] averageF1PerTask;
+    private static final DecimalFormat tableDoubleFormatter;
+    private static final HashMap<String, String> sensorNamesForTable;
+
+    static {
+        // fort table output, use "." as decimal separator regardless of locale, and round to six digits
+        tableDoubleFormatter = new DecimalFormat("0.000000");
+        DecimalFormatSymbols dfs = tableDoubleFormatter.getDecimalFormatSymbols();
+        dfs.setDecimalSeparator('.');
+        tableDoubleFormatter.setDecimalFormatSymbols(dfs);
+
+        sensorNamesForTable = new HashMap<>();
+        sensorNamesForTable.put("head", "He");
+        sensorNamesForTable.put("hip", "Hi");
+        sensorNamesForTable.put("lFoot", "lF");
+        sensorNamesForTable.put("lForeArm", "lFA");
+        sensorNamesForTable.put("lHand", "lH");
+        sensorNamesForTable.put("lLeg", "lL");
+        sensorNamesForTable.put("rArm", "rA");
+        sensorNamesForTable.put("rFoot", "rF");
+        sensorNamesForTable.put("rForeArm", "rFA");
+        sensorNamesForTable.put("rHand", "rH");
+        sensorNamesForTable.put("rLeg", "rL");
+        sensorNamesForTable.put("spine", "Sp");
+
+    }
 
     private ClassificationResult(String classifier, String testDataSubject,
                                  int numberOfSensors, List<String> sensorList, String sensorSummary,
@@ -43,20 +67,27 @@ public class ClassificationResult {
             LinkedList<String> headerList = new LinkedList<>();
             headerList = new LinkedList<>();
             headerList.add("Classifier");
-            headerList.add("F1 average");
-            headerList.add("F1 average (NAN as Zero)");
-            headerList.add("F1 min Subject avg");
-            headerList.add("F1 min Task avg");
-            headerList.add("F1 min single Task & Subject");
-            headerList.add("Number of Sensors");
+            headerList.add("F1-avg");
+            headerList.add("F1-avg-nan-as-zero");
+            headerList.add("F1-min-subject-avg");
+            headerList.add("F1-min-task-avg");
+            headerList.add("F1-min-single-task-subject");
+            headerList.add("Number-of-sensors");
             //            headerList.add("sensorList");
             for (String sensor : GlobalData.getAllAvailableSensors()) {
-                headerList.add(sensor);
+                headerList.add(getSensorNameForTable(sensor));
             }
-            headerList.add("Sensor Summary");
+            headerList.add("Sensor-summary");
             headerList.add("Subject");
             headerList.add("Accuracy");
-            headerList.add("Time Taken");
+            headerList.add("Time-taken");
+            headerList.add("color-F1-avg");
+            headerList.add("color-F1-avg-nan-as-zero");
+            headerList.add("color-F1-min-subject-avg");
+            headerList.add("color-F1-min-task-avg");
+            headerList.add("color-F1-min-single-task-subject");
+            headerList.add("color-Accuracy");
+
             headerForCSV = headerList.toArray(new String[headerList.size()]);
         }
 
@@ -64,24 +95,31 @@ public class ClassificationResult {
         // collect data for CSV writing later on, MIND THE ORDER
         LinkedList<String> dataForCSVList = new LinkedList<>();
         dataForCSVList.add(classifier);
-        dataForCSVList.add(Double.toString(averageF1Score));
-        dataForCSVList.add(Double.toString(averageF1zeroNAN));
-        dataForCSVList.add(Double.toString(minimumF1Person));
-        dataForCSVList.add(Double.toString(minimumAverageF1perTask));
-        dataForCSVList.add(Double.toString(minimumF1PersonTask));
+        dataForCSVList.add(f1ResultForTable(averageF1Score));
+        dataForCSVList.add(f1ResultForTable(averageF1zeroNAN));
+        dataForCSVList.add(f1ResultForTable(minimumF1Person));
+        dataForCSVList.add(f1ResultForTable(minimumAverageF1perTask));
+        dataForCSVList.add(f1ResultForTable(minimumF1PersonTask));
         dataForCSVList.add(Integer.toString(numberOfSensors));
         //        dataForCSVList.add(sensorList);
         for (String sensor : GlobalData.getAllAvailableSensors()) {
             if (sensorList.contains(sensor)) {
-                dataForCSVList.add(sensor);
+                dataForCSVList.add(getSensorNameForTable(sensor));
             } else {
                 dataForCSVList.add(" ");
             }
         }
         dataForCSVList.add(sensorSummary);
         dataForCSVList.add(testDataSubject);
-        dataForCSVList.add(Double.toString(accuracy));
+        dataForCSVList.add(f1ResultForTable(accuracy));
         dataForCSVList.add(Long.toString(timeTaken));
+        dataForCSVList.add(f1ColorForTable(averageF1Score));
+        dataForCSVList.add(f1ColorForTable(averageF1zeroNAN));
+        dataForCSVList.add(f1ColorForTable(minimumF1Person));
+        dataForCSVList.add(f1ColorForTable(minimumAverageF1perTask));
+        dataForCSVList.add(f1ColorForTable(minimumF1PersonTask));
+        dataForCSVList.add(f1ColorForTable(accuracy));
+
         dataForCSV = dataForCSVList.toArray(new String[dataForCSVList.size()]);
 
         // collect original data for comparisons
@@ -272,5 +310,38 @@ public class ClassificationResult {
 
     public String[] getDataForCSV() {
         return dataForCSV;
+    }
+
+
+    private String f1ResultForTable(double value) {
+        if (Double.isNaN(value)) {
+            return "invalid"; //"incalculable";
+        } else if (value == 1) {
+            return "1.0";
+        } else {
+            return ClassificationResult.tableDoubleFormatter.format(value);
+        }
+    }
+
+    private String f1ColorForTable(double value) {
+        if (Double.isNaN(value)) {
+            return "\\cellcolor{tbTerrible}";
+        } else if (value == 1) {
+            return "\\cellcolor{tbPerfect}";
+        } else {
+            double breakPoint = 0.99;
+
+            if (value <= breakPoint) {
+                double colorProgression = 100 * (value / breakPoint);
+                return "\\cellcolor{tbAverage!" + colorProgression + "!tbBad}";
+            } else {
+                double colorProgression = 100 * ((value - breakPoint) / (1 - breakPoint));
+                return "\\cellcolor{tbGood!" + colorProgression + "!tbAverage}";
+            }
+        }
+    }
+
+    private String getSensorNameForTable(String sensor) {
+        return sensorNamesForTable.get(sensor);
     }
 }
