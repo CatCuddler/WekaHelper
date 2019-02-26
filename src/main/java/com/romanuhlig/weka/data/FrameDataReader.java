@@ -5,7 +5,6 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.romanuhlig.weka.ConvexHull.ConvexHull;
 import com.romanuhlig.weka.ConvexHull.ConvexHullPoint;
-import com.romanuhlig.weka.controller.TestBench;
 import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.io.FeatureExtractionResults;
 import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
@@ -21,8 +20,6 @@ import java.util.*;
 import com.romanuhlig.weka.controller.TestBenchSettings.FeatureTag;
 import com.romanuhlig.weka.quickhull3d.Point3d;
 import com.romanuhlig.weka.quickhull3d.QuickHull3D;
-import com.sun.xml.internal.rngom.ast.builder.Include;
-import org.apache.commons.collections.bag.SynchronizedSortedBag;
 
 
 public class FrameDataReader {
@@ -97,7 +94,7 @@ public class FrameDataReader {
 
         ArrayList<FrameDataSet> windows = new ArrayList<>();
         for (FrameDataSet frameDataSet : originalFrameDataSets) {
-            ArrayList<FrameDataSet> dataSetWindows = frameDataSet.separateFrameDataIntoWindows(windowSize, timeBetweenWindows);
+            ArrayList<FrameDataSet> dataSetWindows = frameDataSet.separateFrameDataIntoValidWindows(windowSize, timeBetweenWindows);
             windows.addAll(dataSetWindows);
         }
 

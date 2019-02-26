@@ -39,20 +39,20 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-            {"lForeArm", "lHand"}
+//            {"lForeArm", "lHand"}
 
 
-//            {"rForeArm", "lLeg"}
-//            ,
-//            {"rForeArm", "rLeg"}
-//            ,
-//            {"rArm", "lLeg"}
-//            ,
-//            {"rArm", "rLeg"}
-//            ,
-//            {"lForeArm", "lLeg"}
-//            ,
-//            {"lForeArm", "rLeg"}
+            {"rForeArm", "lLeg"}
+            ,
+            {"rForeArm", "rLeg"}
+            ,
+            {"rArm", "lLeg"}
+            ,
+            {"rArm", "rLeg"}
+            ,
+            {"lForeArm", "lLeg"}
+            ,
+            {"lForeArm", "rLeg"}
 //            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics

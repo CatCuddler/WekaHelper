@@ -1,5 +1,8 @@
 package com.romanuhlig.weka.data;
 
+import com.romanuhlig.weka.math.MathHelper;
+import com.sun.tools.corba.se.idl.constExpr.ShiftLeft;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -17,6 +20,8 @@ public class FrameDataSet {
 
     private final String activity;
 
+    private double timeOfLastAddedEntry;
+
     public FrameDataSet(String subject, String activity) {
         this.subject = subject;
         this.activity = activity;
@@ -33,6 +38,8 @@ public class FrameDataSet {
         for (FrameData frameData : originalFrameData) {
             addFrameData(frameData);
         }
+        // check data consistency for last frame
+        checkDataConsistencyForPreviousFrame();
     }
 
     public FrameDataSet(ArrayList<List<FrameData>> allSensorLists, String subject, String activity) {
@@ -43,6 +50,12 @@ public class FrameDataSet {
 
 
     public void addFrameData(FrameData newFrameData) {
+
+        if (!allSensorLists.isEmpty() && newFrameData.getTime() != timeOfLastAddedEntry) {
+            checkDataConsistencyForPreviousFrame();
+        }
+
+        timeOfLastAddedEntry = newFrameData.getTime();
 
         boolean sensorPositionAlreadyKnown = false;
 
@@ -75,7 +88,129 @@ public class FrameDataSet {
             newSensorList.add(newFrameData);
             addNewSensorListAndSortByPosition(newSensorList);
         }
+
     }
+
+    private void checkDataConsistencyForPreviousFrame() {
+
+//        System.out.println("checking");
+
+        int latestIndex = allSensorLists.get(0).size() - 1;
+//        System.out.println("1");
+
+//        System.out.println("all sensors:");
+//        for (int i = 0; i < allSensorLists.size(); i++) {
+//            System.out.println(allSensorLists.get(i).get(latestIndex).getSensorPosition());
+//        }
+
+        for (int a = 0; a < allSensorLists.size(); a++) {
+
+            FrameData frameDataA = allSensorLists.get(a).get(latestIndex);
+
+            // single sensor checks
+            // height can always be checked for sanity
+            if (frameDataA.getSensorPosition().equals("lForeArm")
+                    || frameDataA.getSensorPosition().equals("rForeArm")
+                    || frameDataA.getSensorPosition().equals("lHand")
+                    || frameDataA.getSensorPosition().equals("rHand")) {
+                if (frameDataA.getCalPosY() > 3.0) {
+                    frameDataA.setInvalid();
+                }
+            } else if (frameDataA.getSensorPosition().equals("head")) {
+                if (frameDataA.getCalPosY() > 2.75) {
+                    frameDataA.setInvalid();
+                }
+            } else if (frameDataA.getSensorPosition().equals("rArm")) {
+                if (frameDataA.getCalPosY() > 2.5) {
+                    frameDataA.setInvalid();
+                }
+            } else if (frameDataA.getSensorPosition().equals("spine")) {
+                if (frameDataA.getCalPosY() > 2.25) {
+                    frameDataA.setInvalid();
+                }
+            } else if (frameDataA.getSensorPosition().equals("hip")) {
+                if (frameDataA.getCalPosY() > 1.5) {
+                    frameDataA.setInvalid();
+                }
+            } else if (frameDataA.getSensorPosition().equals("lLeg")
+                    || frameDataA.getSensorPosition().equals("rLeg")
+                    || frameDataA.getSensorPosition().equals("lFoot")
+                    || frameDataA.getSensorPosition().equals("rFoot")) {
+                if (frameDataA.getCalPosY() > 1.0) {
+                    frameDataA.setInvalid();
+                }
+            }
+
+            for (int b = a + 1; b < allSensorLists.size(); b++) {
+//                System.out.println("3");
+
+                FrameData frameDataB = allSensorLists.get(b).get(latestIndex);
+
+                double distance = MathHelper.distance(frameDataA, frameDataB);
+
+                // no distance should be higher than this, no matter which sensor combination
+                if (distance > 3.5) {
+                    frameDataA.setInvalid();
+                    frameDataB.setInvalid();
+                }
+
+                // dual sensor checks
+                // sensor lists are sorted alphabetically, dual sensor checks have to list the "lower" one first
+                if (frameDataA.getSensorPosition().equals("head")) {
+                    if (frameDataB.getSensorPosition().equals("spine")) {
+                        if (distance > 0.95) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("hip")) {
+                    if (frameDataB.getSensorPosition().equals("spine")) {
+                        if (distance > 0.9) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("lFoot")) {
+                    if (frameDataB.getSensorPosition().equals("lLeg")) {
+                        if (distance > 0.5) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("lForeArm")) {
+                    if (frameDataB.getSensorPosition().equals("lHand")) {
+                        if (distance > 0.5) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("rArm")) {
+                    if (frameDataB.getSensorPosition().equals("rForeArm")) {
+                        if (distance > 0.6) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("rFoot")) {
+                    if (frameDataB.getSensorPosition().equals("rLeg")) {
+                        if (distance > 0.5) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                } else if (frameDataA.getSensorPosition().equals("rForeArm")) {
+                    if (frameDataB.getSensorPosition().equals("rHand")) {
+                        if (distance > 0.5) {
+                            frameDataA.setInvalid();
+                            frameDataB.setInvalid();
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
 
     void addNewSensorListAndSortByPosition(ArrayList<FrameData> newSensorList) {
 
@@ -99,8 +234,9 @@ public class FrameDataSet {
         return allSensorLists;
     }
 
+    static int segmentsLeftOut = 0;
 
-    public ArrayList<FrameDataSet> separateFrameDataIntoWindows(double windowSize, double timeBetweenWindows) {
+    public ArrayList<FrameDataSet> separateFrameDataIntoValidWindows(double windowSize, double timeBetweenWindows) {
 
         // get first point in time
         List<FrameData> firstSensorList = allSensorLists.get(0);
@@ -142,7 +278,15 @@ public class FrameDataSet {
                     List<FrameData> sensorSegment = sensorList.subList(startIndex, endIndex);
                     newFrameDataSegment.add(sensorSegment);
                 }
-                frameDataSegments.add(new FrameDataSet(newFrameDataSegment, subject, activity));
+
+                FrameDataSet newFrameDataSet = new FrameDataSet(newFrameDataSegment, subject, activity);
+
+                if (newFrameDataSet.includesOnlyValidData()) {
+                    frameDataSegments.add(newFrameDataSet);
+                } else {
+                    System.out.println("segments left out:  " + segmentsLeftOut++);
+                }
+
 
                 // update segment indexes and time
                 potentialSegmentStartIndexes.removeFirst();
@@ -153,6 +297,17 @@ public class FrameDataSet {
 
         return frameDataSegments;
 
+    }
+
+    private boolean includesOnlyValidData() {
+        for (List<FrameData> sensor : allSensorLists) {
+            for (FrameData frameData : sensor) {
+                if (frameData.includesInvalidData()) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public FrameDataSet getLatestDataForWindowSizeAndRemoveEarlierData(double windowSize) {

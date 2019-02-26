@@ -1,5 +1,7 @@
 package com.romanuhlig.weka.math;
 
+import com.romanuhlig.weka.data.FrameData;
+
 import java.util.Vector;
 
 public class MathHelper {
@@ -57,6 +59,12 @@ public class MathHelper {
 
     public static double distance(double x1, double x2) {
         return Math.abs(x2 - x1);
+    }
+
+    public static double distance(FrameData frameDataA, FrameData frameDataB) {
+        return distance(
+                frameDataA.getCalPosX(), frameDataA.getCalPosY(), frameDataA.getCalPosZ(),
+                frameDataB.getCalPosX(), frameDataB.getCalPosY(), frameDataB.getCalPosZ());
     }
 
 

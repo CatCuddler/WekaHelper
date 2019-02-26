@@ -60,6 +60,10 @@ public class FrameData {
     boolean derivedDataCalculated = false;
     private double frameDuration = 0;
 
+    // whether invalid values were detected while reading the data
+    private boolean invalid = false;
+
+
     /**
      * Empty constructor, DO NOT USE
      * Required by OpenCSV to fill class automatically when reading from csv file, but should not be used manually
@@ -215,4 +219,13 @@ public class FrameData {
     public double getFrameDuration() {
         return frameDuration;
     }
+
+    public void setInvalid() {
+        this.invalid = true;
+    }
+
+    public boolean includesInvalidData(){
+        return invalid;
+    }
+
 }
