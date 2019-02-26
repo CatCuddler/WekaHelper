@@ -7,6 +7,7 @@ import com.romanuhlig.weka.io.SensorPermutation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 
 
 public class TestBenchSettings {
@@ -24,7 +25,8 @@ public class TestBenchSettings {
 
 
     // do not generate new features, read old file instead
-    private static boolean useExistingFeatureFile = true;
+    private static boolean useExistingFeatureFile = false;
+    private static String forceFolderName = "";
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
@@ -37,17 +39,58 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-            {"rForeArm", "lLeg"}
-            ,
-            {"rForeArm", "rLeg"}
-            ,
-            {"rArm", "lLeg"}
-            ,
-            {"rArm", "rLeg"}
-            ,
-            {"lForeArm", "lLeg"}
-            ,
-            {"lForeArm", "rLeg"}
+            {"lForeArm", "lHand"}
+
+
+//            {"rForeArm", "lLeg"}
+//            ,
+//            {"rForeArm", "rLeg"}
+//            ,
+//            {"rArm", "lLeg"}
+//            ,
+//            {"rArm", "rLeg"}
+//            ,
+//            {"lForeArm", "lLeg"}
+//            ,
+//            {"lForeArm", "rLeg"}
+//            {"head"},                                                                       // HMD
+//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
+//            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
+//            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+//            {"lHand", "rHand"},                                                             // Hands
+//            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
+//            {"lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
+//            {"lForeArm", "rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
+//            {"rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
+
+//            {"head"},                                                                       // HMD
+//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
+//            {"head", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
+//            {"head", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+//            {"lHand", "rHand"},                                                             // Hands
+//            {"rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
+//            {"rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
+
+//            {"head"},                                                                       // HMD
+//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
+//            {"head", "lForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
+//            {"head", "lForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+//            {"lHand", "rHand"},                                                             // Hands
+//            {"lForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
+//            {"lForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
+
+    };
+
+    private static String[][] minimumSensorPermuation = new String[][]{
+            {"head"},                                                                       // HMD
+            {"rForeArm"},
+            {"head", "lHand", "rHand"},
+//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
+//            {"head", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
+//            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+//            {"lHand", "rHand"},                                                     // HMD + Hands
+//            {"hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
+//            {"lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
     };
 
     // types of features to disallow
@@ -64,7 +107,7 @@ public class TestBenchSettings {
     private static int minimumNumberOfTrackers = -111;
     private static int maximumNumberOfTrackers = 1;
     private static int minimumNumberOfSensors = -111;
-    private static int maximumNumberOfSensors = 1;
+    private static int maximumNumberOfSensors = 15;
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 5;
@@ -159,6 +202,11 @@ public class TestBenchSettings {
     }
 
     public static String summarySingleLine() {
+
+        if (forceFolderName != null && forceFolderName != "") {
+            return forceFolderName;
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
 
         stringBuilder.append("C");
@@ -327,6 +375,46 @@ public class TestBenchSettings {
 
     }
 
+
+    public static boolean doesNotFulfillMinimumSensorRequirements(SensorPermutation sensorPermutation) {
+
+        if (minimumSensorPermuation.length == 0) {
+            return false;
+        } else {
+
+            ArrayList<String> sensorsInPermutation = sensorPermutation.getIncludedSensors();
+
+            for (int i = 0; i < minimumSensorPermuation.length; i++) {
+
+                String[] allowedSensorPermutation = minimumSensorPermuation[i];
+
+                if (allowedSensorPermutation.length + maximumNumberOfTrackers >= sensorsInPermutation.size()) {
+
+                    HashSet<String> allowedCombination = new HashSet<>(Arrays.asList(allowedSensorPermutation));
+                    HashSet<String> sensorsIncluded = new HashSet<>(sensorsInPermutation);
+
+                    if (sensorsIncluded.containsAll(allowedCombination)) {
+                        if (sensorsIncluded.size() == allowedCombination.size()) {
+                            return false;
+                        } else {
+                            sensorsIncluded.removeAll(allowedCombination);
+                            if (!sensorsIncluded.contains("lHand") && !sensorsIncluded.contains("rHand")
+                                    && !sensorsIncluded.contains("head")) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+
+        }
+
+
+        return true;
+    }
+
+
     public static boolean isSensorBlocked(String sensor) {
         // do not block sensor if no specific combination was requested
         if (onlyAllowSensorPermutations.length == 0) {
@@ -351,6 +439,10 @@ public class TestBenchSettings {
 
     public static boolean specificSensorCombinationRequested() {
         return onlyAllowSensorPermutations.length > 0;
+    }
+
+    public static boolean minimumSensorCombinationRequested() {
+        return minimumSensorPermuation.length > 0;
     }
 
 

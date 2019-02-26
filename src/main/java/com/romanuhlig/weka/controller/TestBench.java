@@ -60,8 +60,15 @@ public class TestBench {
                     continue;
                 }
 
+            } else if (TestBenchSettings.minimumSensorCombinationRequested()) {
+
+                if (TestBenchSettings.doesNotFulfillMinimumSensorRequirements(sensorPermutation)) {
+                    sensorPermutations.remove(i);
+                    continue;
+                }
             } else {
                 // otherwise, check all individual criteria
+
 
                 // check for hand controller inclusion
                 switch (TestBenchSettings.getSensorUsageHandControllers()) {
