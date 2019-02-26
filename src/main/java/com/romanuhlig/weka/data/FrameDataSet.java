@@ -3,10 +3,7 @@ package com.romanuhlig.weka.data;
 import com.romanuhlig.weka.math.MathHelper;
 import com.sun.tools.corba.se.idl.constExpr.ShiftLeft;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents all Data collected for one user, and one task
@@ -156,56 +153,93 @@ public class FrameDataSet {
 
                 // dual sensor checks
                 // sensor lists are sorted alphabetically, dual sensor checks have to list the "lower" one first
-                if (frameDataA.getSensorPosition().equals("head")) {
-                    if (frameDataB.getSensorPosition().equals("spine")) {
-                        if (distance > 0.95) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                switch (frameDataA.getSensorPosition()) {
+                    case "head":
+                        if (frameDataB.getSensorPosition().equals("spine")) {
+                            if (distance > 0.95) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
+                        } else if (frameDataB.getSensorPosition().equals("lForeArm")
+                                || frameDataB.getSensorPosition().equals("rForeArm")) {
+                            if (distance > 1.5) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("hip")) {
-                    if (frameDataB.getSensorPosition().equals("spine")) {
-                        if (distance > 0.9) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "hip":
+                        if (frameDataB.getSensorPosition().equals("spine")) {
+                            if (distance > 0.9) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
+                        } else if (frameDataB.getSensorPosition().equals("lLeg")
+                                || frameDataB.getSensorPosition().equals("rLeg")) {
+                            if (distance > 1.4) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("lFoot")) {
-                    if (frameDataB.getSensorPosition().equals("lLeg")) {
-                        if (distance > 0.5) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "lFoot":
+                        if (frameDataB.getSensorPosition().equals("lLeg")) {
+                            if (distance > 0.5) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("lForeArm")) {
-                    if (frameDataB.getSensorPosition().equals("lHand")) {
-                        if (distance > 0.5) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "lForeArm":
+                        if (frameDataB.getSensorPosition().equals("lHand")) {
+                            if (distance > 0.5) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
+                        } else if (frameDataB.getSensorPosition().equals("spine")) {
+                            if (distance > 1.1) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("rArm")) {
-                    if (frameDataB.getSensorPosition().equals("rForeArm")) {
-                        if (distance > 0.6) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "rArm":
+                        if (frameDataB.getSensorPosition().equals("rForeArm")) {
+                            if (distance > 0.6) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
+                        } else if (frameDataB.getSensorPosition().equals("spine")) {
+                            if (distance > 0.8) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("rFoot")) {
-                    if (frameDataB.getSensorPosition().equals("rLeg")) {
-                        if (distance > 0.5) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "rFoot":
+                        if (frameDataB.getSensorPosition().equals("rLeg")) {
+                            if (distance > 0.5) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
-                } else if (frameDataA.getSensorPosition().equals("rForeArm")) {
-                    if (frameDataB.getSensorPosition().equals("rHand")) {
-                        if (distance > 0.5) {
-                            frameDataA.setInvalid();
-                            frameDataB.setInvalid();
+                        break;
+                    case "rForeArm":
+                        if (frameDataB.getSensorPosition().equals("rHand")) {
+                            if (distance > 0.5) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
+                        } else if (frameDataB.getSensorPosition().equals("spine")) {
+                            if (distance > 1.1) {
+                                frameDataA.setInvalid();
+                                frameDataB.setInvalid();
+                            }
                         }
-                    }
+                        break;
                 }
+
+
             }
 
         }

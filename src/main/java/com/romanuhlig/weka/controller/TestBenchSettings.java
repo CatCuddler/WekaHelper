@@ -26,7 +26,7 @@ public class TestBenchSettings {
 
     // do not generate new features, read old file instead
     private static boolean useExistingFeatureFile = false;
-    private static String forceFolderName = "";
+    private static String forceFolderName = "all Features";
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
@@ -39,52 +39,34 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-//            {"lForeArm", "lHand"}
+//            {"rForeArm", "lLeg"}
+//            ,
+//            {"rForeArm", "rLeg"}
+//            ,
+//            {"rArm", "lLeg"}
+//            ,
+//            {"rArm", "rLeg"}
+//            ,
+//            {"lForeArm", "lLeg"}
+//            ,
+//            {"lForeArm", "rLeg"}
 
 
-            {"rForeArm", "lLeg"}
-            ,
-            {"rForeArm", "rLeg"}
-            ,
-            {"rArm", "lLeg"}
-            ,
-            {"rArm", "rLeg"}
-            ,
-            {"lForeArm", "lLeg"}
-            ,
-            {"lForeArm", "rLeg"}
 //            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
 //            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
 //            {"lHand", "rHand"},                                                             // Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
-//            {"lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
+//            {"lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},             // IK + Hands
 //            {"lForeArm", "rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
 //            {"rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
-
-//            {"head"},                                                                       // HMD
-//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
-//            {"head", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
-//            {"head", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
-//            {"lHand", "rHand"},                                                             // Hands
-//            {"rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
-//            {"rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
-
-//            {"head"},                                                                       // HMD
-//            {"head", "lHand", "rHand"},                                                     // HMD + Hands
-//            {"head", "lForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
-//            {"head", "lForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
-//            {"lHand", "rHand"},                                                             // Hands
-//            {"lForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
-//            {"lForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"}             // IK + Hands
 
     };
 
     private static String[][] minimumSensorPermuation = new String[][]{
-            {"head"},                                                                       // HMD
-            {"rForeArm"},
-            {"head", "lHand", "rHand"},
+//            {"head"},                                                                       // HMD
+//            {"head", "lHand", "rHand"},
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
@@ -105,9 +87,9 @@ public class TestBenchSettings {
     private static SensorUsage sensorUsageHandControllers = SensorUsage.MayInclude;
     private static boolean allowSingleHandController = true;
     private static int minimumNumberOfTrackers = -111;
-    private static int maximumNumberOfTrackers = 1;
+    private static int maximumNumberOfTrackers = -111;
     private static int minimumNumberOfSensors = -111;
-    private static int maximumNumberOfSensors = 15;
+    private static int maximumNumberOfSensors = 2;
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 5;
