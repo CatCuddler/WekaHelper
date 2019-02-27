@@ -829,7 +829,7 @@ public class FrameDataReader {
         }
 
         featureVector.addFeature(valueCollector.sort_getRange());
-        featureVector.addFeature(valueCollector.getMeanCrossingRate());
+        featureVector.addFeature(valueCollector.getMedianCrossingRate());
 
         for (int i = 25; i < 100; i += 25) {
             featureVector.addFeature(valueCollector.sort_getPercentile(i / 100d));
@@ -853,7 +853,7 @@ public class FrameDataReader {
             headerFields.add(sensor + "_min_" + attribute);
         }
         headerFields.add(sensor + "_range_" + attribute);
-        headerFields.add(sensor + "_meanCrossingRate_" + attribute);
+        headerFields.add(sensor + "_medianCrossingRate_" + attribute);
 
 
         for (int i = 25; i < 100; i += 25) {

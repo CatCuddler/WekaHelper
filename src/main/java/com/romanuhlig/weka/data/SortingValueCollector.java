@@ -206,10 +206,10 @@ public class SortingValueCollector {
     }
 
 
-    public double getMeanCrossingRate() {
+    public double getMedianCrossingRate() {
         createSortedValues();
 
-        double mean = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
+        double median = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
 
         double crossingRate = 0;
 
@@ -217,8 +217,8 @@ public class SortingValueCollector {
             double previousValue = values.get(i - 1);
             double currentValue = values.get(i);
 
-            if (previousValue < mean && currentValue > mean
-                    || previousValue > mean && currentValue < mean) {
+            if (previousValue < median && currentValue > median
+                    || previousValue > median && currentValue < median) {
                 crossingRate++;
             }
         }
