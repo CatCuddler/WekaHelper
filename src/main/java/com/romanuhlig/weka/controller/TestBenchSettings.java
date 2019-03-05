@@ -26,7 +26,7 @@ public class TestBenchSettings {
 
     // do not generate new features, read old file instead
     private static boolean useExistingFeatureFile = true;
-    private static String forceFolderName = "";
+    private static String forceFolderName = "3-4 trackers - 1 second";
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
@@ -62,19 +62,27 @@ public class TestBenchSettings {
 //            {"lForeArm", "rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
 //            {"rForeArm", "lLeg", "rLeg"},                              // inverse kinematics
 
+            //////////////////////   no additional sensors needed for 5s  ///////////////////////
+//            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
+//            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
+//            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
+//            {"lHand", "rHand", "hip", "lLeg", "rLeg"},                                       // base_IK + Hands
+//            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                                 // IK_2
+//            {"lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},               // IK_2 + Hands
+
     };
 
     private static String[][] minimumSensorPermuation = new String[][]{
-//            /////////////////////////////   standard sensor set   /////////////////////////////
-//            {},                                                                              // trackers only
-//            {"head"},                                                                        // HMD
+            /////////////////////////////   standard sensor set   /////////////////////////////
+            {},                                                                              // trackers only
+            {"head"},                                                                        // HMD
 //            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-//            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
+////            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
 //            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
 //            {"lHand", "rHand"},                                                              // Hands
-//            {"hip", "lLeg", "rLeg"},                                                         // base_IK
+////            {"hip", "lLeg", "rLeg"},                                                         // base_IK
 //            {"lHand", "rHand", "hip", "lLeg", "rLeg"},                                       // base_IK + Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                                 // IK_2
 //            {"lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},               // IK_2 + Hands
@@ -91,13 +99,13 @@ public class TestBenchSettings {
     private static SensorUsage sensorUsageHMD = SensorUsage.MayInclude;
     private static SensorUsage sensorUsageHandControllers = SensorUsage.MayInclude;
     private static boolean allowSingleHandController = true;
-    private static int minimumNumberOfTrackers = -111;
-    private static int maximumNumberOfTrackers = 2;
+    private static int minimumNumberOfTrackers = 3;
+    private static int maximumNumberOfTrackers = 4;
     private static int minimumNumberOfSensors = -111;
-    private static int maximumNumberOfSensors = 2;
+    private static int maximumNumberOfSensors = -111;
 
     // input frame data
-    private static double windowSizeForFrameDataToFeatureConversion = 5;
+    private static double windowSizeForFrameDataToFeatureConversion = 1;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
 
@@ -377,6 +385,12 @@ public class TestBenchSettings {
 
                 if (allowedSensorPermutation.length + maximumNumberOfTrackers >= sensorsInPermutation.size()) {
 
+                    if (minimumNumberOfTrackers >= 0) {
+                        if (allowedSensorPermutation.length + minimumNumberOfTrackers > sensorsInPermutation.size()) {
+                            continue;
+                        }
+                    }
+
                     HashSet<String> allowedCombination = new HashSet<>(Arrays.asList(allowedSensorPermutation));
                     HashSet<String> sensorsIncluded = new HashSet<>(sensorsInPermutation);
 
@@ -385,6 +399,7 @@ public class TestBenchSettings {
                             return false;
                         } else {
                             sensorsIncluded.removeAll(allowedCombination);
+
                             if (!sensorsIncluded.contains("lHand") && !sensorsIncluded.contains("rHand")
                                     && !sensorsIncluded.contains("head")) {
                                 return false;
