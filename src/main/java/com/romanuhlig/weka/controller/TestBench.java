@@ -10,6 +10,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
+import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.filters.Filter;
@@ -212,7 +213,7 @@ public class TestBench {
                     } else {
                         // otherwise, load the complete data file and separate both parts
                         Instances allFeaturesUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
-                        RemoveWithValues removeSubject = new RemoveWithValues();
+//                        RemoveWithValues removeSubject = new RemoveWithValues();
 
                         // determine nominal index of current subject within list of available subjects,
                         // from the perspective of the loaded weka data set
@@ -220,18 +221,53 @@ public class TestBench {
                         Attribute subjectAttribute = allFeaturesUnfiltered.attribute(subjectAttributeIndex);
                         int nominalIndexSubject = subjectAttribute.indexOfValue(filePackage.getSubject());
 
-                        removeSubject.setAttributeIndex("" + (allFeaturesUnfiltered.numAttributes() - 1));
-                        removeSubject.setNominalIndicesArr(new int[]{nominalIndexSubject});
-                        removeSubject.setInputFormat(allFeaturesUnfiltered);
-                        removeSubject.setModifyHeader(false);
+//                        // configure the filter to remove the subject data
+//                        // select the attribute by which to filter
+//                        removeSubject.setAttributeIndex("" + (allFeaturesUnfiltered.numAttributes() - 1));
+//                        // select all attribute values which should be filtered out
+//                        removeSubject.setNominalIndicesArr(new int[]{nominalIndexSubject});
+//                        // set the input format to match our data
+//                        removeSubject.setInputFormat(allFeaturesUnfiltered);
+//                        // do not allow filter to modify header
+//                        removeSubject.setModifyHeader(false);
 
-                        if (TestBenchSettings.includeTestDataInTrainingData()) {
+                        // if requested to include all subject data (for sanity checks), don't use subject filter
+                        if (TestBenchSettings.getSubjectDataInclusion() == TestBenchSettings.SubjectDataInclusion.All) {
                             trainingDataAllSensors = allFeaturesUnfiltered;
                         } else {
-                            trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                            // otherwise, remove subject from training data
+//                            trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                            trainingDataAllSensors = new Instances(allFeaturesUnfiltered);
+                            System.out.println("training data size 1:   " + trainingDataAllSensors.size());
+                            for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
+                                Instance instance = trainingDataAllSensors.get(i);
+                                String instanceSubject = instance.stringValue(instance.numAttributes() - 2);
+                                if (instanceSubject.equals(filePackage.getSubject())) {
+                                    trainingDataAllSensors.remove(i);
+                                }
+                            }
+                            System.out.println("training data size 2:   " + trainingDataAllSensors.size());
+
+
                         }
-                        removeSubject.setInvertSelection(true);
-                        testDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+                        // reverse the filter, and remove all but the subject data from test data
+//                        removeSubject.setInvertSelection(true);
+//                        testDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
+
+
+                        testDataAllSensors = new Instances(allFeaturesUnfiltered);
+                        System.out.println("test data size 1:   " + testDataAllSensors.size());
+
+                        for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
+                            Instance instance = testDataAllSensors.get(i);
+                            String instanceSubject = instance.stringValue(instance.numAttributes() - 2);
+                            if (!instanceSubject.equals(filePackage.getSubject())) {
+                                testDataAllSensors.remove(i);
+                            }
+                        }
+                        System.out.println("test data size 2:   " + testDataAllSensors.size());
+
+
                     }
 
 

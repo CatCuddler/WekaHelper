@@ -79,6 +79,12 @@
             <artifactId>opencsv</artifactId>
             <version>4.4</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/consistencySubsetEval -->
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>consistencySubsetEval</artifactId>
+            <version>1.0.4</version>
+        </dependency>
     </dependencies>
 
 

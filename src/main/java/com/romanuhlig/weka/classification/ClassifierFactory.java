@@ -1,5 +1,6 @@
 package com.romanuhlig.weka.classification;
 
+import weka.attributeSelection.*;
 import weka.classifiers.Classifier;
 import weka.classifiers.bayes.BayesNet;
 import weka.classifiers.bayes.NaiveBayes;
@@ -10,6 +11,7 @@ import weka.classifiers.functions.supportVector.RBFKernel;
 import weka.classifiers.functions.supportVector.StringKernel;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.lazy.KStar;
+import weka.classifiers.meta.AttributeSelectedClassifier;
 import weka.classifiers.meta.MultiClassClassifier;
 import weka.classifiers.rules.*;
 import weka.classifiers.trees.*;
@@ -25,7 +27,7 @@ public class ClassifierFactory {
     public enum ClassifierType {
         J48, NaiveBayes, RandomForest, ZeroR, OneR, SMO, DecisionTable, GaussianProcess, M5P, KStar, LMT, BayesNet,
         JRip, SimpleLogistic, LinearRegression, VotedPerceptron, SGD, Logistic, MultilayerPerceptron, REPTree,
-        IBk, RandomTree, SMOreg, LibSVM, LibLinear
+        IBk, RandomTree, SMOreg, LibSVM, LibLinear, SMOfeatureSelected
     }
 
 
@@ -111,6 +113,9 @@ public class ClassifierFactory {
                 case SMOreg:
                     classifiers.add(getSMOreg());
                     break;
+                case SMOfeatureSelected:
+                    classifiers.add(getSMOfeatureSelected());
+                    break;
                 default:
                     System.err.println(classifierType.toString() + "  classifier not implemented!");
             }
@@ -164,6 +169,35 @@ public class ClassifierFactory {
 //        }
 
         return classifier;
+    }
+
+    private Classifier getSMOfeatureSelected() {
+        AttributeSelectedClassifier asClassifier = new AttributeSelectedClassifier();
+        asClassifier.setClassifier(getSMO());
+//        GreedyStepwise search = new GreedyStepwise();
+//        search.setNumToSelect(50);
+//        asClassifier.setSearch(search);
+
+//        WrapperSubsetEval evaluator = new WrapperSubsetEval();
+//        evaluator.setClassifier(getSMO());
+//        asClassifier.setEvaluator(evaluator);
+
+//        ConsistencySubsetEval evaluator = new ConsistencySubsetEval();
+//        asClassifier.setEvaluator(evaluator);
+
+//        GainRatioAttributeEval evaluator = new GainRatioAttributeEval();
+//        asClassifier.setEvaluator(evaluator);
+//        Ranker search = new Ranker();
+//        search.setNumToSelect(50);
+//        asClassifier.setSearch(search);
+
+//        OneRAttributeEval evaluator = new OneRAttributeEval();
+//        asClassifier.setEvaluator(evaluator);
+//        Ranker search = new Ranker();
+//        search.setNumToSelect(50);
+//        asClassifier.setSearch(search);
+
+        return asClassifier;
     }
 
     private Classifier getDecisionTable() {
@@ -252,6 +286,7 @@ public class ClassifierFactory {
         Classifier classifier = new SMOreg();
         return classifier;
     }
+
 
     private Classifier getLibSVM() {
         LibSVM libSVM = new LibSVM();

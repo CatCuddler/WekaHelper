@@ -26,15 +26,17 @@ public class TestBenchSettings {
 
     // do not generate new features, read old file instead
     private static boolean useExistingFeatureFile = true;
-    private static String forceFolderName = "3-4 trackers - 1 second";
+    private static String forceFolderName = "";
+
+    // input frame data
+    private static double windowSizeForFrameDataToFeatureConversion = 6;
+    private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
 
-    // whether to allow the test data for any person to be included in the training data
-    // WARNING: only meant for debugging, using the exact same data for training and testing is not realistic,
-    //          even for a subject dependant model
-    private static boolean includeTestDataInTrainingData = false;
+    // whether to include data of tested subject in training data
+    private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
 
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
@@ -52,7 +54,7 @@ public class TestBenchSettings {
 //            {"lForeArm", "rLeg"}
 
 
-//            {"head"},                                                                       // HMD
+            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
 //            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
@@ -73,16 +75,16 @@ public class TestBenchSettings {
     };
 
     private static String[][] minimumSensorPermuation = new String[][]{
-            /////////////////////////////   standard sensor set   /////////////////////////////
-            {},                                                                              // trackers only
-            {"head"},                                                                        // HMD
+//            /////////////////////////////   standard sensor set   /////////////////////////////
+//            {},                                                                              // trackers only
+//            {"head"},                                                                        // HMD
 //            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-////            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
+//            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
 //            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
 //            {"lHand", "rHand"},                                                              // Hands
-////            {"hip", "lLeg", "rLeg"},                                                         // base_IK
+//            {"hip", "lLeg", "rLeg"},                                                         // base_IK
 //            {"lHand", "rHand", "hip", "lLeg", "rLeg"},                                       // base_IK + Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                                 // IK_2
 //            {"lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},               // IK_2 + Hands
@@ -97,20 +99,18 @@ public class TestBenchSettings {
 
     // sensor permutations to use during evaluation
     private static SensorUsage sensorUsageHMD = SensorUsage.MayInclude;
-    private static SensorUsage sensorUsageHandControllers = SensorUsage.MayInclude;
-    private static boolean allowSingleHandController = true;
-    private static int minimumNumberOfTrackers = 3;
-    private static int maximumNumberOfTrackers = 4;
+    private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
+    private static boolean allowSingleHandController = false;
+    private static int minimumNumberOfTrackers = -1;
+    private static int maximumNumberOfTrackers = 1;
     private static int minimumNumberOfSensors = -111;
     private static int maximumNumberOfSensors = -111;
-
-    // input frame data
-    private static double windowSizeForFrameDataToFeatureConversion = 1;
-    private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
 
     // algorithms to test
     private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
+//            ClassifierType.SMOfeatureSelected
+//            ,
 //            ClassifierType.J48
 //            , // 20min  , NAN-.25
 //            ClassifierType.RandomForest
@@ -190,6 +190,10 @@ public class TestBenchSettings {
         MayInclude, MustInclude, CannotInclude
     }
 
+    public enum SubjectDataInclusion {
+        None, Half, HalfAndNoOtherData, All
+    }
+
     public enum FeatureTag {
         Angular,
         SubjectOrientationRelevant,
@@ -210,7 +214,6 @@ public class TestBenchSettings {
             stringBuilder.append(classifier.toString());
         }
 
-        stringBuilder.append("   itd_" + includeTestDataInTrainingData);
         stringBuilder.append("   s_" + scaleAllFeaturesBy);
         stringBuilder.append("   ws_" + windowSizeForFrameDataToFeatureConversion);
         stringBuilder.append("   wsp_" + windowSpacingForFrameDataToFeatureConversion);
@@ -264,6 +267,8 @@ public class TestBenchSettings {
         stringBuilder.append("minimum number of Sensors:   " + minimumNumberOfSensors);
         stringBuilder.append(System.lineSeparator());
 
+        stringBuilder.append("include subject data   " + subjectDataInclusion.toString());
+        stringBuilder.append(System.lineSeparator());
 
         return stringBuilder.toString();
     }
@@ -461,7 +466,7 @@ public class TestBenchSettings {
         return existingFeaturesInputFolder;
     }
 
-    public static boolean includeTestDataInTrainingData() {
-        return includeTestDataInTrainingData;
+    public static SubjectDataInclusion getSubjectDataInclusion() {
+        return subjectDataInclusion;
     }
 }
