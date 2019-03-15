@@ -54,7 +54,7 @@ public class TestBenchSettings {
 //            {"lForeArm", "rLeg"}
 
 
-            {"head"},                                                                       // HMD
+//            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
 //            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
@@ -76,14 +76,14 @@ public class TestBenchSettings {
 
     private static String[][] minimumSensorPermuation = new String[][]{
 //            /////////////////////////////   standard sensor set   /////////////////////////////
-//            {},                                                                              // trackers only
+            {},                                                                              // trackers only
 //            {"head"},                                                                        // HMD
+//            {"lHand", "rHand"},                                                              // Hands
 //            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-//            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
 //            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
-//            {"lHand", "rHand"},                                                              // Hands
+//            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
 //            {"hip", "lLeg", "rLeg"},                                                         // base_IK
 //            {"lHand", "rHand", "hip", "lLeg", "rLeg"},                                       // base_IK + Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                                 // IK_2
@@ -191,7 +191,7 @@ public class TestBenchSettings {
     }
 
     public enum SubjectDataInclusion {
-        None, Half, HalfAndNoOtherData, All
+        None, Half, HalfAndNoOtherData, All, AllAndNoOtherData
     }
 
     public enum FeatureTag {
@@ -466,7 +466,7 @@ public class TestBenchSettings {
         return existingFeaturesInputFolder;
     }
 
-    public static SubjectDataInclusion getSubjectDataInclusion() {
+    public static SubjectDataInclusion getSubjectTrainingDataInclusion() {
         return subjectDataInclusion;
     }
 }

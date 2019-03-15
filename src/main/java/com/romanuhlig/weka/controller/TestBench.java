@@ -7,6 +7,7 @@ import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
 import org.apache.commons.lang3.time.StopWatch;
+import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
@@ -14,8 +15,8 @@ import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.filters.Filter;
+import weka.filters.Sourcable;
 import weka.filters.unsupervised.attribute.Remove;
-import weka.filters.unsupervised.instance.RemoveWithValues;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -212,63 +213,155 @@ public class TestBench {
                         testDataAllSensors = filePackage.getTestDataUnfiltered();
                     } else {
                         // otherwise, load the complete data file and separate both parts
-                        Instances allFeaturesUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
-//                        RemoveWithValues removeSubject = new RemoveWithValues();
+                        Instances allDataUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
+
 
                         // determine nominal index of current subject within list of available subjects,
                         // from the perspective of the loaded weka data set
-                        int subjectAttributeIndex = allFeaturesUnfiltered.numAttributes() - 2;
-                        Attribute subjectAttribute = allFeaturesUnfiltered.attribute(subjectAttributeIndex);
-                        int nominalIndexSubject = subjectAttribute.indexOfValue(filePackage.getSubject());
+                        int subjectAttributeIndex = allDataUnfiltered.numAttributes() - 2;
+                        int classAttributeIndex = allDataUnfiltered.numAttributes() - 1;
 
-//                        // configure the filter to remove the subject data
-//                        // select the attribute by which to filter
-//                        removeSubject.setAttributeIndex("" + (allFeaturesUnfiltered.numAttributes() - 1));
-//                        // select all attribute values which should be filtered out
-//                        removeSubject.setNominalIndicesArr(new int[]{nominalIndexSubject});
-//                        // set the input format to match our data
-//                        removeSubject.setInputFormat(allFeaturesUnfiltered);
-//                        // do not allow filter to modify header
-//                        removeSubject.setModifyHeader(false);
+                        // determine how many data to remove from the subject, for each task, if not all should be removed from training set
+                        // the tasks are saved in blocks within the feature set for each subject
+                        ArrayList<Integer> instancesPerTask = new ArrayList<>();
+                        ArrayList<Integer> instancesToRemoveFromTrainingDataPerTask = new ArrayList<>();
+                        if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
+                                || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
+                            String previousTask = "";
+                            // go through the list backwards, as we will have to do the same when deleting instances later
+                            for (int i = allDataUnfiltered.size() - 1; i >= 0; i--) {
+                                Instance instance = allDataUnfiltered.get(i);
+                                String instanceSubject = instance.stringValue(subjectAttributeIndex);
+                                String instanceClass = instance.stringValue(classAttributeIndex);
+                                // count the task, or add a new one, if this is the current subject
+                                if (instanceSubject.equals(filePackage.getSubject())) {
+                                    if (!instanceClass.equals(previousTask)) {
+                                        instancesPerTask.add(0);
+                                        previousTask = instanceClass;
+                                    }
+                                    instancesPerTask.set(instancesPerTask.size() - 1, instancesPerTask.get(instancesPerTask.size() - 1) + 1);
+                                }
+                            }
+
+                            for (int i = 0; i < instancesPerTask.size(); i++) {
+                                Integer instancesForTask = instancesPerTask.get(i);
+                                Integer half = instancesForTask / 2;
+                                instancesToRemoveFromTrainingDataPerTask.add(half);
+                            }
+
+                            // debug output for instances per subject
+                            int totalNumberOfInstancesForSubject = 0;
+                            for (int i = 0; i < instancesPerTask.size(); i++) {
+                                totalNumberOfInstancesForSubject += instancesPerTask.get(i);
+                            }
+                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
+
+                        }
 
                         // if requested to include all subject data (for sanity checks), don't use subject filter
-                        if (TestBenchSettings.getSubjectDataInclusion() == TestBenchSettings.SubjectDataInclusion.All) {
-                            trainingDataAllSensors = allFeaturesUnfiltered;
-                        } else {
-                            // otherwise, remove subject from training data
-//                            trainingDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
-                            trainingDataAllSensors = new Instances(allFeaturesUnfiltered);
-                            System.out.println("training data size 1:   " + trainingDataAllSensors.size());
+                        if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.All) {
+                            trainingDataAllSensors = new Instances(allDataUnfiltered);
+                        } else if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
+                                || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
+
+                            trainingDataAllSensors = new Instances(allDataUnfiltered);
+                            System.out.println("training data before:   " + trainingDataAllSensors.size());
+
+                            int countForCurrentClass = 0;
+                            int classIndex = -1;
+                            String previousTask = "";
                             for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
                                 Instance instance = trainingDataAllSensors.get(i);
-                                String instanceSubject = instance.stringValue(instance.numAttributes() - 2);
+                                String instanceSubject = instance.stringValue(subjectAttributeIndex);
+                                String instanceClass = instance.stringValue(classAttributeIndex);
+                                // delete second half of each class
+                                if (instanceSubject.equals(filePackage.getSubject())) {
+                                    if (!instanceClass.equals(previousTask)) {
+                                        countForCurrentClass = 0;
+                                        previousTask = instanceClass;
+                                        classIndex++;
+                                    }
+                                    countForCurrentClass++;
+                                    if (countForCurrentClass <= instancesToRemoveFromTrainingDataPerTask.get(classIndex))
+                                        trainingDataAllSensors.remove(i);
+                                }
+                            }
+
+                            // also delete all data from other subjects if only subject data should be included
+                            if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
+                                for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
+                                    Instance instance = trainingDataAllSensors.get(i);
+                                    String instanceSubject = instance.stringValue(subjectAttributeIndex);
+                                    if (!instanceSubject.equals(filePackage.getSubject())) {
+                                        trainingDataAllSensors.remove(i);
+                                    }
+                                }
+                            }
+
+                        }
+                        // normal case, no current subject in training data
+                        else {
+                            // otherwise, remove subject from training data
+
+                            trainingDataAllSensors = new Instances(allDataUnfiltered);
+
+                            for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
+                                Instance instance = trainingDataAllSensors.get(i);
+                                String instanceSubject = instance.stringValue(subjectAttributeIndex);
                                 if (instanceSubject.equals(filePackage.getSubject())) {
                                     trainingDataAllSensors.remove(i);
                                 }
                             }
-                            System.out.println("training data size 2:   " + trainingDataAllSensors.size());
-
-
                         }
-                        // reverse the filter, and remove all but the subject data from test data
-//                        removeSubject.setInvertSelection(true);
-//                        testDataAllSensors = Filter.useFilter(allFeaturesUnfiltered, removeSubject);
 
+                        testDataAllSensors = new Instances(allDataUnfiltered);
+                        System.out.println("test data before:   " + testDataAllSensors.size());
 
-                        testDataAllSensors = new Instances(allFeaturesUnfiltered);
-                        System.out.println("test data size 1:   " + testDataAllSensors.size());
-
+                        // remove all but current subject from test data
                         for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
                             Instance instance = testDataAllSensors.get(i);
-                            String instanceSubject = instance.stringValue(instance.numAttributes() - 2);
+                            String instanceSubject = instance.stringValue(subjectAttributeIndex);
                             if (!instanceSubject.equals(filePackage.getSubject())) {
                                 testDataAllSensors.remove(i);
                             }
                         }
-                        System.out.println("test data size 2:   " + testDataAllSensors.size());
 
+                        // if some of the subject data was supposed to stay in the training set,
+                        // remove it from the test data
+                        if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
+                                || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
 
+                            int countForCurrentClass = 0;
+                            int classIndex = -1;
+                            String previousClass = "";
+                            for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
+                                Instance instance = testDataAllSensors.get(i);
+                                String instanceClass = instance.stringValue(classAttributeIndex);
+
+                                // delete first half of each class
+                                if (!instanceClass.equals(previousClass)) {
+
+                                    countForCurrentClass = 0;
+                                    previousClass = instanceClass;
+                                    classIndex++;
+                                }
+                                countForCurrentClass++;
+                                if (countForCurrentClass > instancesToRemoveFromTrainingDataPerTask.get(classIndex)) {
+                                    testDataAllSensors.remove(i);
+                                }
+                            }
+                        }
+
+                        // only for debugging purposes, test subject data against subjet data
+                        if (TestBenchSettings.getSubjectTrainingDataInclusion()
+                                == TestBenchSettings.SubjectDataInclusion.AllAndNoOtherData) {
+                            trainingDataAllSensors = new Instances(testDataAllSensors);
+                        }
                     }
+
+
+                    System.out.println("training data after:   " + trainingDataAllSensors.size());
+                    System.out.println("test data after:   " + testDataAllSensors.size());
 
 
                     // remove attributes from sensors that are not included in this sensor permutation
