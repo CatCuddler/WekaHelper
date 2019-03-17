@@ -5,6 +5,7 @@ import com.romanuhlig.weka.data.FrameData;
 import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.data.FrameDataSet;
 import com.romanuhlig.weka.data.OutputFeatureVector;
+import org.apache.commons.lang3.time.StopWatch;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -14,6 +15,9 @@ import weka.core.Instances;
 import java.io.File;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class CppDataClassifier {
 
@@ -33,7 +37,7 @@ public class CppDataClassifier {
     ArrayList<String> classVal;
     Attribute classAttribute;
     ArrayList<Attribute> attributes;
-
+    ExecutorService threadPool = Executors.newCachedThreadPool();
 
     public CppDataClassifier() {
         frameDataSet = new FrameDataSet("", "");
@@ -94,16 +98,22 @@ public class CppDataClassifier {
 
 //                outputClassifierResultToCpp("a");
 
+
+//                StopWatch fullProcessStopWatch = new StopWatch();
+//                fullProcessStopWatch.start();
+
                 FrameDataSet frameDataSetForWindow =
                         frameDataSet.getLatestDataForWindowSizeAndRemoveEarlierData(
                                 TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion());
+
 
 //                outputClassifierResultToCpp("b");
 
 
                 // run the feature computation and execution within a separate thread, to avoid slowdowns
-                Thread recognitionThread = new Thread() {
+                Runnable recognitionThread = new Runnable() {
                     public void run() {
+
 
 //                        outputClassifierResultToCpp("starting classification thread");
 
@@ -194,10 +204,14 @@ public class CppDataClassifier {
 //                outputClassifierResultToCpp("first list data = " + frameDataSetForWindow.getAllSensorLists().get(0).size());
 //                outputClassifierResultToCpp("classifier Result = " + frameDataSet.getAllSensorLists().get(0).size());
 //                outputClassifierResultToCpp(sensorPosition);
+
+//                        fullProcessStopWatch.stop();
+//                        outputClassifierResultToCpp("total time:   " + fullProcessStopWatch.getTime(TimeUnit.MILLISECONDS));
                     }
+
                 };
 
-                recognitionThread.start();
+                threadPool.execute(recognitionThread);
 
             }
 
