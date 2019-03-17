@@ -7,7 +7,6 @@ import com.romanuhlig.weka.io.SensorPermutation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 
 
 public class TestBenchSettings {
@@ -26,16 +25,16 @@ public class TestBenchSettings {
 
     // do not generate new features, read old file instead
     private static boolean useExistingFeatureFile = true;
-    private static String forceFolderName = "";
+    private static String forceFolderName = "full ik model training for live classification";
 
     // input frame data
-    private static double windowSizeForFrameDataToFeatureConversion = 6;
+    private static double windowSizeForFrameDataToFeatureConversion = 1;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // scale all features by fixed amount (required for some algorithms)
     private static double scaleAllFeaturesBy = 1;
 
-    // whether to include data of tested subject in training data
+    // whether to include data of tested subject in training data (subject independent: None)
     private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
 
     // force usage of exactly these sensor combinations, not more or less
@@ -57,7 +56,7 @@ public class TestBenchSettings {
 //            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
-//            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
 //            {"lHand", "rHand"},                                                             // Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
 //            {"lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},             // IK + Hands
@@ -76,9 +75,9 @@ public class TestBenchSettings {
 
     private static String[][] minimumSensorPermuation = new String[][]{
 //            /////////////////////////////   standard sensor set   /////////////////////////////
-            {},                                                                              // trackers only
-//            {"head"},                                                                        // HMD
-//            {"lHand", "rHand"},                                                              // Hands
+//            {},                                                                              // trackers only
+            {"head"},                                                                        // HMD
+            {"lHand", "rHand"},                                                              // Hands
 //            {"head", "lHand", "rHand"},                                                      // HMD + Hands
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
@@ -164,7 +163,7 @@ public class TestBenchSettings {
 
 
     // result output
-    private static boolean writeAllModelsToFolder = false;
+    private static boolean writeAllModelsToFolder = true;
     private static boolean useIndividualFeatureFilesForEachSubject = false;
 
 

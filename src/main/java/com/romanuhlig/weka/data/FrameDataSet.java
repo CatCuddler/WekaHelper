@@ -1,7 +1,6 @@
 package com.romanuhlig.weka.data;
 
 import com.romanuhlig.weka.math.MathHelper;
-import com.sun.tools.corba.se.idl.constExpr.ShiftLeft;
 
 import java.util.*;
 
@@ -359,7 +358,7 @@ public class FrameDataSet {
             }
         }
 
-        // collect sublists within the required time frame
+        // collect sublists within the requested time frame
         ArrayList<List<FrameData>> newSensorLists = new ArrayList<>();
         for (int i = 0; i < allSensorLists.size(); i++) {
             List<FrameData> oldSensorList = allSensorLists.get(i);
@@ -370,6 +369,7 @@ public class FrameDataSet {
             allSensorLists.set(i, newSensorList);
         }
 
+        // using the newSensorList ensures a true copy instead of a mirror
         return new FrameDataSet(newSensorLists, subject, activity);
 
 

@@ -289,8 +289,9 @@ public class ClassifierFactory {
 
 
     private Classifier getLibSVM() {
-        LibSVM libSVM = new LibSVM();
-        libSVM.setNormalize(true);
+    	// removed for now due to maven build issues if required repository is included
+//        LibSVM libSVM = new LibSVM();
+//        libSVM.setNormalize(true);
 //        libSVM.setEps(0.000000000001);
 //        libSVM.setSVMType(new SelectedTag(LibSVM.SVMTYPE_NU_SVC, LibSVM.TAGS_SVMTYPE));
 //        libSVM.setKernelType(new SelectedTag(LibSVM.KERNELTYPE_LINEAR, LibSVM.TAGS_KERNELTYPE));
@@ -304,12 +305,17 @@ public class ClassifierFactory {
         // normalize, nu, eps=0.000000000001: over-night-long, ~.82 in first two complete tests, aborted
         // normalize, sigmoid kernel: 3h, .91-All_1
 
-        return libSVM;
+ //       return libSVM;
+        
+    	return new ZeroR();
+
     }
 
     private Classifier getLibLinear() {
-        LibLINEAR libLinear = new LibLINEAR();
-        libLinear.setNormalize(true);
+    	// removed for now due to maven build issues if required repository is included
+
+//        LibLINEAR libLinear = new LibLINEAR();
+//        libLinear.setNormalize(true);
 //        String[] options = {"-S", "4", "-C", "1.0", "-E", "0.001", "-B 1.0", "-Z", "-L", "0.1", "-I", "1000"};
 //        try {
 //            libLinear.setOptions(options);
@@ -319,7 +325,9 @@ public class ClassifierFactory {
 
         // normalize, Cramer/Singer SVM: 13min, .91-.99
         // normalize: 10min, .84-ALL_1
-        return libLinear;
+
+//    	return libLinear;
+    	return new ZeroR();
     }
 
 }

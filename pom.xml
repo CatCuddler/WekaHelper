@@ -55,35 +55,11 @@
             <artifactId>weka-stable</artifactId>
             <version>3.8.3</version>
         </dependency>
-        <!-- LibSVM wrapper for Weka -->
-        <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>LibSVM</artifactId>
-            <version>1.0.10</version>
-        </dependency>
-        <!-- LibSVM -->
-        <dependency>
-            <groupId>tw.edu.ntu.csie</groupId>
-            <artifactId>libsvm</artifactId>
-            <version>3.23</version>
-        </dependency>
-        <!-- LibLinear -->
-        <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>LibLINEAR</artifactId>
-            <version>1.9.7</version>
-        </dependency>
         <!-- OpenCSV, for csv file input/output -->
         <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>4.4</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/nz.ac.waikato.cms.weka/consistencySubsetEval -->
-        <dependency>
-            <groupId>nz.ac.waikato.cms.weka</groupId>
-            <artifactId>consistencySubsetEval</artifactId>
-            <version>1.0.4</version>
         </dependency>
     </dependencies>
 

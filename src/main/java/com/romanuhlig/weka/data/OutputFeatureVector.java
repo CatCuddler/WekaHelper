@@ -16,14 +16,15 @@ public class OutputFeatureVector {
         this.classValue = classValue;
     }
 
-    public ArrayList<String> getFeaturesWithoutClassAndSubject() {
+    public ArrayList<Double> getFeaturesWithoutClassAndSubject() {
 
-        ArrayList<String> allFeatures = new ArrayList<>(features.size());
-        for (Double value : features) {
-            allFeatures.add(Double.toString(value));
-        }
+//        ArrayList<String> allFeatures = new ArrayList<>(features.size());
+//        for (Double value : features) {
+//            allFeatures.add(Double.toString(value));
+//        }
 
-        return allFeatures;
+//        return allFeatures;
+        return features;
     }
 
     public String getSubject() {

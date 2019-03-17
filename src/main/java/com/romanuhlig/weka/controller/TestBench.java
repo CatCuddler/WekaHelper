@@ -7,7 +7,6 @@ import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
 import org.apache.commons.lang3.time.StopWatch;
-import sun.jvm.hotspot.debugger.posix.elf.ELFSectionHeader;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
@@ -254,7 +253,7 @@ public class TestBench {
                             for (int i = 0; i < instancesPerTask.size(); i++) {
                                 totalNumberOfInstancesForSubject += instancesPerTask.get(i);
                             }
-                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
+//                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
 
                         }
 
@@ -265,7 +264,7 @@ public class TestBench {
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
 
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
-                            System.out.println("training data before:   " + trainingDataAllSensors.size());
+//                            System.out.println("training data before:   " + trainingDataAllSensors.size());
 
                             int countForCurrentClass = 0;
                             int classIndex = -1;
@@ -315,7 +314,7 @@ public class TestBench {
                         }
 
                         testDataAllSensors = new Instances(allDataUnfiltered);
-                        System.out.println("test data before:   " + testDataAllSensors.size());
+//                        System.out.println("test data before:   " + testDataAllSensors.size());
 
                         // remove all but current subject from test data
                         for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
@@ -360,8 +359,8 @@ public class TestBench {
                     }
 
 
-                    System.out.println("training data after:   " + trainingDataAllSensors.size());
-                    System.out.println("test data after:   " + testDataAllSensors.size());
+//                    System.out.println("training data after:   " + trainingDataAllSensors.size());
+//                    System.out.println("test data after:   " + testDataAllSensors.size());
 
 
                     // remove attributes from sensors that are not included in this sensor permutation
