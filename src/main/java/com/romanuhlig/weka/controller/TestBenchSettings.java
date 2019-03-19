@@ -25,17 +25,28 @@ public class TestBenchSettings {
 
     // do not generate new features, read old file instead
     private static boolean useExistingFeatureFile = true;
-    private static String forceFolderName = "full ik model training for live classification";
+
+    // leave empty to use the standard folder name, generated from chosen settings
+    private static String forceFolderName = "features reduced - velocity - 2t";
 
     // input frame data
-    private static double windowSizeForFrameDataToFeatureConversion = 1;
+    private static double windowSizeForFrameDataToFeatureConversion = 6;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
-
-    // scale all features by fixed amount (required for some algorithms)
-    private static double scaleAllFeaturesBy = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
     private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
+
+    // types of features to disallow
+    private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
+//            FeatureTag.Angular
+//            FeatureTag.SubjectOrientationRelevant
+//            FeatureTag.DualSensorCombination
+//            FeatureTag.Position
+            FeatureTag.Velocity
+    ));
+
+    // scale all features by fixed amount (required for some algorithms)
+    private static double scaleAllFeaturesBy = 1;
 
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
@@ -56,7 +67,7 @@ public class TestBenchSettings {
 //            {"head"},                                                                       // HMD
 //            {"head", "lHand", "rHand"},                                                     // HMD + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                      // HMD + inverse kinematics
-            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
+//            {"head", "lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},    // HMD + IK + Hands
 //            {"lHand", "rHand"},                                                             // Hands
 //            {"lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                              // inverse kinematics
 //            {"lForeArm", "rForeArm", "lHand", "rHand", "hip", "lLeg", "rLeg"},             // IK + Hands
@@ -74,14 +85,16 @@ public class TestBenchSettings {
     };
 
     private static String[][] minimumSensorPermuation = new String[][]{
-//            /////////////////////////////   standard sensor set   /////////////////////////////
+//            /////////////////////////////   standard test set   /////////////////////////////
 //            {},                                                                              // trackers only
-            {"head"},                                                                        // HMD
-            {"lHand", "rHand"},                                                              // Hands
+//            {"head"},                                                                        // HMD
+//            {"lHand", "rHand"},                                                              // Hands
 //            {"head", "lHand", "rHand"},                                                      // HMD + Hands
 //            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
 //            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
 //            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
+
+
 //            {"head", "hip", "lLeg", "rLeg"},                                                 // HMD + base_IK
 //            {"hip", "lLeg", "rLeg"},                                                         // base_IK
 //            {"lHand", "rHand", "hip", "lLeg", "rLeg"},                                       // base_IK + Hands
@@ -89,19 +102,13 @@ public class TestBenchSettings {
 //            {"lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},               // IK_2 + Hands
     };
 
-    // types of features to disallow
-    private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
-//            FeatureTag.Angular
-//            FeatureTag.SubjectOrientationRelevant
-//            FeatureTag.DualSensorCombination
-    ));
 
     // sensor permutations to use during evaluation
     private static SensorUsage sensorUsageHMD = SensorUsage.MayInclude;
     private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
     private static boolean allowSingleHandController = false;
-    private static int minimumNumberOfTrackers = -1;
-    private static int maximumNumberOfTrackers = 1;
+    private static int minimumNumberOfTrackers = 2;
+    private static int maximumNumberOfTrackers = 2;
     private static int minimumNumberOfSensors = -111;
     private static int maximumNumberOfSensors = -111;
 
@@ -163,7 +170,7 @@ public class TestBenchSettings {
 
 
     // result output
-    private static boolean writeAllModelsToFolder = true;
+    private static boolean writeAllModelsToFolder = false;
     private static boolean useIndividualFeatureFilesForEachSubject = false;
 
 
@@ -196,7 +203,10 @@ public class TestBenchSettings {
     public enum FeatureTag {
         Angular,
         SubjectOrientationRelevant,
-        DualSensorCombination
+        DualSensorCombination,
+        Position,
+        Velocity,
+        Acceleration
     }
 
     public static String summarySingleLine() {

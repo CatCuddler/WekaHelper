@@ -423,35 +423,49 @@ public class FrameDataReader {
 
 
             // output the calculated values
-            addStandardFeatures(outputFeatureVector, Position_Height);
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                addStandardFeatures(outputFeatureVector, Position_Height);
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
 //                outputFeatureVector.addFeature(Position_X.sort_getRange());
 //                outputFeatureVector.addFeature(Position_Z.sort_getRange());
-                Position_X.adjustToLowestValueAsZero();
-                Position_Z.adjustToLowestValueAsZero();
-                addStandardFeatures(outputFeatureVector, Position_X, false, false);
-                addStandardFeatures(outputFeatureVector, Position_Z, false, false);
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                    Position_X.adjustToLowestValueAsZero();
+                    Position_Z.adjustToLowestValueAsZero();
+                    addStandardFeatures(outputFeatureVector, Position_X, false, false);
+                    addStandardFeatures(outputFeatureVector, Position_Z, false, false);
+                }
 
-
-                addStandardFeatures(outputFeatureVector, Velocity_X);
-                addStandardFeatures(outputFeatureVector, Velocity_Z);
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Velocity)) {
+                    addStandardFeatures(outputFeatureVector, Velocity_X);
+                    addStandardFeatures(outputFeatureVector, Velocity_Z);
+                }
             }
 
-            outputFeatureVector.addFeature(rangeXZ);
-            outputFeatureVector.addFeature(rangeXYZ);
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                outputFeatureVector.addFeature(rangeXZ);
+                outputFeatureVector.addFeature(rangeXYZ);
+            }
 
-            addStandardFeatures(outputFeatureVector, Velocity_Height);
-            addStandardFeatures(outputFeatureVector, Velocity_XZ);
-            addStandardFeatures(outputFeatureVector, Velocity_XYZ);
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Velocity)) {
+                addStandardFeatures(outputFeatureVector, Velocity_Height);
+                addStandardFeatures(outputFeatureVector, Velocity_XZ);
+                addStandardFeatures(outputFeatureVector, Velocity_XYZ);
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                addStandardFeatures(outputFeatureVector, Acceleration_X);
-                addStandardFeatures(outputFeatureVector, Acceleration_Z);
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Acceleration)) {
+                    addStandardFeatures(outputFeatureVector, Acceleration_X);
+                    addStandardFeatures(outputFeatureVector, Acceleration_Z);
+                }
             }
-            addStandardFeatures(outputFeatureVector, Acceleration_Height);
-            addStandardFeatures(outputFeatureVector, Acceleration_XZ);
-            addStandardFeatures(outputFeatureVector, Acceleration_XYZ);
+
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Acceleration)) {
+                addStandardFeatures(outputFeatureVector, Acceleration_Height);
+                addStandardFeatures(outputFeatureVector, Acceleration_XZ);
+                addStandardFeatures(outputFeatureVector, Acceleration_XYZ);
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
                 addStandardFeatures(outputFeatureVector, AngularVelocity);
@@ -704,33 +718,47 @@ public class FrameDataReader {
 //            headerFields.add(sensorType + "_minimum_Height");
 //            headerFields.add(sensorType + "_range_Height");
 
-            addStandardFeatures(headerFields, sensorType, "Position_Height");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                addStandardFeatures(headerFields, sensorType, "Position_Height");
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
 //                headerFields.add(sensorType + "_range_X");
 //                headerFields.add(sensorType + "_range_Z");
-                addStandardFeatures(headerFields, sensorType, "Position_X", false, false);
-                addStandardFeatures(headerFields, sensorType, "Position_Z", false, false);
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                    addStandardFeatures(headerFields, sensorType, "Position_X", false, false);
+                    addStandardFeatures(headerFields, sensorType, "Position_Z", false, false);
+                }
 
-                addStandardFeatures(headerFields, sensorType, "Velocity_X");
-                addStandardFeatures(headerFields, sensorType, "Velocity_Z");
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Velocity)) {
+                    addStandardFeatures(headerFields, sensorType, "Velocity_X");
+                    addStandardFeatures(headerFields, sensorType, "Velocity_Z");
+                }
             }
 
-            headerFields.add(sensorType + "_range_XZ");
-            headerFields.add(sensorType + "_range_XYZ");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Position)) {
+                headerFields.add(sensorType + "_range_XZ");
+                headerFields.add(sensorType + "_range_XYZ");
+            }
 
-
-            addStandardFeatures(headerFields, sensorType, "Velocity_Height");
-            addStandardFeatures(headerFields, sensorType, "Velocity_XZ");
-            addStandardFeatures(headerFields, sensorType, "Velocity_XYZ");
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Velocity)) {
+                addStandardFeatures(headerFields, sensorType, "Velocity_Height");
+                addStandardFeatures(headerFields, sensorType, "Velocity_XZ");
+                addStandardFeatures(headerFields, sensorType, "Velocity_XYZ");
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.SubjectOrientationRelevant)) {
-                addStandardFeatures(headerFields, sensorType, "Acceleration_X");
-                addStandardFeatures(headerFields, sensorType, "Acceleration_Z");
+                if (TestBenchSettings.featureTagsAllowed(FeatureTag.Acceleration)) {
+                    addStandardFeatures(headerFields, sensorType, "Acceleration_X");
+                    addStandardFeatures(headerFields, sensorType, "Acceleration_Z");
+                }
             }
-            addStandardFeatures(headerFields, sensorType, "Acceleration_Height");
-            addStandardFeatures(headerFields, sensorType, "Acceleration_XZ");
-            addStandardFeatures(headerFields, sensorType, "Acceleration_XYZ");
+
+            if (TestBenchSettings.featureTagsAllowed(FeatureTag.Acceleration)) {
+                addStandardFeatures(headerFields, sensorType, "Acceleration_Height");
+                addStandardFeatures(headerFields, sensorType, "Acceleration_XZ");
+                addStandardFeatures(headerFields, sensorType, "Acceleration_XYZ");
+            }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureTag.Angular)) {
                 addStandardFeatures(headerFields, sensorType, "Velocity_Angular");
