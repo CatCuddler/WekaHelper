@@ -27,14 +27,14 @@ public class TestBenchSettings {
     private static boolean useExistingFeatureFile = true;
 
     // leave empty to use the standard folder name, generated from chosen settings
-    private static String forceFolderName = "features reduced - velocity - 2t";
+    private static String forceFolderName = "subject dependent test";
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 6;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
-    private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
+    private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.Half;
 
     // types of features to disallow
     private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
@@ -42,7 +42,8 @@ public class TestBenchSettings {
 //            FeatureTag.SubjectOrientationRelevant
 //            FeatureTag.DualSensorCombination
 //            FeatureTag.Position
-            FeatureTag.Velocity
+//            FeatureTag.Velocity
+//            FeatureTag.Acceleration
     ));
 
     // scale all features by fixed amount (required for some algorithms)
@@ -51,7 +52,7 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-//            {"rForeArm", "lLeg"}
+            {"rForeArm", "lLeg"}
 //            ,
 //            {"rForeArm", "rLeg"}
 //            ,

@@ -223,7 +223,8 @@ public class TestBench {
                         // determine how many data to remove from the subject, for each task, if not all should be removed from training set
                         // the tasks are saved in blocks within the feature set for each subject
                         ArrayList<Integer> instancesPerTask = new ArrayList<>();
-                        ArrayList<Integer> instancesToRemoveFromTrainingDataPerTask = new ArrayList<>();
+                        ArrayList<Integer> instancesToKeepInTrainingDataPerTask = new ArrayList<>();
+                        ArrayList<Integer> instancesToRemoveFromTestDataPerTask = new ArrayList<>();
                         if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
                             String previousTask = "";
@@ -244,8 +245,18 @@ public class TestBench {
 
                             for (int i = 0; i < instancesPerTask.size(); i++) {
                                 Integer instancesForTask = instancesPerTask.get(i);
-                                Integer half = instancesForTask / 2;
-                                instancesToRemoveFromTrainingDataPerTask.add(half);
+
+                                int instancesToLeaveOutForWindow =
+                                        (int) Math.ceil(
+                                                TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion()
+                                                        / TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion())
+                                                - 1;
+
+                                int instancesToKeepForTrainingData = (int) Math.ceil((instancesForTask - instancesToLeaveOutForWindow) / 2f);
+                                instancesToKeepInTrainingDataPerTask.add((instancesToKeepForTrainingData));
+
+                                instancesToRemoveFromTestDataPerTask.add(instancesToKeepForTrainingData + instancesToLeaveOutForWindow);
+
                             }
 
                             // debug output for instances per subject
@@ -253,7 +264,7 @@ public class TestBench {
                             for (int i = 0; i < instancesPerTask.size(); i++) {
                                 totalNumberOfInstancesForSubject += instancesPerTask.get(i);
                             }
-//                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
+                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
 
                         }
 
@@ -264,7 +275,7 @@ public class TestBench {
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
 
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
-//                            System.out.println("training data before:   " + trainingDataAllSensors.size());
+                            System.out.println("training data before:   " + trainingDataAllSensors.size());
 
                             int countForCurrentClass = 0;
                             int classIndex = -1;
@@ -281,7 +292,7 @@ public class TestBench {
                                         classIndex++;
                                     }
                                     countForCurrentClass++;
-                                    if (countForCurrentClass <= instancesToRemoveFromTrainingDataPerTask.get(classIndex))
+                                    if (countForCurrentClass > instancesToKeepInTrainingDataPerTask.get(classIndex))
                                         trainingDataAllSensors.remove(i);
                                 }
                             }
@@ -314,7 +325,7 @@ public class TestBench {
                         }
 
                         testDataAllSensors = new Instances(allDataUnfiltered);
-//                        System.out.println("test data before:   " + testDataAllSensors.size());
+                        System.out.println("test data before:   " + testDataAllSensors.size());
 
                         // remove all but current subject from test data
                         for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
@@ -345,7 +356,7 @@ public class TestBench {
                                     classIndex++;
                                 }
                                 countForCurrentClass++;
-                                if (countForCurrentClass > instancesToRemoveFromTrainingDataPerTask.get(classIndex)) {
+                                if (countForCurrentClass <= instancesToRemoveFromTestDataPerTask.get(classIndex)) {
                                     testDataAllSensors.remove(i);
                                 }
                             }
@@ -359,8 +370,8 @@ public class TestBench {
                     }
 
 
-//                    System.out.println("training data after:   " + trainingDataAllSensors.size());
-//                    System.out.println("test data after:   " + testDataAllSensors.size());
+                    System.out.println("training data after:   " + trainingDataAllSensors.size());
+                    System.out.println("test data after:   " + testDataAllSensors.size());
 
 
                     // remove attributes from sensors that are not included in this sensor permutation
