@@ -259,12 +259,12 @@ public class TestBench {
 
                             }
 
-                            // debug output for instances per subject
-                            int totalNumberOfInstancesForSubject = 0;
-                            for (int i = 0; i < instancesPerTask.size(); i++) {
-                                totalNumberOfInstancesForSubject += instancesPerTask.get(i);
-                            }
-                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
+//                            // debug output for instances per subject
+//                            int totalNumberOfInstancesForSubject = 0;
+//                            for (int i = 0; i < instancesPerTask.size(); i++) {
+//                                totalNumberOfInstancesForSubject += instancesPerTask.get(i);
+//                            }
+//                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
 
                         }
 
@@ -275,7 +275,7 @@ public class TestBench {
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
 
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
-                            System.out.println("training data before:   " + trainingDataAllSensors.size());
+//                            System.out.println("training data before:   " + trainingDataAllSensors.size());
 
                             int countForCurrentClass = 0;
                             int classIndex = -1;
@@ -325,7 +325,7 @@ public class TestBench {
                         }
 
                         testDataAllSensors = new Instances(allDataUnfiltered);
-                        System.out.println("test data before:   " + testDataAllSensors.size());
+//                        System.out.println("test data before:   " + testDataAllSensors.size());
 
                         // remove all but current subject from test data
                         for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
@@ -370,8 +370,8 @@ public class TestBench {
                     }
 
 
-                    System.out.println("training data after:   " + trainingDataAllSensors.size());
-                    System.out.println("test data after:   " + testDataAllSensors.size());
+//                    System.out.println("training data after:   " + trainingDataAllSensors.size());
+//                    System.out.println("test data after:   " + testDataAllSensors.size());
 
 
                     // remove attributes from sensors that are not included in this sensor permutation
