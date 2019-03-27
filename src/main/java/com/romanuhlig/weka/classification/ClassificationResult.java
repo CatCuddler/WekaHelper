@@ -3,6 +3,7 @@ package com.romanuhlig.weka.classification;
 import com.romanuhlig.weka.controller.GlobalData;
 import com.romanuhlig.weka.io.SensorPermutation;
 import com.romanuhlig.weka.math.MathHelper;
+
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
@@ -11,34 +12,58 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.*;
 
+/**
+ * Summarizes results of training and testing a model
+ *
+ * @author Roman Uhlig
+ */
 public class ClassificationResult {
 
-    private static ClassificationResultF1Comparator f1Comparator = new ClassificationResultF1Comparator();
 
+    // information about the evaluation results
     private final String classifier;
     private final String testDataSubject;
     private final int numberOfSensors;
     private final List<String> sensorList;
     private final double averageF1Score;
+    // for this summary statistic, invalid F1 scores are treated as zero
     private final double averageF1zeroNAN;
     private final double minAvgF1Person;
     private final double minimumF1PersonTask;
-    private static String[] headerForCSV;
-    private String[] dataForCSV;
-    private String sensorSummary;
     private final long timeTaken;
     private final double accuracy;
     private final double[] averageF1PerTask;
-    private static final DecimalFormat tableDoubleFormatter;
-    private static final HashMap<String, String> sensorNamesForTable;
+    private String sensorSummary;
+
+    // bonus information for csv output
+    private static String[] headerForCSV;
+    private String[] dataForCSV;
+
+    // formatting / organisation of data
+    private static ClassificationResultF1Comparator f1Comparator = new ClassificationResultF1Comparator();
+    private static DecimalFormat tableDoubleFormatter;
+    private static HashMap<String, String> sensorNamesForTable;
 
     static {
+        initializeTableDecimalFormatting();
+        initializeTableSensorIdentifiers();
+    }
+
+    /**
+     * Setup number formatting for tables to use "." as decimal separator
+     */
+    private static void initializeTableDecimalFormatting() {
         // fort table output, use "." as decimal separator regardless of locale, and round to six digits
         tableDoubleFormatter = new DecimalFormat("0.000000");
         DecimalFormatSymbols dfs = tableDoubleFormatter.getDecimalFormatSymbols();
         dfs.setDecimalSeparator('.');
         tableDoubleFormatter.setDecimalFormatSymbols(dfs);
+    }
 
+    /**
+     * Setup shortened names for sensors within tables
+     */
+    private static void initializeTableSensorIdentifiers() {
         // use shorter identifiers for table output of sensors
         sensorNamesForTable = new HashMap<>();
         sensorNamesForTable.put("head", "He");
@@ -53,9 +78,25 @@ public class ClassificationResult {
         sensorNamesForTable.put("rHand", "rH");
         sensorNamesForTable.put("rLeg", "rL");
         sensorNamesForTable.put("spine", "Sp");
-
     }
 
+    /**
+     * Construct classification result from given data
+     *
+     * @param classifier
+     * @param testDataSubject
+     * @param numberOfSensors
+     * @param sensorList
+     * @param sensorSummary
+     * @param averageF1Score
+     * @param averageF1zeroNAN
+     * @param minimumF1Person
+     * @param averageF1PerTask
+     * @param minimumAverageF1perTask
+     * @param minimumF1PersonTask
+     * @param accuracy
+     * @param timeTaken
+     */
     private ClassificationResult(String classifier, String testDataSubject,
                                  int numberOfSensors, List<String> sensorList, String sensorSummary,
                                  double averageF1Score, double averageF1zeroNAN,
@@ -63,7 +104,7 @@ public class ClassificationResult {
                                  double minimumAverageF1perTask, double minimumF1PersonTask,
                                  double accuracy, long timeTaken) {
 
-        // create header for CSV writing later on, MIND THE ORDER, has to stay the same as below
+        // create header for CSV writing later on, MIND THE ORDER, has to stay the same as values below
         if (headerForCSV == null) {
             LinkedList<String> headerList = new LinkedList<>();
             headerList = new LinkedList<>();
@@ -74,7 +115,6 @@ public class ClassificationResult {
             headerList.add("F1-min-task-avg");
             headerList.add("F1-min-single-task-subject");
             headerList.add("Number-of-sensors");
-            //            headerList.add("sensorList");
             for (String sensor : GlobalData.getAllAvailableSensors()) {
                 headerList.add(getSensorNameForTable(sensor));
             }
@@ -102,7 +142,6 @@ public class ClassificationResult {
         dataForCSVList.add(f1ResultForTable(minimumAverageF1perTask));
         dataForCSVList.add(f1ResultForTable(minimumF1PersonTask));
         dataForCSVList.add(Integer.toString(numberOfSensors));
-        //        dataForCSVList.add(sensorList);
         for (String sensor : GlobalData.getAllAvailableSensors()) {
             if (sensorList.contains(sensor)) {
                 dataForCSVList.add(getSensorNameForTable(sensor));
@@ -138,19 +177,29 @@ public class ClassificationResult {
         this.averageF1PerTask = averageF1PerTask;
     }
 
+    /**
+     * Construct classification result for a single model produced for one subject
+     *
+     * @param evaluation
+     * @param classifier
+     * @param instances
+     * @param subject
+     * @param sensorPermutation
+     * @param timeTaken
+     * @return
+     */
     public static ClassificationResult constructClassificationResultForSinglePerson(
             Evaluation evaluation, Classifier classifier, Instances instances,
             String subject, SensorPermutation sensorPermutation, long timeTaken) {
 
-
+        // retrieve basic information
         String _classifier = classifier.getClass().getSimpleName();
         String _testDataSubject = subject;
         int _numberOfSensors = sensorPermutation.getNumberOfSensors();
         List<String> _sensorList = sensorPermutation.getIncludedSensors();
         String _sensorSummary = sensorPermutation.getSensorListRepresentation();
 
-//        System.out.println("sensors: " + sensorPermutation.getNumberOfSensors());
-
+        // calculate specialized F1 score variants
         double _averageF1 = 0;
         double _averageF1zeroNAN = 0;
         double _minimumF1 = Double.POSITIVE_INFINITY;
@@ -160,25 +209,14 @@ public class ClassificationResult {
             _averageF1zeroNAN += MathHelper.getZeroIfNAN(evaluation.fMeasure(i));
             _minimumF1 = MathHelper.getMinimumWithNAN(_minimumF1, evaluation.fMeasure(i));
             _averageF1perTask[i] = evaluation.fMeasure(i);
-//            System.out.println("recall " + i + " " + evaluation.recall(i));
-//            System.out.println("precision " + i + " " + evaluation.precision(i));
-//            System.out.println("fmeasure " + i + " " + evaluation.fMeasure(i));
-//            System.out.println("true pos rate " + i + " " + evaluation.truePositiveRate(i));
-//            System.out.println("false neg rate " + i + " " + evaluation.falseNegativeRate(i));
-//            System.out.println("true pos num " + i + " " + evaluation.numTruePositives(i));
-//            System.out.println("false neg num " + i + " " + evaluation.numFalseNegatives(i));
         }
         _averageF1 /= instances.numClasses();
         _averageF1zeroNAN /= instances.numClasses();
 
+        // calculate accuracy
         double _accuracy = evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
 
-        //        System.out.println("fmeasure avg: " + averageF1Score);
-//        System.out.println("fmeasure Wei: " + evaluation.weightedFMeasure());
-//        System.out.println("fmeasure uMA: " + evaluation.unweightedMacroFmeasure());
-//        System.out.println("fmeasure uMI: " + evaluation.unweightedMicroFmeasure());
-//        ConsoleHelper.printConfusionMatrix(evaluation.confusionMatrix());
-
+        // return a newly constructed classification result, using the calculated values
         ClassificationResult classificationResult = new ClassificationResult
                 (_classifier, _testDataSubject, _numberOfSensors, _sensorList, _sensorSummary,
                         _averageF1, _averageF1zeroNAN, _averageF1, _averageF1perTask, _minimumF1, _minimumF1,
@@ -187,7 +225,13 @@ public class ClassificationResult {
 
     }
 
-
+    /**
+     * Combine multiple classification results into one
+     * All of the original results must share the same metadata (e.g. Classifier, sensors used)
+     *
+     * @param classifierResults
+     * @return
+     */
     public static ClassificationResult summarizeClassifierResults(
             ArrayList<ClassificationResult> classifierResults) {
 
@@ -199,6 +243,7 @@ public class ClassificationResult {
         long _timeTaken = 0;
         double _averageAccuracy = 0;
         double[] _averageF1perTask = new double[classifierResults.get(0).averageF1PerTask.length];
+        // compute various averages
         for (ClassificationResult result : classifierResults) {
             _averageClassifierF1 += result.averageF1Score;
             _averageClassifierF1zeroNAN += result.averageF1zeroNAN;
@@ -223,7 +268,10 @@ public class ClassificationResult {
             _minimumAverageF1PerTask = MathHelper.getMinimumWithNAN(_minimumAverageF1PerTask, _averageF1perTask[i]);
         }
 
+        // take metadata from the previous results
         ClassificationResult old = classifierResults.get(0);
+
+        // there is no single subject in any summary
         String testDataSubject = "summary";
 
         ClassificationResult summaryResult = new ClassificationResult
@@ -235,51 +283,97 @@ public class ClassificationResult {
 
     }
 
-
+    /**
+     * Name of the classifier that was used
+     *
+     * @return
+     */
     public String getClassifier() {
         return classifier;
     }
 
+    /**
+     * Name of the test subject
+     *
+     * @return
+     */
     public String getTestDataSubject() {
         return testDataSubject;
     }
 
+    /**
+     * The number of sensors used for the classification
+     *
+     * @return
+     */
     public int getNumberOfSensors() {
         return numberOfSensors;
     }
 
+    /**
+     * Names of all sensors used for the classification
+     *
+     * @return
+     */
     public List<String> getSensorList() {
         return sensorList;
     }
 
+    /**
+     * The average overall F1 score
+     *
+     * @return
+     */
     public double getAverageF1Score() {
         return averageF1Score;
     }
 
+    /**
+     * The average overall F1 score, if non-computable F1 scores are treated as zero
+     *
+     * @return
+     */
     public double getAverageF1zeroNAN() {
         return averageF1zeroNAN;
     }
 
+    /**
+     * The minimum average F1 score for any subject
+     *
+     * @return
+     */
     public double getMinAvgF1Person() {
         return minAvgF1Person;
     }
 
+    /**
+     * The minimum F1 score across all subjects and exercises
+     *
+     * @return
+     */
     public double getMinimumF1PersonTask() {
         return minimumF1PersonTask;
     }
 
+    /**
+     * Orders ClassificationResults based primarily on their minimum F1 score
+     *
+     * @return
+     */
     public static ClassificationResultF1Comparator getF1Comparator() {
         return f1Comparator;
     }
 
-
+    /**
+     * Orders ClassificationResults based primarily on their minimum F1 score
+     */
     public static class ClassificationResultF1Comparator implements Comparator<ClassificationResult> {
         public int compare(ClassificationResult c1, ClassificationResult c2) {
 
             if (Double.isNaN(c1.getMinimumF1PersonTask())) {
                 if (Double.isNaN(c2.getMinimumF1PersonTask())) {
 
-                    // if min f1 is NAN for both, do the same test for non-NAN-f1 instead
+                    // if minimum f1 is NAN for both, base comparison on the average F1 score with NAN treated as zero
                     if (Double.isNaN(c1.getAverageF1zeroNAN())) {
                         if (Double.isNaN(c2.getAverageF1zeroNAN())) {
                             return 0;
@@ -293,27 +387,43 @@ public class ClassificationResult {
                     }
 
                 } else {
+                    // only first value is NAN
                     return 1;
                 }
             } else if (Double.isNaN(c2.getMinimumF1PersonTask())) {
+                // only second value is NAN
                 return -1;
             } else {
+                // use the minimum F1 scores for comparison if both are valid
                 return Double.compare(c2.getMinimumF1PersonTask(), c1.getMinimumF1PersonTask());
             }
 
         }
     }
 
-
+    /**
+     * The header for all values that get written to csv files from this class
+     * Compatible with getDataForCSV
+     * @return
+     */
     public static String[] getHeaderForCSV() {
         return headerForCSV;
     }
 
+    /**
+     * Data that represents a line in a csv file
+     * Compatible with getHeaderForCSV
+     * @return
+     */
     public String[] getDataForCSV() {
         return dataForCSV;
     }
 
-
+    /**
+     * Reformats and renames certain values for the csv output
+     * @param value
+     * @return
+     */
     private String f1ResultForTable(double value) {
         if (Double.isNaN(value)) {
             return "\\tableIncalculable"; //"incalculable";
@@ -324,6 +434,11 @@ public class ClassificationResult {
         }
     }
 
+    /**
+     * A helper string for the color formatting of results within latex code
+     * @param value
+     * @return
+     */
     private String f1ColorForTable(double value) {
         if (Double.isNaN(value)) {
             return "\\cellcolor{tbTerrible}";
@@ -342,6 +457,11 @@ public class ClassificationResult {
         }
     }
 
+    /**
+     * Shortened sensor names for output tables
+     * @param sensor
+     * @return
+     */
     private String getSensorNameForTable(String sensor) {
         return sensorNamesForTable.get(sensor);
     }

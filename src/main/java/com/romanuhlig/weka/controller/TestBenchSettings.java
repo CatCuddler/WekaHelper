@@ -27,14 +27,14 @@ public class TestBenchSettings {
     private static boolean useExistingFeatureFile = true;
 
     // leave empty to use the standard folder name, generated from chosen settings
-    private static String forceFolderName = "subject dependent test";
+    private static String forceFolderName = "1 second - handcontrollers - 2 trackers";
 
     // input frame data
-    private static double windowSizeForFrameDataToFeatureConversion = 6;
+    private static double windowSizeForFrameDataToFeatureConversion = 1;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
-    private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.Half;
+    private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
 
     // types of features to disallow
     private static ArrayList<FeatureTag> forbiddenFeatureTags = new ArrayList<>(Arrays.asList(
@@ -52,7 +52,7 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorPermutations = new String[][]{
-            {"rForeArm", "lLeg"}
+//            {"rForeArm", "lLeg"}
 //            ,
 //            {"rForeArm", "rLeg"}
 //            ,
@@ -105,8 +105,8 @@ public class TestBenchSettings {
 
 
     // sensor permutations to use during evaluation
-    private static SensorUsage sensorUsageHMD = SensorUsage.MayInclude;
-    private static SensorUsage sensorUsageHandControllers = SensorUsage.CannotInclude;
+    private static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
+    private static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
     private static boolean allowSingleHandController = false;
     private static int minimumNumberOfTrackers = 2;
     private static int maximumNumberOfTrackers = 2;
@@ -197,6 +197,7 @@ public class TestBenchSettings {
         MayInclude, MustInclude, CannotInclude
     }
 
+    // All and AllAndNoOtherData are useful for sanity checks, or to produce models with data from all participants
     public enum SubjectDataInclusion {
         None, Half, HalfAndNoOtherData, All, AllAndNoOtherData
     }
