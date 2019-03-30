@@ -4,8 +4,7 @@ import com.romanuhlig.weka.controller.TestBenchSettings;
 import com.romanuhlig.weka.data.FrameData;
 import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.data.FrameDataSet;
-import com.romanuhlig.weka.data.OutputFeatureVector;
-import org.apache.commons.lang3.time.StopWatch;
+import com.romanuhlig.weka.data.FeatureVector;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -17,7 +16,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class CppDataClassifier {
 
@@ -118,7 +116,7 @@ public class CppDataClassifier {
 //                        outputClassifierResultToCpp("starting classification thread");
 
                         // create features
-                        OutputFeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
+                        FeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
 
                         // create header and attribute types
                         if (instanceHeader == null) {

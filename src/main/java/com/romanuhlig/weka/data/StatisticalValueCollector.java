@@ -3,7 +3,7 @@ package com.romanuhlig.weka.data;
 import java.util.ArrayList;
 import java.util.Comparator;
 
-public class SortingValueCollector {
+public class StatisticalValueCollector {
 
 
     private final ArrayList<Double> values = new ArrayList<>();
@@ -32,7 +32,7 @@ public class SortingValueCollector {
     };
 
 
-    public SortingValueCollector(boolean scaleRunningTotalByFrameDuration, boolean scaleValuesByBodySize, double totalTimeForAllFrames, double bodySize) {
+    public StatisticalValueCollector(boolean scaleRunningTotalByFrameDuration, boolean scaleValuesByBodySize, double totalTimeForAllFrames, double bodySize) {
         this.scaleRunningTotalByFrameDuration = scaleRunningTotalByFrameDuration;
         this.totalTimeForAllFrames = totalTimeForAllFrames;
         this.scaleValuesByBodySize = scaleValuesByBodySize;

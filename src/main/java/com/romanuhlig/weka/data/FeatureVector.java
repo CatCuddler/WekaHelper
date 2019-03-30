@@ -4,13 +4,13 @@ import com.romanuhlig.weka.controller.TestBenchSettings;
 
 import java.util.ArrayList;
 
-public class OutputFeatureVector {
+public class FeatureVector {
 
     private final ArrayList<Double> features;
     final String classValue;
     final String subject;
 
-    public OutputFeatureVector(String subject, String classValue) {
+    public FeatureVector(String subject, String classValue) {
         this.features = new ArrayList<>();
         this.subject = subject;
         this.classValue = classValue;

@@ -8,7 +8,7 @@ import java.util.HashMap;
  *
  * @author Roman Uhlig
  */
-public class AddingConfusionMatrix {
+public class ConfusionMatrixSummary {
 
     // confusion matrix data
     private double[][] values;

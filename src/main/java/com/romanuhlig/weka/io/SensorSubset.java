@@ -3,10 +3,8 @@ package com.romanuhlig.weka.io;
 import weka.core.Attribute;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
-public class SensorPermutation {
+public class SensorSubset {
 
     private final ArrayList<String> includedSensors;
     private final ArrayList<String> excludedSensors;
@@ -20,7 +18,7 @@ public class SensorPermutation {
     private final int numberOfTrackers;
 
 
-    public SensorPermutation(ArrayList<String> includedSensors, ArrayList<String> excludedSensors) {
+    public SensorSubset(ArrayList<String> includedSensors, ArrayList<String> excludedSensors) {
         this.includedSensors = includedSensors;
         this.excludedSensors = excludedSensors;
 
@@ -95,9 +93,9 @@ public class SensorPermutation {
         return includedSensors.contains(sensor);
     }
 
-    public static ArrayList<SensorPermutation> generateAllPermutations(ArrayList<String> sensorPositions) {
+    public static ArrayList<SensorSubset> generateAllPermutations(ArrayList<String> sensorPositions) {
 
-        ArrayList<SensorPermutation> allPermutations = new ArrayList<>();
+        ArrayList<SensorSubset> allPermutations = new ArrayList<>();
 
         collectSensorPermutationsRecursively(allPermutations, sensorPositions, new ArrayList<>(), new ArrayList<>(), 0);
 
@@ -105,7 +103,7 @@ public class SensorPermutation {
     }
 
     private static void collectSensorPermutationsRecursively
-            (ArrayList<SensorPermutation> allPermutations, ArrayList<String> originalSensorPositions,
+            (ArrayList<SensorSubset> allPermutations, ArrayList<String> originalSensorPositions,
              ArrayList<String> currentIncludedSensors, ArrayList<String> currentExcludedSensors,
              int currentIndex) {
 
@@ -113,7 +111,7 @@ public class SensorPermutation {
         if (currentIndex >= originalSensorPositions.size()) {
             // only if at least one sensorPosition is in list
             if (!currentIncludedSensors.isEmpty())
-                allPermutations.add((new SensorPermutation(currentIncludedSensors, currentExcludedSensors)));
+                allPermutations.add((new SensorSubset(currentIncludedSensors, currentExcludedSensors)));
             // System.out.println("permutation sizes   " + currentIncludedSensors.size() + "   " + currentExcludedSensors.size()
             //       + "   " + (currentIncludedSensors.size() + currentExcludedSensors.size()));
 

@@ -2,7 +2,7 @@ package com.romanuhlig.weka.controller;
 
 import com.romanuhlig.weka.classification.ClassificationResult;
 import com.romanuhlig.weka.classification.ClassifierFactory;
-import com.romanuhlig.weka.classification.AddingConfusionMatrix;
+import com.romanuhlig.weka.classification.ConfusionMatrixSummary;
 import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
@@ -42,28 +42,28 @@ public class TestBench {
         }
 
 
-        ArrayList<SensorPermutation> sensorPermutations = SensorPermutation.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
+        ArrayList<SensorSubset> sensorSubsets = SensorSubset.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
         GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
 
 
         // remove sensor permutations we do not need for this run
-        for (int i = sensorPermutations.size() - 1; i >= 0; i--) {
+        for (int i = sensorSubsets.size() - 1; i >= 0; i--) {
 
-            SensorPermutation sensorPermutation = sensorPermutations.get(i);
+            SensorSubset sensorSubset = sensorSubsets.get(i);
 
             // specific sensor requests override all other criteria
             if (TestBenchSettings.specificSensorCombinationRequested()) {
 
                 // check for specific sensor inclusion
-                if (TestBenchSettings.isSensorCombinationBlocked(sensorPermutation)) {
-                    sensorPermutations.remove(i);
+                if (TestBenchSettings.isSensorCombinationBlocked(sensorSubset)) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
 
             } else if (TestBenchSettings.minimumSensorCombinationRequested()) {
 
-                if (TestBenchSettings.doesNotFulfillMinimumSensorRequirements(sensorPermutation)) {
-                    sensorPermutations.remove(i);
+                if (TestBenchSettings.doesNotFulfillMinimumSensorRequirements(sensorSubset)) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
             } else {
@@ -73,21 +73,21 @@ public class TestBench {
                 // check for hand controller inclusion
                 switch (TestBenchSettings.getSensorUsageHandControllers()) {
                     case CannotInclude:
-                        if (sensorPermutation.includesAtLeastOneHandController()) {
-                            sensorPermutations.remove(i);
+                        if (sensorSubset.includesAtLeastOneHandController()) {
+                            sensorSubsets.remove(i);
                             continue;
                         }
                         break;
                     case MustInclude:
-                        if (!sensorPermutation.includesBothHandControllers()) {
-                            sensorPermutations.remove(i);
+                        if (!sensorSubset.includesBothHandControllers()) {
+                            sensorSubsets.remove(i);
                             continue;
                         }
                         break;
                 }
                 if (!TestBenchSettings.allowSingleHandController()
-                        && sensorPermutation.includesAtLeastOneHandController()
-                        && !sensorPermutation.includesBothHandControllers()
+                        && sensorSubset.includesAtLeastOneHandController()
+                        && !sensorSubset.includesBothHandControllers()
                 ) {
                     continue;
                 }
@@ -95,14 +95,14 @@ public class TestBench {
                 // check for HMD inclusion
                 switch (TestBenchSettings.getSensorUsageHMD()) {
                     case CannotInclude:
-                        if (sensorPermutation.includesHMD()) {
-                            sensorPermutations.remove(i);
+                        if (sensorSubset.includesHMD()) {
+                            sensorSubsets.remove(i);
                             continue;
                         }
                         break;
                     case MustInclude:
-                        if (!sensorPermutation.includesHMD()) {
-                            sensorPermutations.remove(i);
+                        if (!sensorSubset.includesHMD()) {
+                            sensorSubsets.remove(i);
                             continue;
                         }
                         break;
@@ -110,25 +110,25 @@ public class TestBench {
 
                 // check for tracker inclusion
                 if (TestBenchSettings.getMaximumNumberOfTrackers() >= 0 &&
-                        sensorPermutation.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
-                    sensorPermutations.remove(i);
+                        sensorSubset.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
                 if (TestBenchSettings.getMinimumNumberOfTrackers() >= 0 &&
-                        sensorPermutation.getNumberOfTrackers() < TestBenchSettings.getMinimumNumberOfTrackers()) {
-                    sensorPermutations.remove(i);
+                        sensorSubset.getNumberOfTrackers() < TestBenchSettings.getMinimumNumberOfTrackers()) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
 
                 // check for overall sensor inclusion
                 if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
-                        sensorPermutation.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
-                    sensorPermutations.remove(i);
+                        sensorSubset.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
                 if (TestBenchSettings.getMinimumNumberOfSensors() >= 0 &&
-                        sensorPermutation.getNumberOfSensors() < TestBenchSettings.getMinimumNumberOfSensors()) {
-                    sensorPermutations.remove(i);
+                        sensorSubset.getNumberOfSensors() < TestBenchSettings.getMinimumNumberOfSensors()) {
+                    sensorSubsets.remove(i);
                     continue;
                 }
             }
@@ -136,8 +136,8 @@ public class TestBench {
 
         }
 
-        // System.out.println("permutations:     " + sensorPermutations.size());
-//        for (SensorPermutation permutation : sensorPermutations) {
+        // System.out.println("permutations:     " + sensorSubsets.size());
+//        for (SensorSubset permutation : sensorSubsets) {
         //  System.out.println();
 
         //  for (String sensor : permutation.getIncludedSensors()) {
@@ -165,7 +165,7 @@ public class TestBench {
         ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
 
         int numberOfEvaluationsInTotal =
-                sensorPermutations.size() * classifiers.size()
+                sensorSubsets.size() * classifiers.size()
                         * featureExtractionResults.getIndividualTrainingAndTestFilePackages().size();
 
 
@@ -175,12 +175,12 @@ public class TestBench {
 
         // Weka evaluation
         // ... sensor permutations
-        for (SensorPermutation sensorPermutation : sensorPermutations) {
+        for (SensorSubset sensorSubset : sensorSubsets) {
 
 
             ArrayList<ClassificationResult> sensorPermutationResults = new ArrayList<>();
 
-            String outputFolderSensorPermutation = resultsBaseFolder + sensorPermutation.getNumberOfSensors() + " sensors/" + sensorPermutation.getFolderStringRepresentation() + "/";
+            String outputFolderSensorPermutation = resultsBaseFolder + sensorSubset.getNumberOfSensors() + " sensors/" + sensorSubset.getFolderStringRepresentation() + "/";
 
             // ... classifiers
             for (Classifier classifier : classifiers) {
@@ -190,7 +190,7 @@ public class TestBench {
 
                 String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
 
-                AddingConfusionMatrix classifierAddingConfusionMatrix = new AddingConfusionMatrix();
+                ConfusionMatrixSummary classifierConfusionMatrixSummary = new ConfusionMatrixSummary();
 
                 // ... test subjects
                 for (int fp = 0; fp < featureExtractionResults.getIndividualTrainingAndTestFilePackages().size(); fp++) {
@@ -381,7 +381,7 @@ public class TestBench {
 
 
                     for (int i = 0; i < allAttributesList.size(); i++) {
-                        if (sensorPermutation.attributeForbidden(allAttributesList.get(i))) {
+                        if (sensorSubset.attributeForbidden(allAttributesList.get(i))) {
                             attributesToRemove.add(i);
                         }
 
@@ -431,7 +431,7 @@ public class TestBench {
                     // file output
                     // current result
                     ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson
-                            (eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorPermutation, singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
+                            (eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorSubset, singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // model
                     if (TestBenchSettings.writeAllModelsToFolder()) {
@@ -447,12 +447,12 @@ public class TestBench {
                     FileWriter.writeTextFile(eval.toMatrixString(),
                             outputFolderSubject, "confusion matrix.txt");
                     // output confusion matrix for latex
-                    AddingConfusionMatrix tasksAddingConfusionMatrix = new AddingConfusionMatrix();
-                    tasksAddingConfusionMatrix.addResults(eval.confusionMatrix(), trainingDataFinal);
-                    FileWriter.writeTextFile(tasksAddingConfusionMatrix.toOutputStringLatex(),
+                    ConfusionMatrixSummary tasksConfusionMatrixSummary = new ConfusionMatrixSummary();
+                    tasksConfusionMatrixSummary.addResults(eval.confusionMatrix(), trainingDataFinal);
+                    FileWriter.writeTextFile(tasksConfusionMatrixSummary.toOutputStringLatex(),
                             outputFolderSubject, "confusion matrix latex.txt");
                     // add confusion matrix to classifier summary
-                    classifierAddingConfusionMatrix.addResults(eval.confusionMatrix(), trainingDataFinal);
+                    classifierConfusionMatrixSummary.addResults(eval.confusionMatrix(), trainingDataFinal);
 
                     // collect result for summaries
                     classifierResults.add(classificationResult);
@@ -486,7 +486,7 @@ public class TestBench {
 
                     System.out.println(filePackage.getSubject());
 
-                    System.out.println(sensorPermutation.getFolderStringRepresentation());
+                    System.out.println(sensorSubset.getFolderStringRepresentation());
 
                     ArrayList<Attribute> attributesTraining = Collections.list(trainingData.enumerateAttributes());
                     ArrayList<Attribute> attributesTest = Collections.list(testData.enumerateAttributes());
@@ -509,8 +509,8 @@ public class TestBench {
 
                 }
 
-                FileWriter.writeTextFile(classifierAddingConfusionMatrix.toOutputString(), outputFolderClassifier, "confusion matrix.txt");
-                FileWriter.writeTextFile(classifierAddingConfusionMatrix.toOutputStringLatex(), outputFolderClassifier, "confusion matrix latex.txt");
+                FileWriter.writeTextFile(classifierConfusionMatrixSummary.toOutputString(), outputFolderClassifier, "confusion matrix.txt");
+                FileWriter.writeTextFile(classifierConfusionMatrixSummary.toOutputStringLatex(), outputFolderClassifier, "confusion matrix latex.txt");
 
                 ClassificationResult classifierResultSummary = ClassificationResult.summarizeClassifierResults(classifierResults);
                 classifierResults.add(classifierResultSummary);
@@ -522,12 +522,12 @@ public class TestBench {
                 // collect for sensor permutation summary
                 sensorPermutationResults.add(classifierResultSummary);
                 // collect for sensor number summary
-                if (sensorNumberResults.containsKey(sensorPermutation.getNumberOfSensors())) {
-                    sensorNumberResults.get(sensorPermutation.getNumberOfSensors()).add(classifierResultSummary);
+                if (sensorNumberResults.containsKey(sensorSubset.getNumberOfSensors())) {
+                    sensorNumberResults.get(sensorSubset.getNumberOfSensors()).add(classifierResultSummary);
                 } else {
                     ArrayList<ClassificationResult> sensorNumberResultList = new ArrayList<>();
                     sensorNumberResultList.add(classifierResultSummary);
-                    sensorNumberResults.put(sensorPermutation.getNumberOfSensors(), sensorNumberResultList);
+                    sensorNumberResults.put(sensorSubset.getNumberOfSensors(), sensorNumberResultList);
                 }
 
 

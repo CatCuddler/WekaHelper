@@ -2,7 +2,7 @@ package com.romanuhlig.weka.controller;
 
 import com.romanuhlig.weka.classification.ClassifierFactory;
 import com.romanuhlig.weka.classification.ClassifierFactory.ClassifierType;
-import com.romanuhlig.weka.io.SensorPermutation;
+import com.romanuhlig.weka.io.SensorSubset;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,7 +27,7 @@ public class TestBenchSettings {
     private static boolean useExistingFeatureFile = true;
 
     // leave empty to use the standard folder name, generated from chosen settings
-    private static String forceFolderName = "1 second - handcontrollers - 2 trackers";
+    private static String forceFolderName = "1 second - handcontrollers and HMD - 2 trackers";
 
     // input frame data
     private static double windowSizeForFrameDataToFeatureConversion = 1;
@@ -105,7 +105,7 @@ public class TestBenchSettings {
 
 
     // sensor permutations to use during evaluation
-    private static SensorUsage sensorUsageHMD = SensorUsage.CannotInclude;
+    private static SensorUsage sensorUsageHMD = SensorUsage.MustInclude;
     private static SensorUsage sensorUsageHandControllers = SensorUsage.MustInclude;
     private static boolean allowSingleHandController = false;
     private static int minimumNumberOfTrackers = 2;
@@ -358,14 +358,14 @@ public class TestBenchSettings {
         return useIndividualFeatureFilesForEachSubject;
     }
 
-    public static boolean isSensorCombinationBlocked(SensorPermutation sensorPermutation) {
+    public static boolean isSensorCombinationBlocked(SensorSubset sensorSubset) {
         // do not block any combination if no specific combination was requested
         if (onlyAllowSensorPermutations.length == 0) {
             return false;
             // otherwise, search for a fitting combination
         } else {
 
-            ArrayList<String> sensorsInPermutation = sensorPermutation.getIncludedSensors();
+            ArrayList<String> sensorsInPermutation = sensorSubset.getIncludedSensors();
 
             for (int i = 0; i < onlyAllowSensorPermutations.length; i++) {
 
@@ -387,13 +387,13 @@ public class TestBenchSettings {
     }
 
 
-    public static boolean doesNotFulfillMinimumSensorRequirements(SensorPermutation sensorPermutation) {
+    public static boolean doesNotFulfillMinimumSensorRequirements(SensorSubset sensorSubset) {
 
         if (minimumSensorPermuation.length == 0) {
             return false;
         } else {
 
-            ArrayList<String> sensorsInPermutation = sensorPermutation.getIncludedSensors();
+            ArrayList<String> sensorsInPermutation = sensorSubset.getIncludedSensors();
 
             for (int i = 0; i < minimumSensorPermuation.length; i++) {
 

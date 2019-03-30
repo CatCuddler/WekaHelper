@@ -1,7 +1,7 @@
 package com.romanuhlig.weka.classification;
 
 import com.romanuhlig.weka.controller.GlobalData;
-import com.romanuhlig.weka.io.SensorPermutation;
+import com.romanuhlig.weka.io.SensorSubset;
 import com.romanuhlig.weka.math.MathHelper;
 
 import weka.classifiers.Classifier;
@@ -184,20 +184,20 @@ public class ClassificationResult {
      * @param classifier
      * @param instances
      * @param subject
-     * @param sensorPermutation
+     * @param sensorSubset
      * @param timeTaken
      * @return
      */
     public static ClassificationResult constructClassificationResultForSinglePerson(
             Evaluation evaluation, Classifier classifier, Instances instances,
-            String subject, SensorPermutation sensorPermutation, long timeTaken) {
+            String subject, SensorSubset sensorSubset, long timeTaken) {
 
         // retrieve basic information
         String _classifier = classifier.getClass().getSimpleName();
         String _testDataSubject = subject;
-        int _numberOfSensors = sensorPermutation.getNumberOfSensors();
-        List<String> _sensorList = sensorPermutation.getIncludedSensors();
-        String _sensorSummary = sensorPermutation.getSensorListRepresentation();
+        int _numberOfSensors = sensorSubset.getNumberOfSensors();
+        List<String> _sensorList = sensorSubset.getIncludedSensors();
+        String _sensorSummary = sensorSubset.getSensorListRepresentation();
 
         // calculate specialized F1 score variants
         double _averageF1 = 0;
