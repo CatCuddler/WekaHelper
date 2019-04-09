@@ -93,7 +93,7 @@ public class SensorSubset {
         return includedSensors.contains(sensor);
     }
 
-    public static ArrayList<SensorSubset> generateAllPermutations(ArrayList<String> sensorPositions) {
+    public static ArrayList<SensorSubset> generateAllSubsets(ArrayList<String> sensorPositions) {
 
         ArrayList<SensorSubset> allPermutations = new ArrayList<>();
 

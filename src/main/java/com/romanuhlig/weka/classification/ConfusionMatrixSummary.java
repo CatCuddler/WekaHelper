@@ -26,6 +26,9 @@ public class ConfusionMatrixSummary {
         initializeAlternativeClassNames();
     }
 
+    /**
+     * Initialize alternative class names to be used for the text output
+     */
     private static void initializeAlternativeClassNames() {
         classNameForLines.put("jogging", "Jogging");
         classNameForLines.put("kick", "Kick");

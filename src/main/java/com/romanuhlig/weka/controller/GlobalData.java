@@ -13,7 +13,7 @@ public class GlobalData {
     static List<String> allAvailableSensors;
 
     /**
-     * All sensors that are used within the current data set
+     * Get all sensors that are used within the current data set
      * @return
      */
     public static List<String> getAllAvailableSensors() {

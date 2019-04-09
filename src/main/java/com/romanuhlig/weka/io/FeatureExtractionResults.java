@@ -17,7 +17,7 @@ public class FeatureExtractionResults implements Serializable {
         trainingAndTestFilePackages.add(newPackage);
     }
 
-    public ArrayList<TrainingAndTestFilePackage> getIndividualTrainingAndTestFilePackages() {
+    public ArrayList<TrainingAndTestFilePackage> getSubjectTrainingAndTestFilePackages() {
         return trainingAndTestFilePackages;
     }
 

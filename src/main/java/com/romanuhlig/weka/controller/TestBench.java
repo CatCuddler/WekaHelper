@@ -6,7 +6,9 @@ import com.romanuhlig.weka.classification.ConfusionMatrixSummary;
 import com.romanuhlig.weka.data.FrameDataReader;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
+
 import org.apache.commons.lang3.time.StopWatch;
+
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.core.Attribute;
@@ -19,57 +21,71 @@ import weka.filters.unsupervised.attribute.Remove;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Manages the feature extraction, training and evaluation process from start to end
+ *
+ * @author Roman Uhlig
+ */
 public class TestBench {
 
 
+    /**
+     * Create features, train and evaluate models according to the current settings
+     *
+     * @throws Exception
+     */
     public void run() throws Exception {
 
+        // this stopwatch measures the whole process, from start to end
         StopWatch stopwatchFullProcess = new StopWatch();
         stopwatchFullProcess.start();
 
-        // FrameDataReader.readFrameDataSet("./inputFrameData/TestUser__Task1__SID1__1542122933.csv");
-
+        // determine base path for the feature and evaluation data
         String startTime = TimeHelper.getDateWithSeconds();
-        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine() + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
+        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine()
+                + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
 
-
+        // load / create features
         FeatureExtractionResults featureExtractionResults;
         if (TestBenchSettings.useExistingFeatureFile()) {
-            featureExtractionResults = FileWriter.readExistingFeatureSet(TestBenchSettings.getExistingFeaturesInputFolder());
+            // load existing feature file reference, if requested
+            featureExtractionResults = FileWriter.readExistingFeatureSet(
+                    TestBenchSettings.getExistingFeaturesInputFolder());
         } else {
-            featureExtractionResults = FrameDataReader.createFeatureSets(TestBenchSettings.getInputBaseFolder(), outputFolderPath);
-            FileWriter.writeNewFeatureExtractionResults(featureExtractionResults, outputFolderPath, TestBenchSettings.getExistingFeaturesInputFolder(), "featureExtractionResults_" + startTime);
+            // create new feature file
+            featureExtractionResults = FrameDataReader.createFeatureSets(
+                    TestBenchSettings.getInputBaseFolder(), outputFolderPath);
+            FileWriter.writeNewFeatureExtractionResults(featureExtractionResults, outputFolderPath,
+                    TestBenchSettings.getExistingFeaturesInputFolder(), "featureExtractionResults_" + startTime);
         }
 
-
-        ArrayList<SensorSubset> sensorSubsets = SensorSubset.generateAllPermutations(featureExtractionResults.getAllSensorPositions());
+        // determine all possible sensor subsets for the given dataset
+        ArrayList<SensorSubset> sensorSubsets = SensorSubset.generateAllSubsets(
+                featureExtractionResults.getAllSensorPositions());
         GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
 
-
-        // remove sensor permutations we do not need for this run
+        // remove the sensor subsets we do not need for this run
         for (int i = sensorSubsets.size() - 1; i >= 0; i--) {
 
             SensorSubset sensorSubset = sensorSubsets.get(i);
 
             // specific sensor requests override all other criteria
             if (TestBenchSettings.specificSensorCombinationRequested()) {
-
                 // check for specific sensor inclusion
                 if (TestBenchSettings.isSensorCombinationBlocked(sensorSubset)) {
                     sensorSubsets.remove(i);
                     continue;
                 }
-
-            } else if (TestBenchSettings.minimumSensorCombinationRequested()) {
-
+            }
+            // if a set of sensors must be included, with others still allowed, that also takes precedence
+            else if (TestBenchSettings.minimumSensorCombinationRequested()) {
                 if (TestBenchSettings.doesNotFulfillMinimumSensorRequirements(sensorSubset)) {
                     sensorSubsets.remove(i);
                     continue;
                 }
-            } else {
-                // otherwise, check all individual criteria
-
-
+            }
+            // otherwise, check all individual criteria
+            else {
                 // check for hand controller inclusion
                 switch (TestBenchSettings.getSensorUsageHandControllers()) {
                     case CannotInclude:
@@ -85,10 +101,10 @@ public class TestBench {
                         }
                         break;
                 }
+                // check whether it is allowed to have only one instead of two handcontrollers
                 if (!TestBenchSettings.allowSingleHandController()
                         && sensorSubset.includesAtLeastOneHandController()
-                        && !sensorSubset.includesBothHandControllers()
-                ) {
+                        && !sensorSubset.includesBothHandControllers()) {
                     continue;
                 }
 
@@ -108,7 +124,7 @@ public class TestBench {
                         break;
                 }
 
-                // check for tracker inclusion
+                // check for right number of trackers
                 if (TestBenchSettings.getMaximumNumberOfTrackers() >= 0 &&
                         sensorSubset.getNumberOfTrackers() > TestBenchSettings.getMaximumNumberOfTrackers()) {
                     sensorSubsets.remove(i);
@@ -120,7 +136,7 @@ public class TestBench {
                     continue;
                 }
 
-                // check for overall sensor inclusion
+                // check for right number of sensors (including trackers) overall
                 if (TestBenchSettings.getMaximumNumberOfSensors() >= 0 &&
                         sensorSubset.getNumberOfSensors() > TestBenchSettings.getMaximumNumberOfSensors()) {
                     sensorSubsets.remove(i);
@@ -132,73 +148,60 @@ public class TestBench {
                     continue;
                 }
             }
-
-
         }
 
-        // System.out.println("permutations:     " + sensorSubsets.size());
-//        for (SensorSubset permutation : sensorSubsets) {
-        //  System.out.println();
 
-        //  for (String sensor : permutation.getIncludedSensors()) {
-        //     System.out.print(sensor + "   ");
-        //  }
-//        }
-
-
+        // initialize additional data for test run:
+        // create the chosen classifiers
         ClassifierFactory classifierFactory = new ClassifierFactory();
-
-
+        ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
+        // stop watch for a ongoing time tracking during the evaluation process
         StopWatch stopWatchEvaluation = new StopWatch();
         stopWatchEvaluation.start();
+        // stop watch for individual evaluations
         StopWatch singleTestStopWatch = new StopWatch();
+        // collection for total time used by individual classifiers
         HashMap<Classifier, Long> classifierTimeUsage = new HashMap<>();
-
-        int numberOfEvaluationsCompleted = 0;
-
+        // base folder for just the evaluation results
         String resultsBaseFolder = outputFolderPath + "results/";
-
+        // collect all evaluation results
         ArrayList<ClassificationResult> allResults = new ArrayList<>();
-
+        // collect the evaluation results for each number of sensors
         HashMap<Integer, ArrayList<ClassificationResult>> sensorNumberResults = new HashMap<>();
+        // count the number of evaluations for estimation of remaining time
+        int numberOfEvaluationsCompleted = 0;
+        int numberOfEvaluationsInTotal = sensorSubsets.size() * classifiers.size()
+                * featureExtractionResults.getSubjectTrainingAndTestFilePackages().size();
 
-        ArrayList<Classifier> classifiers = classifierFactory.getClassifiers(TestBenchSettings.getClassifiersToUse());
-
-        int numberOfEvaluationsInTotal =
-                sensorSubsets.size() * classifiers.size()
-                        * featureExtractionResults.getIndividualTrainingAndTestFilePackages().size();
-
-
-        // output information about test
+        // output the settings for this run
         FileWriter.writeTextFile(TestBenchSettings.summaryBig(), outputFolderPath, "settings.txt");
 
 
-        // Weka evaluation
-        // ... sensor permutations
+        // Training and evaluation for all sensor subsets, classifiers and test subjects
+        // ... all sensor subsets
         for (SensorSubset sensorSubset : sensorSubsets) {
 
+            // prepare to collect all results for this sensor subset
+            ArrayList<ClassificationResult> sensorSubsetResults = new ArrayList<>();
+            String outputFolderSensorSubset = resultsBaseFolder + sensorSubset.getNumberOfSensors() + " sensors/"
+                    + sensorSubset.getFolderStringRepresentation() + "/";
 
-            ArrayList<ClassificationResult> sensorPermutationResults = new ArrayList<>();
-
-            String outputFolderSensorPermutation = resultsBaseFolder + sensorSubset.getNumberOfSensors() + " sensors/" + sensorSubset.getFolderStringRepresentation() + "/";
-
-            // ... classifiers
+            // ... all classifiers
             for (Classifier classifier : classifiers) {
 
+                // prepare to collect all results for this classifier
                 ArrayList<ClassificationResult> classifierResults = new ArrayList<>();
-
-
-                String outputFolderClassifier = outputFolderSensorPermutation + classifier.getClass().getSimpleName() + "/";
-
+                String outputFolderClassifier = outputFolderSensorSubset + classifier.getClass().getSimpleName() + "/";
                 ConfusionMatrixSummary classifierConfusionMatrixSummary = new ConfusionMatrixSummary();
 
-                // ... test subjects
-                for (int fp = 0; fp < featureExtractionResults.getIndividualTrainingAndTestFilePackages().size(); fp++) {
+                // ... all test subjects
+                for (int fp = 0; fp < featureExtractionResults.getSubjectTrainingAndTestFilePackages().size(); fp++) {
 
-
+                    // retrieve features for this subject
                     TrainingAndTestFilePackage filePackage =
-                            featureExtractionResults.getIndividualTrainingAndTestFilePackages().get(fp);
+                            featureExtractionResults.getSubjectTrainingAndTestFilePackages().get(fp);
 
+                    // prepare to collect all results for this subject
                     String outputFolderSubject = outputFolderClassifier + filePackage.getSubject() + "/";
 
                     // setup data sources
@@ -213,14 +216,14 @@ public class TestBench {
                         // otherwise, load the complete data file and separate both parts
                         Instances allDataUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
 
-
                         // determine nominal index of current subject within list of available subjects,
                         // from the perspective of the loaded weka data set
                         int subjectAttributeIndex = allDataUnfiltered.numAttributes() - 2;
                         int classAttributeIndex = allDataUnfiltered.numAttributes() - 1;
 
-                        // determine how many data to remove from the subject, for each task, if not all should be removed from training set
-                        // the tasks are saved in blocks within the feature set for each subject
+                        // Determine how much data to remove from the subject, for each task,
+                        // in case not all should be removed from training set (personal model).
+                        // The tasks are saved in blocks within the feature set for each subject
                         ArrayList<Integer> instancesPerTask = new ArrayList<>();
                         ArrayList<Integer> instancesToKeepInTrainingDataPerTask = new ArrayList<>();
                         ArrayList<Integer> instancesToRemoveFromTestDataPerTask = new ArrayList<>();
@@ -241,41 +244,29 @@ public class TestBench {
                                     instancesPerTask.set(instancesPerTask.size() - 1, instancesPerTask.get(instancesPerTask.size() - 1) + 1);
                                 }
                             }
-
+                            // after determining how much data there is per task, determine how much to remove and keep
                             for (int i = 0; i < instancesPerTask.size(); i++) {
                                 Integer instancesForTask = instancesPerTask.get(i);
-
+                                // leave out data in the middle to account for window size, to prevent data that
+                                // could end up in both training and test data
                                 int instancesToLeaveOutForWindow =
-                                        (int) Math.ceil(
-                                                TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion()
-                                                        / TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion())
+                                        (int) Math.ceil(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion()
+                                                / TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion())
                                                 - 1;
-
                                 int instancesToKeepForTrainingData = (int) Math.ceil((instancesForTask - instancesToLeaveOutForWindow) / 2f);
                                 instancesToKeepInTrainingDataPerTask.add((instancesToKeepForTrainingData));
-
                                 instancesToRemoveFromTestDataPerTask.add(instancesToKeepForTrainingData + instancesToLeaveOutForWindow);
-
                             }
-
-//                            // debug output for instances per subject
-//                            int totalNumberOfInstancesForSubject = 0;
-//                            for (int i = 0; i < instancesPerTask.size(); i++) {
-//                                totalNumberOfInstancesForSubject += instancesPerTask.get(i);
-//                            }
-//                            System.out.println("instances for subject:   " + totalNumberOfInstancesForSubject);
-
                         }
 
-                        // if requested to include all subject data (for sanity checks), don't use subject filter
+                        // if requested to include all subject data (for sanity checks), just keep it as it is
                         if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.All) {
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
                         } else if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
-
+                            // if some subject data is to be kept, copy the data and filter out what is required
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
-//                            System.out.println("training data before:   " + trainingDataAllSensors.size());
-
+                            // remove the required amount of subject data for each class in the training data
                             int countForCurrentClass = 0;
                             int classIndex = -1;
                             String previousTask = "";
@@ -296,7 +287,7 @@ public class TestBench {
                                 }
                             }
 
-                            // also delete all data from other subjects if only subject data should be included
+                            // also delete all data from other subjects, if only subject data should be included
                             if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
                                 for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
                                     Instance instance = trainingDataAllSensors.get(i);
@@ -307,13 +298,10 @@ public class TestBench {
                                 }
                             }
 
-                        }
-                        // normal case, no current subject in training data
-                        else {
-                            // otherwise, remove subject from training data
-
+                        } else {
+                            // normal case, the current subject needs to be removed from training data
+                            // copy the training data and remove all subject data
                             trainingDataAllSensors = new Instances(allDataUnfiltered);
-
                             for (int i = trainingDataAllSensors.size() - 1; i >= 0; i--) {
                                 Instance instance = trainingDataAllSensors.get(i);
                                 String instanceSubject = instance.stringValue(subjectAttributeIndex);
@@ -323,10 +311,8 @@ public class TestBench {
                             }
                         }
 
+                        // create test data, and remove all but the current subject
                         testDataAllSensors = new Instances(allDataUnfiltered);
-//                        System.out.println("test data before:   " + testDataAllSensors.size());
-
-                        // remove all but current subject from test data
                         for (int i = testDataAllSensors.size() - 1; i >= 0; i--) {
                             Instance instance = testDataAllSensors.get(i);
                             String instanceSubject = instance.stringValue(subjectAttributeIndex);
@@ -335,8 +321,8 @@ public class TestBench {
                             }
                         }
 
-                        // if some of the subject data was supposed to stay in the training set,
-                        // remove it from the test data
+                        // if some of the subject data was supposed to stay in the training data,
+                        // it should not also be in the test data and needs to be removed
                         if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
 
@@ -349,7 +335,6 @@ public class TestBench {
 
                                 // delete first half of each class
                                 if (!instanceClass.equals(previousClass)) {
-
                                     countForCurrentClass = 0;
                                     previousClass = instanceClass;
                                     classIndex++;
@@ -361,45 +346,35 @@ public class TestBench {
                             }
                         }
 
-                        // only for debugging purposes, test subject data against subjet data
+                        // only for debugging purposes, one can use the test data as the training data
                         if (TestBenchSettings.getSubjectTrainingDataInclusion()
                                 == TestBenchSettings.SubjectDataInclusion.AllAndNoOtherData) {
                             trainingDataAllSensors = new Instances(testDataAllSensors);
                         }
                     }
 
-
-//                    System.out.println("training data after:   " + trainingDataAllSensors.size());
-//                    System.out.println("test data after:   " + testDataAllSensors.size());
-
-
-                    // remove attributes from sensors that are not included in this sensor permutation
-                    // collect the wrong column indices
+                    // remove attributes from sensors that are not included in this sensor subset
+                    // collect the column indices of offending attributes
                     Enumeration<Attribute> allAttributes = trainingDataAllSensors.enumerateAttributes();
                     ArrayList<Attribute> allAttributesList = Collections.list(allAttributes);
                     ArrayList<Integer> attributesToRemove = new ArrayList<>();
-
-
                     for (int i = 0; i < allAttributesList.size(); i++) {
                         if (sensorSubset.attributeForbidden(allAttributesList.get(i))) {
                             attributesToRemove.add(i);
                         }
-
-                        // we also need to remove the subject name column, if it is still present due to using
-                        // a single data file for all features
+                        // we also need to remove the subject name column,
+                        // if it is still present due to using a single data file for all features
                         if (allAttributesList.get(i).name().contains("subject")) {
                             attributesToRemove.add(i);
                         }
-
                     }
 
-
+                    // create a filter that can remove all identified unwanted attributes
                     int[] attributeIndicesToRemove = ConversionHelper.integerListToIntArray(attributesToRemove);
-
-
                     Instances trainingDataFinal = trainingDataAllSensors;
                     Instances testDataFinal = testDataAllSensors;
 
+                    // remove the attributes from training and test data
                     if (attributeIndicesToRemove.length > 0) {
                         Remove remove = new Remove();
                         remove.setAttributeIndicesArray(attributeIndicesToRemove);
@@ -412,11 +387,13 @@ public class TestBench {
                     // measure time for single evaluation
                     singleTestStopWatch.reset();
                     singleTestStopWatch.start();
-                    // actual evaluation
+
+                    // build and evaluate model for current sensor subset, classifier and subject
                     classifier.buildClassifier(trainingDataFinal);
                     Evaluation eval = new Evaluation(trainingDataFinal);
                     eval.evaluateModel(classifier, testDataFinal);
-                    // measure time for single evaluation
+
+                    // measure time for a single evaluation, and add up time used by current classifier
                     singleTestStopWatch.stop();
                     if (classifierTimeUsage.containsKey(classifier)) {
                         long overallTimeForClassifier = classifierTimeUsage.get(classifier);
@@ -428,21 +405,19 @@ public class TestBench {
                     }
 
 
-                    // file output
+                    // collect and store evaluation results:
                     // current result
                     ClassificationResult classificationResult = ClassificationResult.constructClassificationResultForSinglePerson
                             (eval, classifier, trainingDataFinal, filePackage.getSubject(), sensorSubset, singleTestStopWatch.getTime(TimeUnit.MILLISECONDS));
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
-                    // model
+                    // current model
                     if (TestBenchSettings.writeAllModelsToFolder()) {
                         SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
                     }
-
                     // features used
                     FileWriter.writeFeaturesUsed(trainingDataFinal, testDataFinal, outputFolderSubject, "features used.txt");
 
-
-                    // confusion matrix
+                    // confusion matrix:
                     // output normal confusion matrix
                     FileWriter.writeTextFile(eval.toMatrixString(),
                             outputFolderSubject, "confusion matrix.txt");
@@ -457,70 +432,29 @@ public class TestBench {
                     // collect result for summaries
                     classifierResults.add(classificationResult);
 
-
-                    // console output
-                    // evaluation counter
+                    // console output: evaluation counter and estimation of remaining time
                     numberOfEvaluationsCompleted++;
                     double timePerTask = stopWatchEvaluation.getTime(TimeUnit.MILLISECONDS) / numberOfEvaluationsCompleted;
                     float numberOfEvaluationsLeft = numberOfEvaluationsInTotal - numberOfEvaluationsCompleted;
                     int approximateTimeLeft = (int) ((timePerTask * numberOfEvaluationsLeft) / 1000);
-
-
                     System.out.println(
                             "evaluations done:  " + numberOfEvaluationsCompleted + " | " + numberOfEvaluationsInTotal
                                     + "     time left:  " + TimeHelper.secondsToTimeOutput(approximateTimeLeft));
-
-
-//                    // attributes in current training instances
-//                    System.out.println("attributes in current training instance:");
-//                    for (int i = 0; i < trainingData.numAttributes(); i++) {
-//                        System.out.println(trainingData.attribute(i).name());
-//                    }
-
-                    /*
-                    System.out.println();
-                    System.out.println();
-                    System.out.println();
-                    System.out.println();
-                    System.out.println();
-
-                    System.out.println(filePackage.getSubject());
-
-                    System.out.println(sensorSubset.getFolderStringRepresentation());
-
-                    ArrayList<Attribute> attributesTraining = Collections.list(trainingData.enumerateAttributes());
-                    ArrayList<Attribute> attributesTest = Collections.list(testData.enumerateAttributes());
-                    System.out.println("number of training attributes from weka   " + attributesTraining.size());
-                    System.out.println("number of test attributes from weka   " + attributesTest.size());
-
-
-                    System.out.println(eval.toSummaryString("\nResults\n======\n", false));
-
-                    // confusion matrix
-                    double[][] matrix = eval.confusionMatrix();
-                    for (int line = 0; line < matrix.length; line++) {
-                        for (int column = 0; column < matrix[line].length; column++) {
-                            System.out.print(Double.toString(matrix[line][column]));
-                            System.out.print("     ");
-                        }
-                        System.out.println();
-                    }
-                    */
-
                 }
 
+                // collect and store results for current classifier:
+                // summarized confusion matrix
                 FileWriter.writeTextFile(classifierConfusionMatrixSummary.toOutputString(), outputFolderClassifier, "confusion matrix.txt");
                 FileWriter.writeTextFile(classifierConfusionMatrixSummary.toOutputStringLatex(), outputFolderClassifier, "confusion matrix latex.txt");
-
+                // summarized results
                 ClassificationResult classifierResultSummary = ClassificationResult.summarizeClassifierResults(classifierResults);
                 classifierResults.add(classifierResultSummary);
                 FileWriter.writeClassificationResults(classifierResults, outputFolderClassifier, "classificationResult");
 
                 // collect for overall summary
                 allResults.add(classifierResultSummary);
-
-                // collect for sensor permutation summary
-                sensorPermutationResults.add(classifierResultSummary);
+                // collect for sensor subset summary
+                sensorSubsetResults.add(classifierResultSummary);
                 // collect for sensor number summary
                 if (sensorNumberResults.containsKey(sensorSubset.getNumberOfSensors())) {
                     sensorNumberResults.get(sensorSubset.getNumberOfSensors()).add(classifierResultSummary);
@@ -529,13 +463,10 @@ public class TestBench {
                     sensorNumberResultList.add(classifierResultSummary);
                     sensorNumberResults.put(sensorSubset.getNumberOfSensors(), sensorNumberResultList);
                 }
-
-
             }
 
-            FileWriter.writeClassificationResults(sensorPermutationResults, outputFolderSensorPermutation, "classificationResult");
-
-
+            // store results for current sensor subset
+            FileWriter.writeClassificationResults(sensorSubsetResults, outputFolderSensorSubset, "classificationResult");
         }
 
         // write all results
@@ -554,7 +485,7 @@ public class TestBench {
             FileWriter.writeClassificationResults(sensorNumberResultsSorted, outputFolderSensorNumber, "classificationResult");
         }
 
-        // output runtime
+        // output runtime for overall evaluation and individual classifiers
         stopWatchEvaluation.stop();
         stopwatchFullProcess.stop();
         System.out.println();
@@ -564,8 +495,5 @@ public class TestBench {
         for (Classifier classifier : classifierTimeUsage.keySet()) {
             System.out.println(classifierTimeUsage.get(classifier) + "     " + classifier.getClass().getSimpleName());
         }
-
     }
-
-
 }
