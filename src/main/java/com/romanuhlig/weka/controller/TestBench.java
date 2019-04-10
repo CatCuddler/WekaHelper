@@ -42,7 +42,7 @@ public class TestBench {
 
         // determine base path for the feature and evaluation data
         String startTime = TimeHelper.getDateWithSeconds();
-        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.summarySingleLine()
+        String outputFolderPath = TestBenchSettings.outputBaseFolder() + TestBenchSettings.getSettingsAsFolderName()
                 + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
 
         // load / create features
@@ -72,14 +72,14 @@ public class TestBench {
             // specific sensor requests override all other criteria
             if (TestBenchSettings.specificSensorCombinationRequested()) {
                 // check for specific sensor inclusion
-                if (TestBenchSettings.isSensorCombinationBlocked(sensorSubset)) {
+                if (TestBenchSettings.isBlockedBySpecificRequests(sensorSubset)) {
                     sensorSubsets.remove(i);
                     continue;
                 }
             }
             // if a set of sensors must be included, with others still allowed, that also takes precedence
             else if (TestBenchSettings.minimumSensorCombinationRequested()) {
-                if (TestBenchSettings.doesNotFulfillMinimumSensorRequirements(sensorSubset)) {
+                if (TestBenchSettings.isBlockedByMinimumRequests(sensorSubset)) {
                     sensorSubsets.remove(i);
                     continue;
                 }
@@ -174,7 +174,7 @@ public class TestBench {
                 * featureExtractionResults.getSubjectTrainingAndTestFilePackages().size();
 
         // output the settings for this run
-        FileWriter.writeTextFile(TestBenchSettings.summaryBig(), outputFolderPath, "settings.txt");
+        FileWriter.writeTextFile(TestBenchSettings.getSettingsSummary(), outputFolderPath, "settings.txt");
 
 
         // Training and evaluation for all sensor subsets, classifiers and test subjects
