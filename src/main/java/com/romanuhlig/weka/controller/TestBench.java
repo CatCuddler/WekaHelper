@@ -34,7 +34,7 @@ public class TestBench {
      *
      * @throws Exception
      */
-    public void run() throws Exception {
+    public void run() {
 
         // this stopwatch measures the whole process, from start to end
         StopWatch stopwatchFullProcess = new StopWatch();
@@ -378,9 +378,15 @@ public class TestBench {
                     if (attributeIndicesToRemove.length > 0) {
                         Remove remove = new Remove();
                         remove.setAttributeIndicesArray(attributeIndicesToRemove);
-                        remove.setInputFormat(trainingDataFinal);
-                        trainingDataFinal = Filter.useFilter(trainingDataAllSensors, remove);
-                        testDataFinal = Filter.useFilter(testDataAllSensors, remove);
+                        try {
+                            remove.setInputFormat(trainingDataFinal);
+                            trainingDataFinal = Filter.useFilter(trainingDataAllSensors, remove);
+                            testDataFinal = Filter.useFilter(testDataAllSensors, remove);
+                        } catch (Exception e) {
+                            System.out.println("Unable to apply filter:");
+                            e.printStackTrace();
+                            System.exit(-1);
+                        }
                     }
 
 
@@ -389,9 +395,17 @@ public class TestBench {
                     singleTestStopWatch.start();
 
                     // build and evaluate model for current sensor subset, classifier and subject
-                    classifier.buildClassifier(trainingDataFinal);
-                    Evaluation eval = new Evaluation(trainingDataFinal);
-                    eval.evaluateModel(classifier, testDataFinal);
+                    Evaluation eval = null;
+                    try {
+                        classifier.buildClassifier(trainingDataFinal);
+                        eval = new Evaluation(trainingDataFinal);
+                        eval.evaluateModel(classifier, testDataFinal);
+                    } catch (Exception e) {
+                        System.out.println("Unable to train and evaluate model:");
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
+
 
                     // measure time for a single evaluation, and add up time used by current classifier
                     singleTestStopWatch.stop();
@@ -412,15 +426,27 @@ public class TestBench {
                     FileWriter.writeClassificationResult(classificationResult, outputFolderSubject, "classificationResult");
                     // current model
                     if (TestBenchSettings.writeAllModelsToFolder()) {
-                        SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
+                        try {
+                            SerializationHelper.write(outputFolderSubject + "currentModel.model", classifier);
+                        } catch (Exception e) {
+                            System.out.println("Unable to save model:");
+                            e.printStackTrace();
+                            System.exit(-1);
+                        }
                     }
                     // features used
                     FileWriter.writeFeaturesUsed(trainingDataFinal, testDataFinal, outputFolderSubject, "features used.txt");
 
                     // confusion matrix:
                     // output normal confusion matrix
-                    FileWriter.writeTextFile(eval.toMatrixString(),
-                            outputFolderSubject, "confusion matrix.txt");
+                    try {
+                        FileWriter.writeTextFile(eval.toMatrixString(),
+                                outputFolderSubject, "confusion matrix.txt");
+                    } catch (Exception e) {
+                        System.out.println("Unable to save confusion matrix:");
+                        e.printStackTrace();
+                        System.exit(-1);
+                    }
                     // output confusion matrix for latex
                     ConfusionMatrixSummary tasksConfusionMatrixSummary = new ConfusionMatrixSummary();
                     tasksConfusionMatrixSummary.addResults(eval.confusionMatrix(), trainingDataFinal);
