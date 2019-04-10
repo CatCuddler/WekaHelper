@@ -5,42 +5,48 @@ import com.romanuhlig.weka.math.MathHelper;
 
 /**
  * Represents the data collected during a single frame, for a single sensor
+ * <p>
+ * Primarily used for reading recorded data through OpenCSV
+ *
+ * @author Roman Uhlig
  */
 public class FrameData {
 
+    // these fields are automatically filled by OpenCSV through their column name
     @CsvBindByName(column = "tag")
     private String sensorPosition;
+    // if the column and field name are identical, no additional declaration is required
     @CsvBindByName
     private String subject;
     @CsvBindByName
     private String activity;
 
     @CsvBindByName(column = "rawPosX")
-    private double calPosX;
+    private double rawPosX;
     @CsvBindByName(column = "rawPosY")
-    private double calPosY;
+    private double rawPosY;
     @CsvBindByName(column = "rawPosZ")
-    private double calPosZ;
+    private double rawPosZ;
     @CsvBindByName(column = "rawRotX")
-    private double calRotX;
+    private double rawRotX;
     @CsvBindByName(column = "rawRotY")
-    private double calRotY;
+    private double rawRotY;
     @CsvBindByName(column = "rawRotZ")
-    private double calRotZ;
+    private double rawRotZ;
     @CsvBindByName(column = "rawRotW")
-    private double calRotW;
+    private double rawRotW;
     @CsvBindByName(column = "rawAngVelX")
-    private double angVelX;
+    private double rawAngVelX;
     @CsvBindByName(column = "rawAngVelY")
-    private double angVelY;
+    private double rawAngVelY;
     @CsvBindByName(column = "rawAngVelZ")
-    private double angVelZ;
+    private double rawAngVelZ;
     @CsvBindByName(column = "rawLinVelX")
-    private double linVelX;
+    private double rawLinVelX;
     @CsvBindByName(column = "rawLinVelY")
-    private double linVelY;
+    private double rawLinVelY;
     @CsvBindByName(column = "rawLinVelZ")
-    private double linVelZ;
+    private double rawLinVelZ;
 
     // the acceleration can not be read directly from the sensors, and has to be derived using two frames
     private double linAccelerationX;
@@ -55,8 +61,8 @@ public class FrameData {
     @CsvBindByName
     private double time;
 
-    // acceleration has to be calculated from the previous frame,
-    // which leaves data points where that data can not be accurate
+    // acceleration and frame duration have to be calculated from the previous frame,
+    // which leaves data points where that data can not be determined
     boolean derivedDataCalculated = false;
     private double frameDuration = 0;
 
@@ -65,166 +71,328 @@ public class FrameData {
 
 
     /**
-     * Empty constructor, DO NOT USE
-     * Required by OpenCSV to fill class automatically when reading from csv file, but should not be used manually
+     * DO NOT USE, empty constructor:
+     * Required by OpenCSV to fill fields automatically when reading from csv file, but should not be used manually
      */
     public FrameData() {
     }
 
 
+    /**
+     * Create new Frame Data with the given attributes
+     *
+     * @param sensorPosition
+     * @param subject
+     * @param activity
+     * @param rawPosX
+     * @param rawPosY
+     * @param rawPosZ
+     * @param rawRotX
+     * @param rawRotY
+     * @param rawRotZ
+     * @param rawRotW
+     * @param rawAngVelX
+     * @param rawAngVelY
+     * @param rawAngVelZ
+     * @param rawLinVelX
+     * @param rawLinVelY
+     * @param rawLinVelZ
+     * @param scale
+     * @param time
+     */
     public FrameData(String sensorPosition, String subject, String activity,
-                     double calPosX, double calPosY, double calPosZ,
-                     double calRotX, double calRotY, double calRotZ, double calRotW,
-                     double angVelX, double angVelY, double angVelZ,
-                     double linVelX, double linVelY, double linVelZ,
+                     double rawPosX, double rawPosY, double rawPosZ,
+                     double rawRotX, double rawRotY, double rawRotZ, double rawRotW,
+                     double rawAngVelX, double rawAngVelY, double rawAngVelZ,
+                     double rawLinVelX, double rawLinVelY, double rawLinVelZ,
                      double scale, double time) {
         this.sensorPosition = sensorPosition;
         this.subject = subject;
         this.activity = activity;
-        this.calPosX = calPosX;
-        this.calPosY = calPosY;
-        this.calPosZ = calPosZ;
-        this.calRotX = calRotX;
-        this.calRotY = calRotY;
-        this.calRotZ = calRotZ;
-        this.calRotW = calRotW;
-        this.angVelX = angVelX;
-        this.angVelY = angVelY;
-        this.angVelZ = angVelZ;
-        this.linVelX = linVelX;
-        this.linVelY = linVelY;
-        this.linVelZ = linVelZ;
+        this.rawPosX = rawPosX;
+        this.rawPosY = rawPosY;
+        this.rawPosZ = rawPosZ;
+        this.rawRotX = rawRotX;
+        this.rawRotY = rawRotY;
+        this.rawRotZ = rawRotZ;
+        this.rawRotW = rawRotW;
+        this.rawAngVelX = rawAngVelX;
+        this.rawAngVelY = rawAngVelY;
+        this.rawAngVelZ = rawAngVelZ;
+        this.rawLinVelX = rawLinVelX;
+        this.rawLinVelY = rawLinVelY;
+        this.rawLinVelZ = rawLinVelZ;
         this.scale = scale;
         this.time = time;
     }
 
+    /**
+     * Fill out the data for this frame that requires knowledge of the previous frame
+     *
+     * @param previousFrame
+     */
     public void computeAdditionalDataBasedOnPreviousFrame(FrameData previousFrame) {
 
         // linear acceleration
-        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelX, this.linVelX, previousFrame.time, this.time);
-        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelY, this.linVelY, previousFrame.time, this.time);
-        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.linVelZ, this.linVelZ, previousFrame.time, this.time);
+        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelX, this.rawLinVelX, previousFrame.time, this.time);
+        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelY, this.rawLinVelY, previousFrame.time, this.time);
+        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelZ, this.rawLinVelZ, previousFrame.time, this.time);
 
         // angular acceleration
-        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelX, this.angVelX, previousFrame.time, this.time);
-        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
-        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelX, this.rawAngVelX, previousFrame.time, this.time);
+        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelY, this.rawAngVelY, previousFrame.time, this.time);
+        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelZ, this.rawAngVelZ, previousFrame.time, this.time);
 
+        // frame duration
         this.frameDuration = this.time - previousFrame.time;
 
         derivedDataCalculated = true;
     }
 
+    /**
+     * The position the sensor is worn, also known as the "tag"
+     *
+     * @return
+     */
     public String getSensorPosition() {
         return sensorPosition;
     }
 
+    /**
+     * The subject that recorded the data
+     *
+     * @return
+     */
     public String getSubject() {
         return subject;
     }
 
+    /**
+     * The recorded activity
+     *
+     * @return
+     */
     public String getActivity() {
         return activity;
     }
 
-    public double getCalPosX() {
-        return calPosX;
+    /**
+     * The unmodified x position, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawPosX() {
+        return rawPosX;
     }
 
-    public double getCalPosY() {
-        return calPosY;
+    /**
+     * The unmodified y position, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawPosY() {
+        return rawPosY;
     }
 
-    public double getCalPosZ() {
-        return calPosZ;
+    /**
+     * The unmodified z position, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawPosZ() {
+        return rawPosZ;
     }
 
-    public double getCalRotX() {
-        return calRotX;
+    /**
+     * The unmodified x rotation, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawRotX() {
+        return rawRotX;
     }
 
-    public double getCalRotY() {
-        return calRotY;
+    /**
+     * The unmodified y rotation, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawRotY() {
+        return rawRotY;
     }
 
-    public double getCalRotZ() {
-        return calRotZ;
+    /**
+     * The unmodified z rotation, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawRotZ() {
+        return rawRotZ;
     }
 
-    public double getCalRotW() {
-        return calRotW;
+    /**
+     * The unmodified w rotation, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawRotW() {
+        return rawRotW;
     }
 
-    public double getAngVelX() {
-        return angVelX;
+    /**
+     * The unmodified x angular velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawAngVelX() {
+        return rawAngVelX;
     }
 
-    public double getAngVelY() {
-        return angVelY;
+    /**
+     * The unmodified y angular velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawAngVelY() {
+        return rawAngVelY;
     }
 
-    public double getAngVelZ() {
-        return angVelZ;
+    /**
+     * The unmodified z angular velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawAngVelZ() {
+        return rawAngVelZ;
     }
 
-    public double getLinVelX() {
-        return linVelX;
+    /**
+     * The unmodified x linear velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawLinVelX() {
+        return rawLinVelX;
     }
 
-    public double getLinVelY() {
-        return linVelY;
+    /**
+     * The unmodified y linear velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawLinVelY() {
+        return rawLinVelY;
     }
 
-    public double getLinVelZ() {
-        return linVelZ;
+    /**
+     * The unmodified z linear velocity, as reported by the sensor for this frame
+     *
+     * @return
+     */
+    public double getRawLinVelZ() {
+        return rawLinVelZ;
     }
 
+    /**
+     * The x linear acceleration, derived from the velocity of this frame and the previous frame
+     *
+     * @return
+     */
     public double getLinAccelerationX() {
         return linAccelerationX;
     }
 
+    /**
+     * The y linear acceleration, derived from the velocity of this frame and the previous frame
+     *
+     * @return
+     */
     public double getLinAccelerationY() {
         return linAccelerationY;
     }
 
+    /**
+     * The z linear acceleration, derived from the velocity of this frame and the previous frame
+     *
+     * @return
+     */
     public double getLinAccelerationZ() {
         return linAccelerationZ;
     }
 
+    /**
+     * The x angular acceleration, derived from the velocity of this and the previous frame
+     *
+     * @return
+     */
     public double getAngAccelerationX() {
         return angAccelerationX;
     }
 
+    /**
+     * The y angular acceleration, derived from the velocity of this and the previous frame
+     *
+     * @return
+     */
     public double getAngAccelerationY() {
         return angAccelerationY;
     }
 
+    /**
+     * The z angular acceleration, derived from the velocity of this and the previous frame
+     *
+     * @return
+     */
     public double getAngAccelerationZ() {
         return angAccelerationZ;
     }
 
+    /**
+     * The scale, as determined by the height of the HMD during the subject calibration
+     *
+     * @return
+     */
     public double getScale() {
         return scale;
     }
 
+    /**
+     * The timestamp when this frame was recorded
+     *
+     * @return
+     */
     public double getTime() {
         return time;
     }
 
-
+    /**
+     * Whether the previous frame was already used to derive additional features for this frame
+     *
+     * @return
+     */
     public boolean derivedDataWasCalculated() {
         return derivedDataCalculated;
     }
 
+    /**
+     * The difference in time between this frame and the previous frame
+     *
+     * @return
+     */
     public double getFrameDuration() {
         return frameDuration;
     }
 
+    /**
+     * Mark this frame as containing data which cannot have been recorded correctly
+     * <p>
+     * E.g., if the sensor reported to be 100 meters above the ground
+     */
     public void setInvalid() {
         this.invalid = true;
     }
 
-    public boolean includesInvalidData(){
+    public boolean includesInvalidData() {
         return invalid;
     }
 

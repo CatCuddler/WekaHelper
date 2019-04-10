@@ -109,30 +109,30 @@ public class FrameDataSet {
                     || frameDataA.getSensorPosition().equals("rForeArm")
                     || frameDataA.getSensorPosition().equals("lHand")
                     || frameDataA.getSensorPosition().equals("rHand")) {
-                if (frameDataA.getCalPosY() > 3.0) {
+                if (frameDataA.getRawPosY() > 3.0) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("head")) {
-                if (frameDataA.getCalPosY() > 2.75) {
+                if (frameDataA.getRawPosY() > 2.75) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("rArm")) {
-                if (frameDataA.getCalPosY() > 2.5) {
+                if (frameDataA.getRawPosY() > 2.5) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("spine")) {
-                if (frameDataA.getCalPosY() > 2.25) {
+                if (frameDataA.getRawPosY() > 2.25) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("hip")) {
-                if (frameDataA.getCalPosY() > 1.5) {
+                if (frameDataA.getRawPosY() > 1.5) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("lLeg")
                     || frameDataA.getSensorPosition().equals("rLeg")
                     || frameDataA.getSensorPosition().equals("lFoot")
                     || frameDataA.getSensorPosition().equals("rFoot")) {
-                if (frameDataA.getCalPosY() > 1.0) {
+                if (frameDataA.getRawPosY() > 1.0) {
                     frameDataA.setInvalid();
                 }
             }

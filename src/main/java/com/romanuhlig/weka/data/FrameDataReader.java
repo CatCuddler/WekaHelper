@@ -320,27 +320,27 @@ public class FrameDataReader {
                 FrameData frameData = singleSensorList.get(i);
 
                 // collect points in order to calculate maximum range in different dimensions
-                rangePointsXZ.add(new ConvexHullPoint(frameData.getCalPosX(), frameData.getCalPosZ()));
-                rangePointsXYZ[i] = new Point3d(frameData.getCalPosX(), frameData.getCalPosY(), frameData.getCalPosZ());
+                rangePointsXZ.add(new ConvexHullPoint(frameData.getRawPosX(), frameData.getRawPosZ()));
+                rangePointsXYZ[i] = new Point3d(frameData.getRawPosX(), frameData.getRawPosY(), frameData.getRawPosZ());
 
                 // collect other values over time for future analysis
                 double timeSinceLastFrame = frameData.getFrameDuration();
 
-                Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
-                Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
-                Velocity_Height.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
+                Velocity_X.addValue(Math.abs(frameData.getRawLinVelX()), timeSinceLastFrame);
+                Velocity_Z.addValue(Math.abs(frameData.getRawLinVelZ()), timeSinceLastFrame);
+                Velocity_Height.addValue(Math.abs(frameData.getRawLinVelY()), timeSinceLastFrame);
 
 
                 Velocity_XZ.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getLinVelX(),
-                                frameData.getLinVelZ()),
+                                frameData.getRawLinVelX(),
+                                frameData.getRawLinVelZ()),
                         timeSinceLastFrame);
                 Velocity_XYZ.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getLinVelX(),
-                                frameData.getLinVelY(),
-                                frameData.getLinVelZ()),
+                                frameData.getRawLinVelX(),
+                                frameData.getRawLinVelY(),
+                                frameData.getRawLinVelZ()),
                         timeSinceLastFrame);
 
 
@@ -364,9 +364,9 @@ public class FrameDataReader {
 
                 AngularVelocity.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getAngVelX(),
-                                frameData.getAngVelY(),
-                                frameData.getAngVelZ()),
+                                frameData.getRawAngVelX(),
+                                frameData.getRawAngVelY(),
+                                frameData.getRawAngVelZ()),
                         timeSinceLastFrame);
                 AngularAcceleration.addValue(
                         MathHelper.EuclideanNorm(
@@ -376,9 +376,9 @@ public class FrameDataReader {
                         timeSinceLastFrame);
 
 
-                Position_X.addValue(frameData.getCalPosX(), timeSinceLastFrame);
-                Position_Z.addValue(frameData.getCalPosZ(), timeSinceLastFrame);
-                Position_Height.addValue(frameData.getCalPosY(), timeSinceLastFrame);
+                Position_X.addValue(frameData.getRawPosX(), timeSinceLastFrame);
+                Position_Z.addValue(frameData.getRawPosZ(), timeSinceLastFrame);
+                Position_Height.addValue(frameData.getRawPosY(), timeSinceLastFrame);
             }
 
 
@@ -547,30 +547,30 @@ public class FrameDataReader {
 
                         double averageDistanceCurrentFrameX =
                                 MathHelper.distance(
-                                        frameDataA.getCalPosX(),
-                                        frameDataB.getCalPosX());
+                                        frameDataA.getRawPosX(),
+                                        frameDataB.getRawPosX());
                         double averageDistanceCurrentFrameZ =
                                 MathHelper.distance(
-                                        frameDataA.getCalPosZ(),
-                                        frameDataB.getCalPosZ());
+                                        frameDataA.getRawPosZ(),
+                                        frameDataB.getRawPosZ());
                         double averageDistanceCurrentFrameHeight =
                                 MathHelper.distance(
-                                        frameDataA.getCalPosY(),
-                                        frameDataB.getCalPosY());
+                                        frameDataA.getRawPosY(),
+                                        frameDataB.getRawPosY());
                         double averageDistanceCurrentFrameXZ =
                                 MathHelper.distance(
-                                        frameDataA.getCalPosX(),
-                                        frameDataA.getCalPosZ(),
-                                        frameDataB.getCalPosX(),
-                                        frameDataB.getCalPosZ());
+                                        frameDataA.getRawPosX(),
+                                        frameDataA.getRawPosZ(),
+                                        frameDataB.getRawPosX(),
+                                        frameDataB.getRawPosZ());
                         double averageDistanceCurrentFrameXYZ =
                                 MathHelper.distance(
-                                        frameDataA.getCalPosX(),
-                                        frameDataA.getCalPosY(),
-                                        frameDataA.getCalPosZ(),
-                                        frameDataB.getCalPosX(),
-                                        frameDataB.getCalPosY(),
-                                        frameDataB.getCalPosZ());
+                                        frameDataA.getRawPosX(),
+                                        frameDataA.getRawPosY(),
+                                        frameDataA.getRawPosZ(),
+                                        frameDataB.getRawPosX(),
+                                        frameDataB.getRawPosY(),
+                                        frameDataB.getRawPosZ());
 
 
                         // calculate current frame
@@ -589,23 +589,23 @@ public class FrameDataReader {
 //                            distanceChangeXZ.addValue(Math.abs(averageDistanceCurrentFrameXZ - averageDistanceLastFrameXZ), timeSinceLastFrame);
 //                            distanceChangeXYZ.addValue(Math.abs(averageDistanceCurrentFrameXYZ - averageDistanceLastFrameXYZ), timeSinceLastFrame);
 
-                        differenceVelocityX.addValue(Math.abs(frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
-                        differenceVelocityZ.addValue(Math.abs(frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
-                        differenceVelocityHeight.addValue(Math.abs(frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
+                        differenceVelocityX.addValue(Math.abs(frameDataA.getRawLinVelX() - frameDataB.getRawLinVelX()), timeSinceLastFrame);
+                        differenceVelocityZ.addValue(Math.abs(frameDataA.getRawLinVelZ() - frameDataB.getRawLinVelZ()), timeSinceLastFrame);
+                        differenceVelocityHeight.addValue(Math.abs(frameDataA.getRawLinVelY() - frameDataB.getRawLinVelY()), timeSinceLastFrame);
                         double velocityXZa = MathHelper.EuclideanNorm(
-                                frameDataA.getLinVelX(),
-                                frameDataA.getLinVelZ());
+                                frameDataA.getRawLinVelX(),
+                                frameDataA.getRawLinVelZ());
                         double velocityXZb = MathHelper.EuclideanNorm(
-                                frameDataB.getLinVelX(),
-                                frameDataB.getLinVelZ());
+                                frameDataB.getRawLinVelX(),
+                                frameDataB.getRawLinVelZ());
                         double velocityXYZa = MathHelper.EuclideanNorm(
-                                frameDataA.getLinVelX(),
-                                frameDataA.getLinVelY(),
-                                frameDataA.getLinVelZ());
+                                frameDataA.getRawLinVelX(),
+                                frameDataA.getRawLinVelY(),
+                                frameDataA.getRawLinVelZ());
                         double velocityXYZb = MathHelper.EuclideanNorm(
-                                frameDataB.getLinVelX(),
-                                frameDataB.getLinVelY(),
-                                frameDataB.getLinVelZ());
+                                frameDataB.getRawLinVelX(),
+                                frameDataB.getRawLinVelY(),
+                                frameDataB.getRawLinVelZ());
                         differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
                         differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
 
@@ -632,14 +632,14 @@ public class FrameDataReader {
 
 //                            double AngularVelocityXYZa =
 //                                    MathHelper.EuclideanNorm(
-//                                            frameDataA.getAngVelX(),
-//                                            frameDataA.getAngVelY(),
-//                                            frameDataA.getAngVelZ());
+//                                            frameDataA.getRawAngVelX(),
+//                                            frameDataA.getRawAngVelY(),
+//                                            frameDataA.getRawAngVelZ());
 //                            double AngularVelocityXYZb =
 //                                    MathHelper.EuclideanNorm(
-//                                            frameDataB.getAngVelX(),
-//                                            frameDataB.getAngVelY(),
-//                                            frameDataB.getAngVelZ());
+//                                            frameDataB.getRawAngVelX(),
+//                                            frameDataB.getRawAngVelY(),
+//                                            frameDataB.getRawAngVelZ());
 //                            differenceAngularVelocityXYZ.addValue((Math.abs(AngularVelocityXYZa - AngularVelocityXYZb)), timeSinceLastFrame);
 
 
@@ -923,7 +923,8 @@ public class FrameDataReader {
             csvWriter.writeNext(headerFields.toArray(new String[headerFields.size()]));
 
             for (FeatureVector featureVector : featureVectors) {
-                csvWriter.writeNext(featureVector.getFeaturesAndClassAsArray());
+                csvWriter.writeNext(featureVector.getFeaturesWithClassAndSubject(
+                        !TestBenchSettings.useIndividualFeatureFilesForEachSubject()));
             }
 
         } catch (Exception e) {
