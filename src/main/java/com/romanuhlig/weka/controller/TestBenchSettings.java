@@ -33,7 +33,7 @@ public class TestBenchSettings {
     private static boolean useExistingFeatureFile = true;
 
     // leave empty if you want to use the standard folder name, generated from the chosen settings
-    private static String forceFolderName = "1 second - handcontrollers and HMD - 2 trackers";
+    private static String forceFolderName = "refactor test 01";
 
     // window size and spacing for feature generation
     private static double windowSizeForFrameDataToFeatureConversion = 1;
@@ -68,18 +68,18 @@ public class TestBenchSettings {
 //            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
 
 
-//            /////////////////////////////   some standard 2 tracker combinations:   /////////////////////////////
-//            {"rForeArm", "lLeg"}
-//            ,
-//            {"rForeArm", "rLeg"}
-//            ,
-//            {"rArm", "lLeg"}
-//            ,
-//            {"rArm", "rLeg"}
-//            ,
-//            {"lForeArm", "lLeg"}
-//            ,
-//            {"lForeArm", "rLeg"}
+//            /////////////////////////////   arm and leg 2 tracker combinations:   /////////////////////////////
+            {"rForeArm", "lLeg"}
+            ,
+            {"rForeArm", "rLeg"}
+            ,
+            {"rArm", "lLeg"}
+            ,
+            {"rArm", "rLeg"}
+            ,
+            {"lForeArm", "lLeg"}
+            ,
+            {"lForeArm", "rLeg"}
     };
 
     // Force usage of at least these sensor combinations,

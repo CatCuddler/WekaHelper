@@ -71,8 +71,14 @@ public class FrameDataReader {
         File inputFolder = new File(inputFilePath);
         File[] listOfInputFiles = inputFolder.listFiles();
 
+
         ArrayList<FrameDataSet> allFrameDataSets = new ArrayList<>();
         for (int i = 0; i < listOfInputFiles.length; i++) {
+
+            if (listOfInputFiles[i].getName().equals("desktop.ini")) {
+                System.out.println("ignored desktop.ini");
+                continue;
+            }
 
             System.out.println("reading input file:   " + (i + 1) + " / " + listOfInputFiles.length);
 
