@@ -59,15 +59,18 @@ public class FeatureVector {
     }
 
     /**
-     * The feature values, followed by the subject (optional) and class value
+     * The feature values, followed by the subject and class value
+     *
+     * The subject is only included if all features are saved in one file,
+     * instead of individual files for each subject (set in TestBenchSettings)
      *
      * @return
      */
-    public String[] getFeaturesWithClassAndSubject(boolean includeSubject) {
+    public String[] getFeaturesWithClassAndSubject() {
 
-        // create longer array if subject included
+        // create longer array if subject is required
         String[] allFeaturesWithClass;
-        if (includeSubject) {
+        if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
             allFeaturesWithClass = new String[featureValues.size() + 1];
         } else {
             allFeaturesWithClass = new String[featureValues.size() + 2];
@@ -78,8 +81,8 @@ public class FeatureVector {
             allFeaturesWithClass[i] = Double.toString(featureValues.get(i));
         }
 
-        // add subject (optional) and class
-        if (!includeSubject) {
+        // add subject (if required) and class
+        if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
             allFeaturesWithClass[allFeaturesWithClass.length - 1] = classValue;
         } else {
             allFeaturesWithClass[allFeaturesWithClass.length - 2] = subject;

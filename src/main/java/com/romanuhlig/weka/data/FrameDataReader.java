@@ -929,8 +929,7 @@ public class FrameDataReader {
             csvWriter.writeNext(headerFields.toArray(new String[headerFields.size()]));
 
             for (FeatureVector featureVector : featureVectors) {
-                csvWriter.writeNext(featureVector.getFeaturesWithClassAndSubject(
-                        !TestBenchSettings.useIndividualFeatureFilesForEachSubject()));
+                csvWriter.writeNext(featureVector.getFeaturesWithClassAndSubject());
             }
 
         } catch (Exception e) {
