@@ -5,25 +5,42 @@ import com.romanuhlig.weka.math.MathHelper;
 import java.util.*;
 
 /**
- * Represents all Data collected for one user, and one task
+ * Represents all data for a single recording produced by one subject for one task
+ *
+ * @author Roman Uhlig
  */
 public class FrameDataSet {
 
-    // an inner List represents all data collected for an individual sensor
+    // any inner List represents all data collected for a single individual sensor
     private final ArrayList<List<FrameData>> allSensorLists;
 
     private final String subject;
-
     private final String activity;
 
-    private double timeOfLastAddedEntry;
+    private double timestampOfLatestEntry;
 
+    // for debugging purposes, count the number of frame data sets which have been removed
+    // because they contained invalid data
+    private static int segmentsLeftOut = 0;
+
+
+    /**
+     * Construct an empty FrameDataSet for the given subject and activity
+     *
+     * @param subject
+     * @param activity
+     */
     public FrameDataSet(String subject, String activity) {
         this.subject = subject;
         this.activity = activity;
         allSensorLists = new ArrayList<>();
     }
 
+    /**
+     * Construct a new FrameDataSet from the given raw data
+     *
+     * @param originalFrameData
+     */
     public FrameDataSet(List<FrameData> originalFrameData) {
 
         subject = originalFrameData.get(0).getSubject();
@@ -34,39 +51,56 @@ public class FrameDataSet {
         for (FrameData frameData : originalFrameData) {
             addFrameData(frameData);
         }
-        // check data consistency for last frame
-        checkDataConsistencyForPreviousFrame();
+        // check data consistency for last added frame
+        checkDataConsistencyForNewestData();
     }
 
+    /**
+     * Construct a FrameDataSet from previously prepared data
+     * <p>
+     * No further checks will be made, the data needs to be ordered and checked for consistencies already
+     *
+     * @param allSensorLists
+     * @param subject
+     * @param activity
+     */
     public FrameDataSet(ArrayList<List<FrameData>> allSensorLists, String subject, String activity) {
         this.allSensorLists = allSensorLists;
         this.subject = subject;
         this.activity = activity;
     }
 
-
+    /**
+     * Add a single sensor reading to this set
+     * <p>
+     * FrameData needs to be added in order, with the highest timestamp added last
+     *
+     * @param newFrameData
+     */
     public void addFrameData(FrameData newFrameData) {
 
-        if (!allSensorLists.isEmpty() && newFrameData.getTime() != timeOfLastAddedEntry) {
-            checkDataConsistencyForPreviousFrame();
+        // if the data that was last added has another timestamp, the previous frame has been completed
+        // in that case, check the previous frame for data inconsistencies
+        if (!allSensorLists.isEmpty() && newFrameData.getTime() != timestampOfLatestEntry) {
+            checkDataConsistencyForNewestData();
         }
+        timestampOfLatestEntry = newFrameData.getTime();
 
-        timeOfLastAddedEntry = newFrameData.getTime();
 
+        // find the corresponding sensor list for the new data, and add it there
         boolean sensorPositionAlreadyKnown = false;
-
-        // find the corresponding sensor list, and add the new data
         for (List<FrameData> sensorList : allSensorLists) {
-            if (!sensorList.isEmpty()
-                    && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
+            if (!sensorList.isEmpty() && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
                 sensorList.add(newFrameData);
                 sensorPositionAlreadyKnown = true;
-                // compute acceleration
+
+                // if this is not the first frame to be added, compute additional data
+                // which depends on the previous frame to be known
                 if (sensorList.size() > 1) {
                     FrameData previousFrameData = sensorList.get(sensorList.size() - 2);
                     newFrameData.computeAdditionalDataBasedOnPreviousFrame(previousFrameData);
 
-                    // remove the first pieces of data, where acceleration could not yet have been set correctly
+                    // remove the first frame, where that data could not yet have been set correctly
                     if (!previousFrameData.derivedDataWasCalculated()) {
                         // can only happen when the first data pieces are added,
                         // meaning the previous piece of data has to be the first in the list
@@ -77,31 +111,26 @@ public class FrameDataSet {
             }
         }
 
-
         // if no sensor list exist for this sensor yet, add a new one
         if (!sensorPositionAlreadyKnown) {
             ArrayList<FrameData> newSensorList = new ArrayList<FrameData>();
             newSensorList.add(newFrameData);
             addNewSensorListAndSortByPosition(newSensorList);
         }
-
     }
 
-    private void checkDataConsistencyForPreviousFrame() {
+    /**
+     * Within the newest entries for each sensor, mark data which contains impossible values
+     * <p>
+     * E.g. a sensor that is 10 meters above the ground
+     */
+    private void checkDataConsistencyForNewestData() {
 
-//        System.out.println("checking");
-
-        int latestIndex = allSensorLists.get(0).size() - 1;
-//        System.out.println("1");
-
-//        System.out.println("all sensors:");
-//        for (int i = 0; i < allSensorLists.size(); i++) {
-//            System.out.println(allSensorLists.get(i).get(latestIndex).getSensorPosition());
-//        }
+        int indexForNewestData = allSensorLists.get(0).size() - 1;
 
         for (int a = 0; a < allSensorLists.size(); a++) {
 
-            FrameData frameDataA = allSensorLists.get(a).get(latestIndex);
+            FrameData frameDataA = allSensorLists.get(a).get(indexForNewestData);
 
             // single sensor checks
             // height can always be checked for sanity
@@ -137,11 +166,11 @@ public class FrameDataSet {
                 }
             }
 
+            // dual sensor checks
+            // based on the maximum achievable distance between neighbouring sensors
             for (int b = a + 1; b < allSensorLists.size(); b++) {
-//                System.out.println("3");
 
-                FrameData frameDataB = allSensorLists.get(b).get(latestIndex);
-
+                FrameData frameDataB = allSensorLists.get(b).get(indexForNewestData);
                 double distance = MathHelper.distance(frameDataA, frameDataB);
 
                 // no distance should be higher than this, no matter which sensor combination
@@ -150,7 +179,7 @@ public class FrameDataSet {
                     frameDataB.setInvalid();
                 }
 
-                // dual sensor checks
+                // specific pairs
                 // sensor lists are sorted alphabetically, dual sensor checks have to list the "lower" one first
                 switch (frameDataA.getSensorPosition()) {
                     case "head":
@@ -237,14 +266,15 @@ public class FrameDataSet {
                         }
                         break;
                 }
-
-
             }
-
         }
     }
 
-
+    /**
+     * Add the new sensor list to this data set and sort all sensor lists by their sensor names
+     *
+     * @param newSensorList
+     */
     void addNewSensorListAndSortByPosition(ArrayList<FrameData> newSensorList) {
 
         allSensorLists.add(newSensorList);
@@ -252,23 +282,22 @@ public class FrameDataSet {
 
     }
 
-
-    public ArrayList<FrameData> composeFlatList() {
-        ArrayList<FrameData> flatList = new ArrayList<FrameData>();
-        for (List<FrameData> sensorList : allSensorLists
-        ) {
-            flatList.addAll(sensorList);
-        }
-
-        return flatList;
-    }
-
+    /**
+     * Get all sensor lists contained in this set
+     *
+     * @return
+     */
     public ArrayList<List<FrameData>> getAllSensorLists() {
         return allSensorLists;
     }
 
-    static int segmentsLeftOut = 0;
-
+    /**
+     * Separate this FrameDataSet into pieces of the given length, with the given distance between them
+     *
+     * @param windowSize
+     * @param timeBetweenWindows
+     * @return
+     */
     public ArrayList<FrameDataSet> separateFrameDataIntoValidWindows(double windowSize, double timeBetweenWindows) {
 
         // get first point in time
@@ -282,8 +311,10 @@ public class FrameDataSet {
         double lastPotentialSegmentStartTime = startTime;
         double currentSegmentStartTime = startTime;
 
+        // prepare to collect created sets
         ArrayList<FrameDataSet> frameDataSegments = new ArrayList<>();
 
+        // advance through the timestamps of any sensor list to determine the points of separation
         for (int i = 0; i < firstSensorList.size(); i++) {
 
             double frameTime = firstSensorList.get(i).getTime();
@@ -311,27 +342,29 @@ public class FrameDataSet {
                     List<FrameData> sensorSegment = sensorList.subList(startIndex, endIndex);
                     newFrameDataSegment.add(sensorSegment);
                 }
-
                 FrameDataSet newFrameDataSet = new FrameDataSet(newFrameDataSegment, subject, activity);
 
+                // add new segment, or throw it out if it contains wrong sensor readings
                 if (newFrameDataSet.includesOnlyValidData()) {
                     frameDataSegments.add(newFrameDataSet);
                 } else {
                     System.out.println("segments left out:  " + segmentsLeftOut++);
                 }
 
-
                 // update segment indexes and time
                 potentialSegmentStartIndexes.removeFirst();
                 currentSegmentStartTime = firstSensorList.get(potentialSegmentStartIndexes.getFirst()).getTime();
             }
-
         }
 
         return frameDataSegments;
-
     }
 
+    /**
+     * Whether any of the included data has been determined to result from an erroneous sensor reading
+     *
+     * @return
+     */
     private boolean includesOnlyValidData() {
         for (List<FrameData> sensor : allSensorLists) {
             for (FrameData frameData : sensor) {
@@ -343,12 +376,20 @@ public class FrameDataSet {
         return true;
     }
 
+    /**
+     * Get a new FrameDataSet which represents the latest data of the given length, and remove all earlier data
+     * <p>
+     * Useful for live classification, allowing to continuously update a FrameDataSet
+     * and get the newest data when needed, without letting it grow forever
+     *
+     * @param windowSize
+     * @return
+     */
     public FrameDataSet getLatestDataForWindowSizeAndRemoveEarlierData(double windowSize) {
 
 
+        // determine index of first data point within requested time frame
         List<FrameData> firstSensorList = allSensorLists.get(0);
-
-        // determine index of first data point in time frame
         double latestTime = firstSensorList.get(firstSensorList.size() - 1).getTime();
         int indexOfFirstSensorData = 0;
         for (int i = firstSensorList.size() - 1; i >= 0; i--) {
@@ -365,24 +406,35 @@ public class FrameDataSet {
             ArrayList<FrameData> newSensorList =
                     new ArrayList<>(oldSensorList.subList(indexOfFirstSensorData, oldSensorList.size() - 1));
             newSensorLists.add(newSensorList);
-            // we will not need the older data either, so we can forget it by also using the reduced list
+            // forget the old data by using the reduced list from now on
             allSensorLists.set(i, newSensorList);
         }
 
         // using the newSensorList ensures a true copy instead of a mirror
         return new FrameDataSet(newSensorLists, subject, activity);
-
-
     }
 
+    /**
+     * The subject which recorded all data within this set
+     *
+     * @return
+     */
     public String getSubject() {
         return subject;
     }
 
+    /**
+     * The activity performed for all data within this set
+     *
+     * @return
+     */
     public String getActivity() {
         return activity;
     }
 
+    /**
+     * Sort all sensor lists by their sensor name
+     */
     private void sortSensorListsByPosition() {
         allSensorLists.sort(new Comparator<List<FrameData>>() {
             @Override
@@ -392,6 +444,11 @@ public class FrameDataSet {
         });
     }
 
+    /**
+     * Get the names of all sensors positions which recorded data for this set
+     *
+     * @return
+     */
     public ArrayList<String> getAllSensorPositions() {
         ArrayList<String> sensorPositions = new ArrayList<>();
         for (List<FrameData> sensorList : allSensorLists) {
@@ -400,9 +457,14 @@ public class FrameDataSet {
         return sensorPositions;
     }
 
-
+    /**
+     * Determine if this set contains enough data to cover the given window size
+     *
+     * @param windowSize
+     * @return
+     */
     public boolean enoughDataForWindowSize(double windowSize) {
-
+        // if there is data at all, simply determine earliest and latest data
         if (allSensorLists.size() > 0 && allSensorLists.get(0).size() > 0) {
             List<FrameData> firstSensorList = allSensorLists.get(0);
             double startTime = firstSensorList.get(0).getTime();
@@ -411,8 +473,5 @@ public class FrameDataSet {
         } else {
             return false;
         }
-
     }
-
-
 }
