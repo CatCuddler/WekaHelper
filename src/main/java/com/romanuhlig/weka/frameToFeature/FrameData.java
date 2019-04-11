@@ -1,4 +1,4 @@
-package com.romanuhlig.weka.data;
+package com.romanuhlig.weka.frameToFeature;
 
 import com.opencsv.bean.CsvBindByName;
 import com.romanuhlig.weka.math.MathHelper;
@@ -63,7 +63,7 @@ public class FrameData {
 
     // acceleration and frame duration have to be calculated from the previous frame,
     // which leaves data points where that data can not be determined
-    boolean derivedDataCalculated = false;
+    private boolean derivedDataCalculated = false;
     private double frameDuration = 0;
 
     // whether invalid values were detected while reading the data

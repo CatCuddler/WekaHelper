@@ -10,7 +10,7 @@ import java.util.List;
 public class GlobalData {
 
 
-    static List<String> allAvailableSensors;
+    private static List<String> allAvailableSensors;
 
     /**
      * Get all sensors that are used within the current data set

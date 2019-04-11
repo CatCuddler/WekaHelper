@@ -1,10 +1,10 @@
 package com.romanuhlig.weka.lifeClassification;
 
 import com.romanuhlig.weka.controller.TestBenchSettings;
-import com.romanuhlig.weka.data.FrameData;
-import com.romanuhlig.weka.data.FrameDataReader;
-import com.romanuhlig.weka.data.FrameDataSet;
-import com.romanuhlig.weka.data.FeatureVector;
+import com.romanuhlig.weka.frameToFeature.FrameData;
+import com.romanuhlig.weka.frameToFeature.FeatureExtractor;
+import com.romanuhlig.weka.frameToFeature.FrameDataSet;
+import com.romanuhlig.weka.frameToFeature.FeatureVector;
 import weka.classifiers.Classifier;
 import weka.core.Attribute;
 import weka.core.DenseInstance;
@@ -116,11 +116,11 @@ public class CppDataClassifier {
 //                        outputClassifierResultToCpp("starting classification thread");
 
                         // create features
-                        FeatureVector features = FrameDataReader.getFeaturesForFrameDataSet(frameDataSetForWindow);
+                        FeatureVector features = FeatureExtractor.getFeaturesForFrameDataSet(frameDataSetForWindow);
 
                         // create header and attribute types
                         if (instanceHeader == null) {
-                            instanceHeader = FrameDataReader.getHeaderForFrameDataSet(frameDataSetForWindow, false, false);
+                            instanceHeader = FeatureExtractor.getFeatureHeaderForFrameDataSet(frameDataSetForWindow, false, false);
 
                             //                        outputClassifierResultToCpp("c");
 

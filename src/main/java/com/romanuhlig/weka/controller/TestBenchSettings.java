@@ -30,7 +30,7 @@ public class TestBenchSettings {
     // Do not generate new features, read old file instead?
     // To read an old file, place the existing featureExtractionResults file (not the actual feature file)
     // in the existingFeaturesInputFolder specified further below
-    private static boolean useExistingFeatureFile = false;
+    private static boolean useExistingFeatureFile = true;
 
     // leave empty if you want to use the standard folder name, generated from the chosen settings
     private static String forceFolderName = "test";
@@ -69,17 +69,17 @@ public class TestBenchSettings {
 
 
 //            /////////////////////////////   arm and leg 2 tracker combinations:   /////////////////////////////
-            {"rForeArm", "lLeg"}
-            ,
-            {"rForeArm", "rLeg"}
-            ,
-            {"rArm", "lLeg"}
-            ,
-            {"rArm", "rLeg"}
-            ,
-            {"lForeArm", "lLeg"}
-            ,
-            {"lForeArm", "rLeg"}
+//            {"rForeArm", "lLeg"}
+//            ,
+//            {"rForeArm", "rLeg"}
+//            ,
+//            {"rArm", "lLeg"}
+//            ,
+//            {"rArm", "rLeg"}
+//            ,
+//            {"lForeArm", "lLeg"}
+//            ,
+//            {"lForeArm", "rLeg"}
     };
 
     // Force usage of at least these sensor combinations,
@@ -88,13 +88,13 @@ public class TestBenchSettings {
     // If left empty, more generalized options below will be used.
     private static String[][] minimumSensorSubset = new String[][]{
 //            /////////////////////////////   standard test set   /////////////////////////////
-//            {},                                                                              // trackers only
-//            {"head"},                                                                        // HMD
-//            {"lHand", "rHand"},                                                              // Hands
-//            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-//            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
-//            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
-//            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
+            {},                                                                              // trackers only
+            {"head"},                                                                        // HMD
+            {"lHand", "rHand"},                                                              // Hands
+            {"head", "lHand", "rHand"},                                                      // HMD + Hands
+            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
+            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
+            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
     };
 
 
@@ -106,8 +106,8 @@ public class TestBenchSettings {
     private static boolean allowSingleHandController = false;
     // number of trackers
     // choose below 0 to express any number is allowed
-    private static int minimumNumberOfTrackers = 2;
-    private static int maximumNumberOfTrackers = 2;
+    private static int minimumNumberOfTrackers = -111;
+    private static int maximumNumberOfTrackers = 1;
     // sensor number refers to HMD, handcontrollers and all trackers added up
     // choose below 0 to express any number is allowed
     private static int minimumNumberOfSensors = -111;

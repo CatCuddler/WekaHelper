@@ -1,4 +1,4 @@
-package com.romanuhlig.weka.data;
+package com.romanuhlig.weka.frameToFeature;
 
 import java.util.ArrayList;
 import java.util.Comparator;

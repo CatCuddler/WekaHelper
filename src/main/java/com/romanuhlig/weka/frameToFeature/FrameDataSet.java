@@ -1,4 +1,4 @@
-package com.romanuhlig.weka.data;
+package com.romanuhlig.weka.frameToFeature;
 
 import com.romanuhlig.weka.math.MathHelper;
 

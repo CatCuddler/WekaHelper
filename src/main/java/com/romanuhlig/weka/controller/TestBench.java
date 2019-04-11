@@ -3,7 +3,7 @@ package com.romanuhlig.weka.controller;
 import com.romanuhlig.weka.classification.ClassificationResult;
 import com.romanuhlig.weka.classification.ClassifierFactory;
 import com.romanuhlig.weka.classification.ConfusionMatrixSummary;
-import com.romanuhlig.weka.data.FrameDataReader;
+import com.romanuhlig.weka.frameToFeature.FeatureExtractor;
 import com.romanuhlig.weka.io.*;
 import com.romanuhlig.weka.time.TimeHelper;
 
@@ -53,7 +53,7 @@ public class TestBench {
                     TestBenchSettings.getExistingFeaturesInputFolder());
         } else {
             // create new feature file
-            featureExtractionResults = FrameDataReader.createFeatureSets(
+            featureExtractionResults = FeatureExtractor.createFeatureFiles(
                     TestBenchSettings.getInputBaseFolder(), outputFolderPath);
             FileWriter.writeNewFeatureExtractionResults(featureExtractionResults, outputFolderPath,
                     TestBenchSettings.getExistingFeaturesInputFolder(), "featureExtractionResults_" + startTime);

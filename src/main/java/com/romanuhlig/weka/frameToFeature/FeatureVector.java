@@ -1,4 +1,4 @@
-package com.romanuhlig.weka.data;
+package com.romanuhlig.weka.frameToFeature;
 
 import com.romanuhlig.weka.controller.TestBenchSettings;
 
@@ -12,8 +12,8 @@ import java.util.ArrayList;
 public class FeatureVector {
 
     private final ArrayList<Double> featureValues;
-    final String classValue;
-    final String subject;
+    private final String classValue;
+    private final String subject;
 
     /**
      * Create a new feature vector for the given subject and class

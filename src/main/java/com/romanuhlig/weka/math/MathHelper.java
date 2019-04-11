@@ -1,6 +1,6 @@
 package com.romanuhlig.weka.math;
 
-import com.romanuhlig.weka.data.FrameData;
+import com.romanuhlig.weka.frameToFeature.FrameData;
 
 public class MathHelper {
 
