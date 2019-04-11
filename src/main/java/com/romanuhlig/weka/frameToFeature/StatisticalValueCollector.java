@@ -3,27 +3,38 @@ package com.romanuhlig.weka.frameToFeature;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+/**
+ * Collects data series and computes statistics for the collected data
+ *
+ * @author Roman Uhlig
+ */
 public class StatisticalValueCollector {
 
 
     private final ArrayList<Double> values = new ArrayList<>();
     private ArrayList<Double> sortedValues = new ArrayList<>();
+    private boolean sortedValuesWereCreated = false;
 
+    private final double bodySize;
+    private final boolean scaleValuesByBodySize;
     private final double totalTimeForAllFrames;
-    private final boolean scaleRunningTotalByFrameDuration;
-    private double runningTotal = 0;
 
+    // the sum of all collected values, and whether each individual added value should be scaled
+    // by the body size when it is being added (only for the running sum)
+    private double runningSum = 0;
+    private final boolean scaleRunningSumByFrameDuration;
+
+    // the average of all collected values, only calculated when needed
     private double unscaledAverage = 0;
     private boolean unscaledAverageComputed = false;
 
+    // the variance of all collected values, only calculated when needed
     private double variance = 0;
     private boolean varianceComputed = false;
 
-    private final boolean scaleValuesByBodySize;
-    private final double bodySize;
-
-    private boolean createdSortedValues = false;
-
+    /**
+     * Simple Comparator for the ordering of collected values by size
+     */
     private final static Comparator<Double> valueComparator = new Comparator<Double>() {
         @Override
         public int compare(Double o1, Double o2) {
@@ -31,64 +42,101 @@ public class StatisticalValueCollector {
         }
     };
 
-
-    public StatisticalValueCollector(boolean scaleRunningTotalByFrameDuration, boolean scaleValuesByBodySize, double totalTimeForAllFrames, double bodySize) {
-        this.scaleRunningTotalByFrameDuration = scaleRunningTotalByFrameDuration;
+    /**
+     * Creates an empty Value Collector with the given settings
+     *
+     * @param scaleRunningSumByFrameDuration
+     * @param scaleValuesByBodySize
+     * @param totalTimeForAllFrames
+     * @param bodySize
+     */
+    public StatisticalValueCollector(boolean scaleRunningSumByFrameDuration, boolean scaleValuesByBodySize, double totalTimeForAllFrames, double bodySize) {
+        this.scaleRunningSumByFrameDuration = scaleRunningSumByFrameDuration;
         this.totalTimeForAllFrames = totalTimeForAllFrames;
         this.scaleValuesByBodySize = scaleValuesByBodySize;
         this.bodySize = bodySize;
     }
 
+    /**
+     * Add a single new value
+     * <p>
+     * Values need to be added in (time) order
+     *
+     * @param value
+     * @param frameDuration
+     */
     public void addValue(double value, double frameDuration) {
 
         values.add(value);
 
-        if (scaleRunningTotalByFrameDuration) {
-            runningTotal += value * frameDuration;
+        // if requested, scale the value by the duration of the frame
+        if (scaleRunningSumByFrameDuration) {
+            runningSum += value * frameDuration;
         } else {
-            runningTotal += value;
+            runningSum += value;
         }
 
-        createdSortedValues = false;
+        // after a new value was added, statistics have to be recreated when needed
+        sortedValuesWereCreated = false;
         unscaledAverageComputed = false;
         varianceComputed = false;
     }
 
-
+    /**
+     * Create a sorted list of all collected values
+     */
     private void createSortedValues() {
-        if (!createdSortedValues) {
+        if (!sortedValuesWereCreated) {
             sortedValues = new ArrayList<>(values);
             sortedValues.sort(valueComparator);
-            createdSortedValues = true;
+            sortedValuesWereCreated = true;
         }
     }
 
-
+    /**
+     * Set the lowest collected value to zero, and modify all other values by the same amount
+     * <p>
+     * For example, a list of (4,3,8) becomes (1,0,5), and a list of (4,-3,8) becomes (7,0,11)
+     */
     public void adjustToLowestValueAsZero() {
 
+        // determine lowest value
         double lowestValue = Double.MAX_VALUE;
         for (Double value : values) {
             if (value < lowestValue) {
                 lowestValue = value;
             }
         }
+
+        // adjust all values by the lowest value
         for (int i = 0; i < values.size(); i++) {
             values.set(i, values.get(i) - lowestValue);
         }
-
-
     }
 
-
+    /**
+     * Determine the requested percentile, after creating the sorted value list
+     *
+     * @param percentile
+     * @return
+     */
     public double sort_getPercentile(double percentile) {
+
         createSortedValues();
 
+        // determine percentile
         int index = (int) ((sortedValues.size() - 1) * percentile);
         double value = sortedValues.get(index);
-        return scaledValue(value);
+        return potentiallyScaledValue(value);
     }
 
-    private double scaledValue(double value) {
+    /**
+     * Scale the value by body size if requested, or return it unchanged if not
+     *
+     * @param value
+     * @return
+     */
+    private double potentiallyScaledValue(double value) {
         if (scaleValuesByBodySize) {
             return value / bodySize;
         } else {
@@ -96,47 +144,69 @@ public class StatisticalValueCollector {
         }
     }
 
-    public double getAverage() {
-        return scaledValue(runningTotal / totalTimeForAllFrames);
+    /**
+     * The average of all collected values, scaled by the total time
+     *
+     * @return
+     */
+    public double getAverageScaledByTime() {
+        return potentiallyScaledValue(runningSum / totalTimeForAllFrames);
     }
 
+    /**
+     * Get the minimum collected value, after creating the sorted value list
+     *
+     * @return
+     */
     public double sort_getMin() {
         createSortedValues();
-        return scaledValue(sortedValues.get(0));
+        return potentiallyScaledValue(sortedValues.get(0));
     }
 
+    /**
+     * Get the maximum collected value, after creating the sorted value list
+     *
+     * @return
+     */
     public double sort_getMax() {
         createSortedValues();
-        return scaledValue(sortedValues.get(sortedValues.size() - 1));
+        return potentiallyScaledValue(sortedValues.get(sortedValues.size() - 1));
     }
 
-    public double sort_getMaxAbsolute() {
-        createSortedValues();
-        return Math.max(Math.abs(sort_getMin()), Math.abs(sort_getMax()));
-    }
-
-
+    /**
+     * Get the absolute difference between the minimum and maximum collected value, after creating the sorted value list
+     *
+     * @return
+     */
     public double sort_getRange() {
         createSortedValues();
         double min = sortedValues.get(0);
         double max = sortedValues.get(sortedValues.size() - 1);
-        return scaledValue(Math.abs(max - min));
+        return potentiallyScaledValue(Math.abs(max - min));
     }
 
+    /**
+     * The root mean square of all collected values
+     *
+     * @return
+     */
     public double getRootMeanSquare() {
-        // sqrt of the average of all squared values
+        // = sqrt of the average of the sum of all squares:
+        // sum all squares
         double rootMeanSquare = 0;
-        // squares
         for (Double value : values) {
             rootMeanSquare += Math.pow(value, 2);
         }
-        // average
+        // average (of the sum of all squares)
         rootMeanSquare /= values.size();
-        // sqrt
+        // sqrt (of the average of the sum of all squares)
         rootMeanSquare = Math.sqrt(rootMeanSquare);
-        return scaledValue(rootMeanSquare);
+        return potentiallyScaledValue(rootMeanSquare);
     }
 
+    /**
+     * Determine and set the unscaled average of all collected values
+     */
     private void computeUnscaledAverage() {
         if (!unscaledAverageComputed) {
 
@@ -150,21 +220,32 @@ public class StatisticalValueCollector {
         }
     }
 
+    /**
+     * The standard deviation of all collected values
+     * <p>
+     * Also triggers computation of variance
+     *
+     * @return
+     */
     public double getStandardDeviation() {
-        // sqrt of average squared distance from average
         computeVariance();
-
         double standardDeviation = Math.sqrt(variance);
-        return scaledValue(standardDeviation);
+        return potentiallyScaledValue(standardDeviation);
     }
 
+    /**
+     * The variance of all collected values
+     *
+     * @return
+     */
     public double getVariance() {
-        // average squared distance from average
         computeVariance();
-
-        return scaledValue(variance);
+        return potentiallyScaledValue(variance);
     }
 
+    /**
+     * Determine and set the variance of all collected values
+     */
     private void computeVariance() {
 
         if (!varianceComputed) {
@@ -178,41 +259,55 @@ public class StatisticalValueCollector {
 
             varianceComputed = true;
         }
-
     }
 
+    /**
+     * The mean absolute deviation of all collected values
+     *
+     * @return
+     */
     public double getMeanAbsoluteDeviation() {
-        // average distance from average
+
         computeUnscaledAverage();
+
         double meanAbsoluteDeviation = 0;
         for (Double value : values) {
             meanAbsoluteDeviation += Math.abs(value - unscaledAverage);
         }
         meanAbsoluteDeviation /= values.size();
 
-        return scaledValue(meanAbsoluteDeviation);
+        return potentiallyScaledValue(meanAbsoluteDeviation);
     }
 
-
+    /**
+     * Get the interquartile range of all collected values, after creating the sorted value list
+     *
+     * @return
+     */
     public double sort_getInterquartileRange() {
-        // q75 - q25
+
         createSortedValues();
 
+        // q75 - q25
         double quartile1 = sortedValues.get((int) ((sortedValues.size() - 1) * 0.25));
         double quartile3 = sortedValues.get((int) ((sortedValues.size() - 1) * 0.75));
 
-        return scaledValue(quartile3 - quartile1);
+        return potentiallyScaledValue(quartile3 - quartile1);
 
     }
 
+    /**
+     * Get the median crossing rate of all collected values, after creating the sorted value list
+     *
+     * @return
+     */
+    public double sort_getMedianCrossingRate() {
 
-    public double getMedianCrossingRate() {
         createSortedValues();
-
         double median = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
 
+        // count instances where current and previous value are on opposite sides of median
         double crossingRate = 0;
-
         for (int i = 1; i < values.size(); i++) {
             double previousValue = values.get(i - 1);
             double currentValue = values.get(i);

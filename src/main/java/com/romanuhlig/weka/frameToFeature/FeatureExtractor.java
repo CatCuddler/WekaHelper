@@ -747,7 +747,7 @@ public class FeatureExtractor {
             boolean includeMin, boolean includeMax) {
 
         // the order and option-based selection here has to be consistent with the standard feature header
-        featureVector.addFeature(valueCollector.getAverage());
+        featureVector.addFeature(valueCollector.getAverageScaledByTime());
         featureVector.addFeature(valueCollector.getRootMeanSquare());
         featureVector.addFeature(valueCollector.getStandardDeviation());
         featureVector.addFeature(valueCollector.getVariance());
@@ -762,7 +762,7 @@ public class FeatureExtractor {
         }
 
         featureVector.addFeature(valueCollector.sort_getRange());
-        featureVector.addFeature(valueCollector.getMedianCrossingRate());
+        featureVector.addFeature(valueCollector.sort_getMedianCrossingRate());
 
         for (int i = 25; i < 100; i += 25) {
             featureVector.addFeature(valueCollector.sort_getPercentile(i / 100d));
