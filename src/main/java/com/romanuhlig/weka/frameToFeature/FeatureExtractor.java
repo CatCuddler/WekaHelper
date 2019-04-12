@@ -6,8 +6,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import com.romanuhlig.weka.ConvexHull.ConvexHull;
 import com.romanuhlig.weka.ConvexHull.ConvexHullPoint;
 import com.romanuhlig.weka.controller.TestBenchSettings;
-import com.romanuhlig.weka.io.FeatureExtractionResults;
-import com.romanuhlig.weka.io.TrainingAndTestFilePackage;
+import com.romanuhlig.weka.io.SubjectsFeatureExtractionResults;
+import com.romanuhlig.weka.io.SubjectTrainingAndTestFilePackage;
 import com.romanuhlig.weka.math.MathHelper;
 
 import java.io.File;
@@ -133,7 +133,7 @@ public class FeatureExtractor {
      * @param outputFilePath
      * @return
      */
-    public static FeatureExtractionResults createFeatureFiles(String inputFilePath, String outputFilePath) {
+    public static SubjectsFeatureExtractionResults createFeatureFiles(String inputFilePath, String outputFilePath) {
 
         // read original recorded data, and separate into windows
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
@@ -190,7 +190,7 @@ public class FeatureExtractor {
             new File(subjectFolderPath).mkdirs();
         }
 
-        FeatureExtractionResults featureExtractionResults = new FeatureExtractionResults(sensorTypes);
+        SubjectsFeatureExtractionResults subjectsFeatureExtractionResults = new SubjectsFeatureExtractionResults(sensorTypes);
 
         // create training and test file for each subject individually
         if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
@@ -217,13 +217,13 @@ public class FeatureExtractor {
                 writeOutputFeatureVectorToCSV(trainingFilePath, headerFields, allButSubjectVectors);
                 writeOutputFeatureVectorToCSV(testFilePath, headerFields, onlySubjectVectors);
 
-                featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(
+                subjectsFeatureExtractionResults.addTrainingAndTestFilePackage(new SubjectTrainingAndTestFilePackage(
                         trainingFilePath, testFilePath, subject));
             }
         } else {
             // create dummy file packages if they are only needed as a reference to the subjects
             for (String subject : subjectNameList) {
-                featureExtractionResults.addTrainingAndTestFilePackage(new TrainingAndTestFilePackage(subject));
+                subjectsFeatureExtractionResults.addTrainingAndTestFilePackage(new SubjectTrainingAndTestFilePackage(subject));
             }
         }
 
@@ -232,10 +232,10 @@ public class FeatureExtractor {
         // write all features in a single data file
         String completeFeatureSetFilePath = outputFeaturesFilePath + "/allDataInOne.csv";
         writeOutputFeatureVectorToCSV(completeFeatureSetFilePath, headerFields, featureVectors);
-        featureExtractionResults.setCompleteFeatureSet(new TrainingAndTestFilePackage(
+        subjectsFeatureExtractionResults.setCompleteFeatureSet(new SubjectTrainingAndTestFilePackage(
                 completeFeatureSetFilePath, completeFeatureSetFilePath, "completeFeatureSet"));
 
-        return featureExtractionResults;
+        return subjectsFeatureExtractionResults;
 
     }
 

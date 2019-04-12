@@ -46,23 +46,23 @@ public class TestBench {
                 + "   " + TestBenchSettings.getOutputFolderTag() + startTime + "/";
 
         // load / create features
-        FeatureExtractionResults featureExtractionResults;
+        SubjectsFeatureExtractionResults subjectsFeatureExtractionResults;
         if (TestBenchSettings.useExistingFeatureFile()) {
             // load existing feature file reference, if requested
-            featureExtractionResults = FileWriter.readExistingFeatureSet(
+            subjectsFeatureExtractionResults = FileWriter.readExistingFeatureSet(
                     TestBenchSettings.getExistingFeaturesInputFolder());
         } else {
             // create new feature file
-            featureExtractionResults = FeatureExtractor.createFeatureFiles(
+            subjectsFeatureExtractionResults = FeatureExtractor.createFeatureFiles(
                     TestBenchSettings.getInputBaseFolder(), outputFolderPath);
-            FileWriter.writeNewFeatureExtractionResults(featureExtractionResults, outputFolderPath,
+            FileWriter.writeNewFeatureExtractionResults(subjectsFeatureExtractionResults, outputFolderPath,
                     TestBenchSettings.getExistingFeaturesInputFolder(), "featureExtractionResults_" + startTime);
         }
 
         // determine all possible sensor subsets for the given dataset
         ArrayList<SensorSubset> sensorSubsets = SensorSubset.generateAllSubsets(
-                featureExtractionResults.getAllSensorPositions());
-        GlobalData.setAllAvailableSensors(featureExtractionResults.getAllSensorPositions());
+                subjectsFeatureExtractionResults.getAllSensorPositions());
+        GlobalData.setAllAvailableSensors(subjectsFeatureExtractionResults.getAllSensorPositions());
 
         // remove the sensor subsets we do not need for this run
         for (int i = sensorSubsets.size() - 1; i >= 0; i--) {
@@ -171,7 +171,7 @@ public class TestBench {
         // count the number of evaluations for estimation of remaining time
         int numberOfEvaluationsCompleted = 0;
         int numberOfEvaluationsInTotal = sensorSubsets.size() * classifiers.size()
-                * featureExtractionResults.getSubjectTrainingAndTestFilePackages().size();
+                * subjectsFeatureExtractionResults.getSubjectTrainingAndTestFilePackages().size();
 
         // output the settings for this run
         FileWriter.writeTextFile(TestBenchSettings.getSettingsSummary(), outputFolderPath, "settings.txt");
@@ -195,11 +195,11 @@ public class TestBench {
                 ConfusionMatrixSummary classifierConfusionMatrixSummary = new ConfusionMatrixSummary();
 
                 // ... all test subjects
-                for (int fp = 0; fp < featureExtractionResults.getSubjectTrainingAndTestFilePackages().size(); fp++) {
+                for (int fp = 0; fp < subjectsFeatureExtractionResults.getSubjectTrainingAndTestFilePackages().size(); fp++) {
 
                     // retrieve features for this subject
-                    TrainingAndTestFilePackage filePackage =
-                            featureExtractionResults.getSubjectTrainingAndTestFilePackages().get(fp);
+                    SubjectTrainingAndTestFilePackage filePackage =
+                            subjectsFeatureExtractionResults.getSubjectTrainingAndTestFilePackages().get(fp);
 
                     // prepare to collect all results for this subject
                     String outputFolderSubject = outputFolderClassifier + filePackage.getSubject() + "/";
@@ -214,7 +214,7 @@ public class TestBench {
                         testDataAllSensors = filePackage.getTestDataUnfiltered();
                     } else {
                         // otherwise, load the complete data file and separate both parts
-                        Instances allDataUnfiltered = featureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
+                        Instances allDataUnfiltered = subjectsFeatureExtractionResults.getCompleteFeatureSet().getTrainingDataUnfiltered();
 
                         // determine nominal index of current subject within list of available subjects,
                         // from the perspective of the loaded weka data set

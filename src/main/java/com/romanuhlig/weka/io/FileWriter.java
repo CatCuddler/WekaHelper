@@ -117,7 +117,7 @@ public class FileWriter {
 
     }
 
-    public static void writeNewFeatureExtractionResults(FeatureExtractionResults results, String currentFolder, String existingFeaturesInputFolder, String filename) {
+    public static void writeNewFeatureExtractionResults(SubjectsFeatureExtractionResults results, String currentFolder, String existingFeaturesInputFolder, String filename) {
 
         // get rid of any existing feature extraction result
         File inputFolder = new File(existingFeaturesInputFolder);
@@ -134,7 +134,7 @@ public class FileWriter {
         serializeObject(results, existingFeaturesInputFolder, filename);
     }
 
-    private static void serializeObject(FeatureExtractionResults results, String folder, String filename) {
+    private static void serializeObject(SubjectsFeatureExtractionResults results, String folder, String filename) {
 
         ensureFolderExists(folder);
 
@@ -151,7 +151,7 @@ public class FileWriter {
     }
 
 
-    public static FeatureExtractionResults readExistingFeatureSet(String existingFeaturesInputFolder) {
+    public static SubjectsFeatureExtractionResults readExistingFeatureSet(String existingFeaturesInputFolder) {
 
         File inputFolder = new File(existingFeaturesInputFolder);
         File[] listOfInputFiles = inputFolder.listFiles();
@@ -159,13 +159,13 @@ public class FileWriter {
         try {
             FileInputStream fileInputStream = new FileInputStream(listOfInputFiles[0].getPath());
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-            FeatureExtractionResults result = (FeatureExtractionResults) objectInputStream.readObject();
+            SubjectsFeatureExtractionResults result = (SubjectsFeatureExtractionResults) objectInputStream.readObject();
             objectInputStream.close();
             return result;
         } catch (Exception e) {
             System.out.println("unable to load existing feature extraction result");
             e.printStackTrace();
-            return new FeatureExtractionResults(new ArrayList<>());
+            return new SubjectsFeatureExtractionResults(new ArrayList<>());
         }
 
 

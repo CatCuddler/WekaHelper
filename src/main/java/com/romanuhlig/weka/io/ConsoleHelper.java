@@ -1,8 +1,18 @@
 package com.romanuhlig.weka.io;
 
+/**
+ * Provides formatting for the console output
+ *
+ * @author Roman Uhlig
+ */
 public class ConsoleHelper {
 
 
+    /**
+     * Output the given matrix to the console
+     *
+     * @param matrix
+     */
     public static void printConfusionMatrix(double[][] matrix) {
 
         for (int line = 0; line < matrix.length; line++) {
