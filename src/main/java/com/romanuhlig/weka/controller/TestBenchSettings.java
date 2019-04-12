@@ -30,7 +30,7 @@ public class TestBenchSettings {
     // Do not generate new features, read old file instead?
     // To read an old file, place the existing featureExtractionResults file (not the actual feature file)
     // in the existingFeaturesInputFolder specified further below
-    private static boolean useExistingFeatureFile = true;
+    private static boolean useExistingFeatureFile = false;
 
     // leave empty if you want to use the standard folder name, generated from the chosen settings
     private static String forceFolderName = "test";
