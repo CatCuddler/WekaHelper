@@ -55,6 +55,4 @@ public class TimeHelper {
     public static String secondsToTimeOutput(long seconds) {
         return secondsToTimeOutput(Math.toIntExact(seconds));
     }
-
-
 }

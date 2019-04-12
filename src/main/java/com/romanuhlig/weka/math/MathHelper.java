@@ -135,6 +135,4 @@ public class MathHelper {
                 frameDataA.getRawPosX(), frameDataA.getRawPosY(), frameDataA.getRawPosZ(),
                 frameDataB.getRawPosX(), frameDataB.getRawPosY(), frameDataB.getRawPosZ());
     }
-
-
 }
