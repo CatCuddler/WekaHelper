@@ -13,7 +13,7 @@ The Weka Helper uses Maven, so simply load the project into your IDE through the
 For upwards of ~30 minutes of recorded data, the Weka Helper will likely require more memory than a 32-bit JVM can provide, making a 64-bit JVM necessary. The Weka Helper has been tested with Java 11.0.2.
 
 ### Live classification
-In order to communicate with the Body Tracking Framework through the Java Native Interface, the Weka Helper first needs to be packaged (Maven->Install) into a jar file. Since the body Tracking Framework does not currently feature 64-bit support, the jar has to be compiled with a 32-bit version of Java. However, Oracle does not provide 32-bit JDKs for Java 9 and upwards. The Weka Helper has been tested with Zulu 10.3, a 32-bit JDK 10 distribution provided by [Azul](https://www.azul.com/downloads/zulu/). If your
+In order to communicate with the Body Tracking Framework through the Java Native Interface, the Weka Helper first needs to be packaged (Maven->Install) into a jar file. Since the body Tracking Framework does not currently feature 64-bit support, the jar has to be compiled with a 32-bit version of Java. However, Oracle does not provide 32-bit JDKs for Java 9 and upwards. The Weka Helper has been tested with Zulu 10.3, a 32-bit JDK 10 distribution provided by [Azul](https://www.azul.com/downloads/zulu/).
 
 # Usage
 
@@ -43,11 +43,11 @@ If the option for saving models in TestBenchSettings is set, all models will be 
 The Weka Helper was developed for a specific dataset, containing a predefined selection of exercises and sensors. The machine learning algorithms all work for any exercise and sensor, but they are in some cases referenced directly for specific sanity checks on the produced data, and to improve the result formatting. In order to use the Weka Helper with data for different exercises or sensors, these references have to be changed.
 
 The currently used sensor names are:
-head, hip, lFoot, lForearm, lHand, lLeg, rArm, rFoot, rForeArm, rHand, rLeg, spine
+head, hip, lFoot, lForearm, lHand, lLeg, rArm, rFoot, rForeArm, rHand, rLeg and spine.
 They are referenced in the following classes:
 FrameDataSet, ClassificationResult, TestBenchSettings (only for choosing sensor subsets)
 
 The currently used exercises are:
-jogging, kick, kickPunch, lateralBounding, lunges, punch, sitting, squats, standing, walking
+jogging, kick, kickPunch, lateralBounding, lunges, punch, sitting, squats, standing and walking.
 They are referenced in the following classes:
 ConfusionMatrixSummary, CppDataClassifier (only for live classification)
