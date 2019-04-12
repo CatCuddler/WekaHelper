@@ -171,7 +171,7 @@ public class FrameDataSet {
             for (int b = a + 1; b < allSensorLists.size(); b++) {
 
                 FrameData frameDataB = allSensorLists.get(b).get(indexForNewestData);
-                double distance = MathHelper.distance(frameDataA, frameDataB);
+                double distance = MathHelper.distanceRawPosition(frameDataA, frameDataB);
 
                 // no distance should be higher than this, no matter which sensor combination
                 if (distance > 3.5) {
