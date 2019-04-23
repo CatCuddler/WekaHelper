@@ -44,6 +44,7 @@ public class ClassificationResult {
     private static DecimalFormat tableDoubleFormatter;
     private static HashMap<String, String> sensorNamesForTable;
 
+    // initialization before first use
     static {
         initializeTableDecimalFormatting();
         initializeTableSensorIdentifiers();

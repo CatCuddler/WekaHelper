@@ -27,28 +27,28 @@ import java.util.concurrent.Executors;
 public class CppDataClassifier {
 
     // time when the last sensor reading was registered, in seconds
-    double timeOfLastFrameData = 0;
+    private double timeOfLastFrameData = 0;
 
     // time of the last prediction attempt, in seconds
-    double timeOfLastClassification = 0;
+    private double timeOfLastClassification = 0;
     // pause between two prediction attempts, in seconds
-    final double timeBetweenClassifications = 1.2;
+    private final double timeBetweenClassifications = 1.2;
 
     // collector for incoming sensor readings
     private FrameDataSet frameDataSet;
 
     // pre-trained model
-    final String pathToClassifier;
-    Classifier classifier;
+    private final String pathToClassifier;
+    private Classifier classifier;
 
     // the header for all instances, generated the first time it is needed
-    ArrayList<String> instanceHeader;
+    private ArrayList<String> instanceHeader;
 
     // data required for any classifier and any run
-    ArrayList<String> classVal;
-    Attribute classAttribute;
-    ArrayList<Attribute> attributes;
-    ExecutorService threadPool = Executors.newCachedThreadPool();
+    private ArrayList<String> classVal;
+    private Attribute classAttribute;
+    private ArrayList<Attribute> attributes;
+    private ExecutorService threadPool = Executors.newCachedThreadPool();
 
     /**
      * Creates a new CppDataClassifier

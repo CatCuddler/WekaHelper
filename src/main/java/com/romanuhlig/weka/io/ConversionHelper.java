@@ -23,5 +23,4 @@ public class ConversionHelper {
         }
         return array;
     }
-
 }

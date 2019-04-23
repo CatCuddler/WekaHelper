@@ -21,7 +21,7 @@ public class ConfusionMatrixSummary {
     // lookup array required to assign letters to columns in array output
     private static final char[] alphabet = "abcdefghijklmnopqrstuvwxyz".toCharArray();
 
-
+    // initialization before first use
     static {
         initializeAlternativeClassNames();
     }

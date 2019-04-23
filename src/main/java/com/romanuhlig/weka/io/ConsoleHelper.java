@@ -7,7 +7,6 @@ package com.romanuhlig.weka.io;
  */
 public class ConsoleHelper {
 
-
     /**
      * Output the given matrix to the console
      *
@@ -22,7 +21,5 @@ public class ConsoleHelper {
             }
             System.out.println();
         }
-
     }
-
 }

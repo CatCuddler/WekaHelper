@@ -118,5 +118,4 @@ public class SubjectTrainingAndTestFilePackage implements Serializable {
     public String getSubject() {
         return subject;
     }
-
 }
