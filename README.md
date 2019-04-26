@@ -10,7 +10,7 @@ The Weka Helper uses Maven, so simply load the project into your IDE through the
 ## Java
 
 ### Feature extraction, model training and evaluation
-For upwards of ~30 minutes of recorded data, the Weka Helper will likely require more memory than a 32-bit JVM can provide, making a 64-bit JVM necessary. The Weka Helper has been tested with Java 11.0.2.
+For upwards of ~30 minutes of recorded data, the Weka Helper will likely require more memory than a 32-bit JVM can provide, making a 64-bit JVM necessary. The Weka Helper has been tested with Java 11.0.2. For our test data consisting of roughly 4 hours of recordings, using a window spacing of 1 second, more than 8 GB of ram were required. To increase the amount of memory available to the JVM, add the argument "-Xmx11000m" to the VM options, where "1100m" is the memory in megabytes.
 
 ### Live classification
 In order to communicate with the Body Tracking Framework through the Java Native Interface, the Weka Helper first needs to be packaged (Maven->Install) into a jar file. Since the body Tracking Framework does not currently feature 64-bit support, the jar has to be compiled with a 32-bit version of Java. However, Oracle does not provide 32-bit JDKs for Java 9 and upwards. The Weka Helper has been tested with Zulu 10.3, a 32-bit JDK 10 distribution provided by [Azul](https://www.azul.com/downloads/zulu/).
@@ -18,7 +18,7 @@ In order to communicate with the Body Tracking Framework through the Java Native
 # Usage
 
 ### Feature extraction, model training and evaluation
-The Feature Extraction, training and evaluation process is started through the Main class. 
+The Feature Extraction, training and evaluation process is started through the Main class.
 The following settings can be changed in the TestBenchSettings class:
 
 - Which sensor subsets to examine
