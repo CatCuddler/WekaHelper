@@ -139,7 +139,8 @@ public class CppDataClassifier {
                         if (instanceHeader == null) {
 
                             // header
-                            instanceHeader = FeatureExtractor.getFeatureHeaderForFrameDataSet(frameDataSetForWindow, false, false);
+                            instanceHeader = FeatureExtractor.getFeatureHeaderForFrameDataSet(
+                                    frameDataSetForWindow, false, false);
 
                             // attribute types
                             int numberOfFeatures = instanceHeader.size();
@@ -172,7 +173,8 @@ public class CppDataClassifier {
                                 instance.setValue(i, featureValues.get(i));
                             } catch (Exception e) {
                                 outputClassifierResultToCpp(e.getLocalizedMessage());
-                                outputClassifierResultToCpp("error setting value:   " + i + "   " + attributes.get(i).name());
+                                outputClassifierResultToCpp(
+                                        "error setting value:   " + i + "   " + attributes.get(i).name());
                             }
                         }
 

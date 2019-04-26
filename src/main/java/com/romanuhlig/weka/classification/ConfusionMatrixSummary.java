@@ -1,6 +1,7 @@
 package com.romanuhlig.weka.classification;
 
 import weka.core.Instances;
+
 import java.util.HashMap;
 
 /**
@@ -186,7 +187,8 @@ public class ConfusionMatrixSummary {
         stringBuilder.append("\\hhline{*{1}{~}|*{" + (classNames.length + 1) + "}{-|}}");
         stringBuilder.append(System.lineSeparator());
 
-        stringBuilder.append("\\multirow{" + classNames.length + "}{*}{\\rotatebox{90}{\\textbf{Actual Class}\\hspace{8pt}}} ");
+        stringBuilder.append("\\multirow{" + classNames.length
+                + "}{*}{\\rotatebox{90}{\\textbf{Actual Class}\\hspace{8pt}}} ");
         stringBuilder.append(System.lineSeparator());
 
 
@@ -315,7 +317,7 @@ public class ConfusionMatrixSummary {
      * Add spaces before the original double value (cast to integer), to produce a string of the desired length
      * Replaces zeros with a placeholder value for better readability of plaintext output
      *
-     * @param original will be cast to integer
+     * @param original   will be cast to integer
      * @param goalLength
      * @return
      */

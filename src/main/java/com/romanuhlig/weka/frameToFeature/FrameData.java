@@ -134,14 +134,20 @@ public class FrameData {
     public void computeAdditionalDataBasedOnPreviousFrame(FrameData previousFrame) {
 
         // linear acceleration
-        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelX, this.rawLinVelX, previousFrame.time, this.time);
-        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelY, this.rawLinVelY, previousFrame.time, this.time);
-        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawLinVelZ, this.rawLinVelZ, previousFrame.time, this.time);
+        this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawLinVelX, this.rawLinVelX, previousFrame.time, this.time);
+        this.linAccelerationY = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawLinVelY, this.rawLinVelY, previousFrame.time, this.time);
+        this.linAccelerationZ = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawLinVelZ, this.rawLinVelZ, previousFrame.time, this.time);
 
         // angular acceleration
-        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelX, this.rawAngVelX, previousFrame.time, this.time);
-        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelY, this.rawAngVelY, previousFrame.time, this.time);
-        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(previousFrame.rawAngVelZ, this.rawAngVelZ, previousFrame.time, this.time);
+        this.angAccelerationX = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawAngVelX, this.rawAngVelX, previousFrame.time, this.time);
+        this.angAccelerationY = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawAngVelY, this.rawAngVelY, previousFrame.time, this.time);
+        this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.rawAngVelZ, this.rawAngVelZ, previousFrame.time, this.time);
 
         // frame duration
         this.frameDuration = this.time - previousFrame.time;

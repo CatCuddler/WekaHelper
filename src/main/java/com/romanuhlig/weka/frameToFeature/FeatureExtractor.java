@@ -190,7 +190,8 @@ public class FeatureExtractor {
             new File(subjectFolderPath).mkdirs();
         }
 
-        SubjectsFeatureExtractionResults subjectsFeatureExtractionResults = new SubjectsFeatureExtractionResults(sensorTypes);
+        SubjectsFeatureExtractionResults subjectsFeatureExtractionResults
+                = new SubjectsFeatureExtractionResults(sensorTypes);
 
         // create training and test file for each subject individually
         if (TestBenchSettings.useIndividualFeatureFilesForEachSubject()) {
@@ -223,7 +224,8 @@ public class FeatureExtractor {
         } else {
             // create dummy file packages if they are only needed as a reference to the subjects
             for (String subject : subjectNameList) {
-                subjectsFeatureExtractionResults.addTrainingAndTestFilePackage(new SubjectTrainingAndTestFilePackage(subject));
+                subjectsFeatureExtractionResults.addTrainingAndTestFilePackage(
+                        new SubjectTrainingAndTestFilePackage(subject));
             }
         }
 

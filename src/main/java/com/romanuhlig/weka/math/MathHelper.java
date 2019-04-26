@@ -18,7 +18,8 @@ public class MathHelper {
      * @param timeFinal
      * @return
      */
-    public static double calculateAccelerationFromVelocity(double velocityBegin, double velocityFinal, double timeBegin, double timeFinal) {
+    public static double calculateAccelerationFromVelocity(
+            double velocityBegin, double velocityFinal, double timeBegin, double timeFinal) {
         return (velocityFinal - velocityBegin) / (timeFinal - timeBegin);
     }
 

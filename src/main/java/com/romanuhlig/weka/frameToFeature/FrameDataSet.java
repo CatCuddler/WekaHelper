@@ -90,7 +90,8 @@ public class FrameDataSet {
         // find the corresponding sensor list for the new data, and add it there
         boolean sensorPositionAlreadyKnown = false;
         for (List<FrameData> sensorList : allSensorLists) {
-            if (!sensorList.isEmpty() && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
+            if (!sensorList.isEmpty()
+                    && sensorList.get(0).getSensorPosition().equals(newFrameData.getSensorPosition())) {
                 sensorList.add(newFrameData);
                 sensorPositionAlreadyKnown = true;
 

@@ -50,7 +50,8 @@ public class StatisticalValueCollector {
      * @param totalTimeForAllFrames
      * @param bodySize
      */
-    public StatisticalValueCollector(boolean scaleRunningSumByFrameDuration, boolean scaleValuesByBodySize, double totalTimeForAllFrames, double bodySize) {
+    public StatisticalValueCollector(boolean scaleRunningSumByFrameDuration, boolean scaleValuesByBodySize,
+                                     double totalTimeForAllFrames, double bodySize) {
         this.scaleRunningSumByFrameDuration = scaleRunningSumByFrameDuration;
         this.totalTimeForAllFrames = totalTimeForAllFrames;
         this.scaleValuesByBodySize = scaleValuesByBodySize;

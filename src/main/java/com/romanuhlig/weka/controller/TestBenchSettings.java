@@ -33,7 +33,7 @@ public class TestBenchSettings {
     private static boolean useExistingFeatureFile = false;
 
     // leave empty if you want to use the standard folder name, generated from the chosen settings
-    private static String forceFolderName = "test";
+    private static String forceFolderName = "";
 
     // window size and spacing for feature generation
     private static double windowSizeForFrameDataToFeatureConversion = 1;
@@ -283,10 +283,12 @@ public class TestBenchSettings {
         stringBuilder.append("scale all features by:   " + scaleAllFeaturesBy);
         stringBuilder.append(System.lineSeparator());
 
-        stringBuilder.append("Window Size for frame data to feature conversion:   " + windowSizeForFrameDataToFeatureConversion);
+        stringBuilder.append("Window Size for frame data to feature conversion:   "
+                + windowSizeForFrameDataToFeatureConversion);
         stringBuilder.append(System.lineSeparator());
 
-        stringBuilder.append("Window Spacing for frame data to feature conversion:   " + windowSpacingForFrameDataToFeatureConversion);
+        stringBuilder.append("Window Spacing for frame data to feature conversion:   "
+                + windowSpacingForFrameDataToFeatureConversion);
         stringBuilder.append(System.lineSeparator());
 
         stringBuilder.append("sensor usage HMD:   " + sensorUsageHMD.toString());
