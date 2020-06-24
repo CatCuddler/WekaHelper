@@ -5,10 +5,10 @@
 /target/**
 
 # generated evaluation results
-/outputResults/**
+#/outputResults/**
 
 # data source for training
-/inputFrameData/
+#/inputFrameData/
 
 
 # Compiled class file
