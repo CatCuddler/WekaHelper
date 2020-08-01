@@ -35,21 +35,24 @@ public class TestBenchSettings {
     // leave empty if you want to use the standard folder name, generated from the chosen settings
     private static String forceFolderName = "";
 
-    // window size and spacing for feature generation
-    private static double windowSizeForFrameDataToFeatureConversion = 1;
+    //If this is true, we separate by execution, not window size
+    private static boolean separateByExecution = true;
+    // window size and spacing for feature generation (only used if separateByExecution == false)
+    private static double windowSizeForFrameDataToFeatureConversion = 2;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
+    // TODO: Set SubjectDataInclusion.All for the final model!!!
     private static SubjectDataInclusion subjectDataInclusion = SubjectDataInclusion.None;
 
     // types of features to exclude (does not apply to existing feature file, if reused)
     private static ArrayList<FeatureType> forbiddenFeatureTypes = new ArrayList<>(Arrays.asList(
-//            FeatureType.Angular
-//            FeatureType.SubjectOrientationRelevant
-//            FeatureType.DualSensorCombination
+            FeatureType.Angular,
+//            FeatureType.SubjectOrientationRelevant,
+            FeatureType.DualSensorCombination,
 //            FeatureType.Position
-//            FeatureType.Velocity
-//            FeatureType.Acceleration
+            FeatureType.Velocity,
+            FeatureType.Acceleration
     ));
 
     // scale all features by fixed amount (required to adapt data to some algorithms, should be left at 1 if no errors)
@@ -90,11 +93,9 @@ public class TestBenchSettings {
 //            /////////////////////////////   standard test set   /////////////////////////////
             {},                                                                              // trackers only
             {"head"},                                                                        // HMD
-            {"lHand", "rHand"},                                                              // Hands
-            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
-            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
-            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
+            {"lForeArm", "rForeArm"},                                                        // Hands
+            {"head", "lForeArm", "rForeArm"},                                                // HMD + Hands
+            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + Hands + Feet
     };
 
 
@@ -106,12 +107,12 @@ public class TestBenchSettings {
     private static boolean allowSingleHandController = false;
     // number of trackers
     // choose below 0 to express any number is allowed
-    private static int minimumNumberOfTrackers = -111;
-    private static int maximumNumberOfTrackers = 1;
+    private static int minimumNumberOfTrackers = 0;
+    private static int maximumNumberOfTrackers = 10;
     // sensor number refers to HMD, handcontrollers and all trackers added up
     // choose below 0 to express any number is allowed
-    private static int minimumNumberOfSensors = -111;
-    private static int maximumNumberOfSensors = -111;
+    private static int minimumNumberOfSensors = 0;
+    private static int maximumNumberOfSensors = 10;
 
 
     // classification algorithms to compare
@@ -171,7 +172,7 @@ public class TestBenchSettings {
 
 
     // save all created models to their respective subject folder
-    private static boolean writeAllModelsToFolder = false;
+    private static boolean writeAllModelsToFolder = true;
 
     // Write one feature file per subject, instead of writing all into one file (and separating later).
     // Much slower due to frequent need to reload data, and needs much more memory due to size of training files.
@@ -182,7 +183,7 @@ public class TestBenchSettings {
 
     // Input and output folders
     // collected exercise data
-    private static String inputBaseFolder = "./inputFrameData/currentInput";
+    private static String inputBaseFolder = "./inputFrameData/currentInput_yoga";
     // place the existing featureExtractionResults file (not the actual feature file) here for feature reuse
     private static String existingFeaturesInputFolder = "./inputFrameData/existingFeatures";
     // base folder for results
@@ -352,6 +353,15 @@ public class TestBenchSettings {
      */
     public static String getOutputFolderTag() {
         return outputFolderTag;
+    }
+
+    /**
+     * Check if we separate by execution
+     *
+     * @return
+     */
+    public static boolean getSeparateByExecution() {
+        return separateByExecution;
     }
 
     /**

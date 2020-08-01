@@ -81,8 +81,8 @@ public class FeatureExtractor {
         for (int i = 0; i < listOfInputFiles.length; i++) {
 
             // windows likes to place a desktop.ini file wherever it feels like, so we have to ignore it
-            if (listOfInputFiles[i].getName().equals("desktop.ini")) {
-                System.out.println("ignored desktop.ini");
+            if (listOfInputFiles[i].getName().equals("desktop.ini") || listOfInputFiles[i].getName().equals(".DS_Store")) {
+                System.out.println("ignored desktop.ini or .DS_Store");
                 continue;
             }
 
@@ -135,12 +135,21 @@ public class FeatureExtractor {
      */
     public static SubjectsFeatureExtractionResults createFeatureFiles(String inputFilePath, String outputFilePath) {
 
-        // read original recorded data, and separate into windows
+        ArrayList<FrameDataSet> windows;
+
+
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
-        ArrayList<FrameDataSet> windows = separateFrameDataSetsIntoWindows(
-                originalFrameDataSets,
-                TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
-                TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
+
+        if (TestBenchSettings.getSeparateByExecution()) {
+            // read original recorded data and separate pro execution (one window == execution)
+            windows = originalFrameDataSets;
+        } else {
+            // read original recorded data, and separate into windows
+            windows = separateFrameDataSetsIntoWindows(
+                    originalFrameDataSets,
+                    TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
+                    TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
+        }
 
         // collect all subject names
         HashSet<String> subjectNames = new HashSet<>();
