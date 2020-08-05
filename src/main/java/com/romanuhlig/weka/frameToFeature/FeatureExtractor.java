@@ -141,7 +141,7 @@ public class FeatureExtractor {
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
 
         if (TestBenchSettings.getSeparateByExecution()) {
-            // read original recorded data and separate pro execution (one window == execution)
+            // read original recorded data and separate for each movement (one window == movement)
             windows = originalFrameDataSets;
         } else {
             // read original recorded data, and separate into windows

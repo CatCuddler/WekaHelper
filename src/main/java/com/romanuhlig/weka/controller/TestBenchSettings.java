@@ -35,7 +35,7 @@ public class TestBenchSettings {
     // leave empty if you want to use the standard folder name, generated from the chosen settings
     private static String forceFolderName = "";
 
-    //If this is true, we separate by execution, not window size
+    // if this is true, we separate by execution, not window size
     private static boolean separateByExecution = true;
     // window size and spacing for feature generation (only used if separateByExecution == false)
     private static double windowSizeForFrameDataToFeatureConversion = 2;
@@ -49,7 +49,7 @@ public class TestBenchSettings {
     private static ArrayList<FeatureType> forbiddenFeatureTypes = new ArrayList<>(Arrays.asList(
             FeatureType.Angular,
 //            FeatureType.SubjectOrientationRelevant,
-            FeatureType.DualSensorCombination,
+//            FeatureType.DualSensorCombination,
 //            FeatureType.Position
             FeatureType.Velocity,
             FeatureType.Acceleration
@@ -83,6 +83,8 @@ public class TestBenchSettings {
 //            {"lForeArm", "lLeg"}
 //            ,
 //            {"lForeArm", "rLeg"}
+//            ,
+            {"head"},{"hip"},{"lHand"},{"rHand"},{"lFoot"},{"rFoot"}
     };
 
     // Force usage of at least these sensor combinations,
@@ -183,7 +185,7 @@ public class TestBenchSettings {
 
     // Input and output folders
     // collected exercise data
-    private static String inputBaseFolder = "./inputFrameData/currentInput_yoga";
+    private static String inputBaseFolder = "./inputFrameData/currentInput_yoga_all";
     // place the existing featureExtractionResults file (not the actual feature file) here for feature reuse
     private static String existingFeaturesInputFolder = "./inputFrameData/existingFeatures";
     // base folder for results

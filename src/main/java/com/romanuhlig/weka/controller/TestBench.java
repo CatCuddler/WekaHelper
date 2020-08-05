@@ -447,6 +447,18 @@ public class TestBench {
                         e.printStackTrace();
                         System.exit(-1);
                     }
+
+                    // Output accuracy TODO
+                    System.out.println("Summary for " + filePackage.getSubject() + " " + sensorSubset.getSensorListRepresentation());
+                    final String[] metrics = new String[]{"Correct", "Incorrect", "Kappa", "Total cost", "Average cost", "KB relative", "KB information", "Correlation", "Complexity 0", "Complexity scheme", "Complexity improvement", "MAE", "RMSE", "RAE", "RRSE", "Coverage", "Region size", "TP rate", "FP rate", "Precision", "Recall", "F-measure", "MCC", "ROC area", "PRC area"};
+                    eval.setMetricsToDisplay(Arrays.asList(metrics));
+                    System.out.println(eval.toSummaryString());
+                    try {
+                        System.out.println(eval.toClassDetailsString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
                     // output confusion matrix for latex
                     ConfusionMatrixSummary tasksConfusionMatrixSummary = new ConfusionMatrixSummary();
                     tasksConfusionMatrixSummary.addResults(eval.confusionMatrix(), trainingDataFinal);
