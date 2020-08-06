@@ -38,7 +38,7 @@ public class TestBenchSettings {
     // if this is true, we separate by execution, not window size
     private static boolean separateByExecution = true;
     // window size and spacing for feature generation (only used if separateByExecution == false)
-    private static double windowSizeForFrameDataToFeatureConversion = 2;
+    private static double windowSizeForFrameDataToFeatureConversion = 1;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
@@ -61,30 +61,21 @@ public class TestBenchSettings {
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used
     private static String[][] onlyAllowSensorSubset = new String[][]{
-//            /////////////////////////////   standard test set   /////////////////////////////
-//            {},                                                                              // trackers only
-//            {"head"},                                                                        // HMD
-//            {"lHand", "rHand"},                                                              // Hands
-//            {"head", "lHand", "rHand"},                                                      // HMD + Hands
-//            {"head", "lHand", "rHand", "hip", "lLeg", "rLeg"},                               // HMD + base_IK + Hands
-//            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + IK_2
-//            {"head", "lHand", "rHand", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},       // HMD + IK_2 + Hands
+            /////////////////////////////   standard test set   /////////////////////////////
+            {"lHand", "rHand"},                                     // Hands
+            {"lFoot", "rFoot"},                                     // Feet
+            {"head", "lHand", "rHand"},                             // Upper-body
+            {"hip", "lFoot", "rFoot"},                              // Lower-body
+            {"head", "lHand", "rHand", "hip", "lFoot", "rFoot"},    // Full-body
 
+            // ///////////////////////////   single sensor test set   /////////////////////////////
+            {"head"}, {"hip"}, {"lHand"}, {"rHand"}, {"lFoot"}, {"rFoot"},
 
-//            /////////////////////////////   arm and leg 2 tracker combinations:   /////////////////////////////
-//            {"rForeArm", "lLeg"}
-//            ,
-//            {"rForeArm", "rLeg"}
-//            ,
-//            {"rArm", "lLeg"}
-//            ,
-//            {"rArm", "rLeg"}
-//            ,
-//            {"lForeArm", "lLeg"}
-//            ,
-//            {"lForeArm", "rLeg"}
-//            ,
-            {"head"},{"hip"},{"lHand"},{"rHand"},{"lFoot"},{"rFoot"}
+            /////////////////////////////   hand and foot 2 tracker combinations:   /////////////////////////////
+            {"lHand", "lFoot"},
+            {"rHand", "rFoot"},
+            {"lHand", "rFoot"},
+            {"rHand", "lFoot"}
     };
 
     // Force usage of at least these sensor combinations,
@@ -92,12 +83,12 @@ public class TestBenchSettings {
     // Only applied if the tracker-less list above is empty.
     // If left empty, more generalized options below will be used.
     private static String[][] minimumSensorSubset = new String[][]{
-//            /////////////////////////////   standard test set   /////////////////////////////
-            {},                                                                              // trackers only
-            {"head"},                                                                        // HMD
-            {"lForeArm", "rForeArm"},                                                        // Hands
-            {"head", "lForeArm", "rForeArm"},                                                // HMD + Hands
-            {"head", "lForeArm", "rForeArm", "hip", "lLeg", "rLeg"},                         // HMD + Hands + Feet
+            /////////////////////////////   standard test set   /////////////////////////////
+            {},                                                     // trackers only
+            {"head"},                                               // HMD
+            {"lHand", "rHand"},                                     // Hands
+            {"head", "lHand", "rHand"},                             // HMD + Hands
+            {"head", "lHand", "rHand", "hip", "lFoot", "rFoot"},    // HMD + Hands + Feet
     };
 
 
@@ -121,13 +112,13 @@ public class TestBenchSettings {
     private static ArrayList<ClassifierFactory.ClassifierType> classifiersToUse = new ArrayList<>(Arrays.asList(
 //            ClassifierType.SMOfeatureSelected
 //            ,
-//            ClassifierType.J48
+            ClassifierType.J48
 //            ,
 //            ClassifierType.RandomForest
 //            ,
 //            ClassifierType.NaiveBayes
 //            ,
-            ClassifierType.SMO
+//            ClassifierType.SMO
 //            ,
 //            ClassifierType.LibSVM
 //            ,
@@ -185,7 +176,7 @@ public class TestBenchSettings {
 
     // Input and output folders
     // collected exercise data
-    private static String inputBaseFolder = "./inputFrameData/currentInput_yoga_all";
+    private static String inputBaseFolder = "./inputFrameData/currentInput";
     // place the existing featureExtractionResults file (not the actual feature file) here for feature reuse
     private static String existingFeaturesInputFolder = "./inputFrameData/existingFeatures";
     // base folder for results
