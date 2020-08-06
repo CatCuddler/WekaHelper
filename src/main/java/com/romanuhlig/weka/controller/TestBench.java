@@ -227,6 +227,7 @@ public class TestBench {
                         ArrayList<Integer> instancesPerTask = new ArrayList<>();
                         ArrayList<Integer> instancesToKeepInTrainingDataPerTask = new ArrayList<>();
                         ArrayList<Integer> instancesToRemoveFromTestDataPerTask = new ArrayList<>();
+                        List<String> allActivities = new ArrayList<>();
                         if (TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.Half
                                 || TestBenchSettings.getSubjectTrainingDataInclusion() == TestBenchSettings.SubjectDataInclusion.HalfAndNoOtherData) {
                             String previousTask = "";
@@ -388,6 +389,13 @@ public class TestBench {
                             System.exit(-1);
                         }
                     }
+
+                    String[] classNames = new String[trainingDataFinal.classAttribute().numValues()];
+                    List<String> allActivities = new ArrayList<>();
+                    for (int i = 0; i < trainingDataFinal.classAttribute().numValues(); i++) {
+                        allActivities.add(trainingDataFinal.classAttribute().value(i));
+                    }
+                    GlobalData.setAllActivities(allActivities);
 
 
                     // measure time for single evaluation

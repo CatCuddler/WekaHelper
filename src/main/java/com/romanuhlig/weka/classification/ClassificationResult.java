@@ -130,6 +130,10 @@ public class ClassificationResult {
             headerList.add("color-F1-min-single-task-subject");
             headerList.add("color-Accuracy");
 
+            for (String activity : GlobalData.getAllActivities()) {
+                headerList.add(activity);
+            }
+
             headerForCSV = headerList.toArray(new String[headerList.size()]);
         }
 
@@ -160,6 +164,10 @@ public class ClassificationResult {
         dataForCSVList.add(f1ColorForTable(minimumAverageF1perTask));
         dataForCSVList.add(f1ColorForTable(minimumF1PersonTask));
         dataForCSVList.add(f1ColorForTable(accuracy));
+
+        for (int i = 0; i < averageF1PerTask.length; i++) {
+            dataForCSVList.add(Double.toString(averageF1PerTask[i]));
+        }
 
         dataForCSV = dataForCSVList.toArray(new String[dataForCSVList.size()]);
 
@@ -215,7 +223,9 @@ public class ClassificationResult {
         _averageF1zeroNAN /= instances.numClasses();
 
         // calculate accuracy
-        double _accuracy = evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
+        double _accuracy = evaluation.pctCorrect(); //evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
+
+
 
         // return a newly constructed classification result, using the calculated values
         ClassificationResult classificationResult = new ClassificationResult
