@@ -59,9 +59,9 @@ public class SensorSubset {
         // determine general information about the included sensors
         int tempNumberOfHeadControllersAndHMD = 0;
         includesAtLeastOneHandController
-                = includedSensors.contains("lForeArm") || includedSensors.contains("rForeArm");
+                = includedSensors.contains("lHand") || includedSensors.contains("rHand");
         includesBothHandControllers
-                = includedSensors.contains("lForeArm") && includedSensors.contains("rForeArm");
+                = includedSensors.contains("lHand") && includedSensors.contains("rHand");
         includesHMD
                 = includedSensors.contains("head");
         if (includesHMD) {
