@@ -1,4 +1,4 @@
-tag;subject;activity;rawPosX;rawPosY;rawPosZ;desPosX;desPosY;desPosZ;finalPosX;finalPosY;finalPosZ;rawRotX;rawRotY;rawRotZ;rawRotW;desRotX;desRotY;desRotZ;desRotW;finalRotX;finalRotY;finalRotZ;finalRotW;rawAngVelX;rawAngVelY;rawAngVelZ;desAngVelX;desAngVelY;desAngVelZ;desAngVelW;rawLinVelX;rawLinVelY;rawLinVelZ;desLinVelX;desLinVelY;desLinVelZ;scale;time
+tag;subject;activity;finalPosX;finalPosY;finalPosZ;desPosX;desPosY;desPosZ;rawPosX;rawPosY;rawPosZ;finalRotX;finalRotY;finalRotZ;finalRotW;desRotX;desRotY;desRotZ;desRotW;rawRotX;rawRotY;rawRotZ;rawRotW;rawAngVelX;rawAngVelY;rawAngVelZ;desAngVelX;desAngVelY;desAngVelZ;desAngVelW;rawLinVelX;rawLinVelY;rawLinVelZ;desLinVelX;desLinVelY;desLinVelZ;scale;time
 head;Subject_4;Krieger_3;0.140899;0.0130829;0.989937;0;0;0;0;0;0;0.752118;0.0129749;0.042926;0.0129749;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;555.948
 hip;Subject_4;Krieger_3;0.232072;0.0865728;0.968838;0;0;0;0;0;0;0.560776;0.0167298;0.0299906;0.0167298;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;555.948
 lHand;Subject_4;Krieger_3;0.590538;-0.164578;0.79005;0;0;0;0;0;0;0.132028;0.400691;-0.867898;0.400691;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;555.948
