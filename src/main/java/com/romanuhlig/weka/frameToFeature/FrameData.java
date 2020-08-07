@@ -192,6 +192,15 @@ public class FrameData {
     }
 
     /**
+     * Final position
+     *
+     * @return
+     */
+    public double getFinalPosX() {
+        return rawPosX;
+    }
+
+    /**
      * The unmodified y position, as reported by the sensor for this frame
      *
      * @return
@@ -201,11 +210,29 @@ public class FrameData {
     }
 
     /**
+     * Final position
+     *
+     * @return
+     */
+    public double getFinalPosY() {
+        return rawPosY;
+    }
+
+    /**
      * The unmodified z position, as reported by the sensor for this frame
      *
      * @return
      */
     public double getRawPosZ() {
+        return rawPosZ;
+    }
+
+    /**
+     * Final position
+     *
+     * @return
+     */
+    public double getFinalPosZ() {
         return rawPosZ;
     }
 
