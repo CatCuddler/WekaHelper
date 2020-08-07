@@ -26,6 +26,8 @@ public class TestBenchSettings {
     ////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
+    // Evaluate a classifier using leave-one-out principle (true) or 10-fold cross-validation (false)
+    private static boolean leaveOneOut = false;
 
     // Do not generate new features, read old file instead?
     // To read an old file, place the existing featureExtractionResults file (not the actual feature file)
@@ -112,20 +114,20 @@ public class TestBenchSettings {
 //            ,
             ClassifierType.J48
             ,
-//            ClassifierType.RandomForest
-//            ,
-//            ClassifierType.NaiveBayes
-//            ,
+            ClassifierType.RandomForest
+            ,
+            ClassifierType.NaiveBayes
+            ,
             ClassifierType.SMO
             ,
-//            ClassifierType.LibSVM
-//            ,
+            ClassifierType.LibSVM
+            ,
 //            ClassifierType.LibLinear
 //            ,
 //            ClassifierType.LMT
 //            ,
-//            ClassifierType.JRip
-//            ,
+            ClassifierType.JRip
+            ,
 //            ClassifierType.SimpleLogistic
 //            ,
 //            ClassifierType.VotedPerceptron
@@ -134,12 +136,12 @@ public class TestBenchSettings {
 //            ,
 //            ClassifierType.Logistic
 //            ,
-//            ClassifierType.REPTree
-//            ,
-//            ClassifierType.RandomTree
-//            ,
-//            ClassifierType.OneR                   // only useful for sanity checks
-//            ,
+            ClassifierType.REPTree
+            ,
+            ClassifierType.RandomTree
+            ,
+            ClassifierType.OneR                   // only useful for sanity checks
+            ,
             ClassifierType.ZeroR                  // only useful for sanity checks
 //            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
@@ -308,6 +310,14 @@ public class TestBenchSettings {
         stringBuilder.append(System.lineSeparator());
 
         return stringBuilder.toString();
+    }
+
+    /**
+     *
+     * @return
+     */
+    public static boolean isLeaveOneOut() {
+        return leaveOneOut;
     }
 
     /**
