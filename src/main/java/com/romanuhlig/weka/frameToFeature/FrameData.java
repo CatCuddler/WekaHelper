@@ -27,6 +27,12 @@ public class FrameData {
     private double rawPosY;
     @CsvBindByName(column = "rawPosZ")
     private double rawPosZ;
+    @CsvBindByName(column = "finalPosX")
+    private double finalPosX;
+    @CsvBindByName(column = "finalPosY")
+    private double finalPosY;
+    @CsvBindByName(column = "finalPosZ")
+    private double finalPosZ;
     @CsvBindByName(column = "rawRotX")
     private double rawRotX;
     @CsvBindByName(column = "rawRotY")
@@ -197,7 +203,7 @@ public class FrameData {
      * @return
      */
     public double getFinalPosX() {
-        return rawPosX;
+        return finalPosX;
     }
 
     /**
@@ -215,7 +221,7 @@ public class FrameData {
      * @return
      */
     public double getFinalPosY() {
-        return rawPosY;
+        return finalPosY;
     }
 
     /**
@@ -233,7 +239,7 @@ public class FrameData {
      * @return
      */
     public double getFinalPosZ() {
-        return rawPosZ;
+        return finalPosZ;
     }
 
     /**
