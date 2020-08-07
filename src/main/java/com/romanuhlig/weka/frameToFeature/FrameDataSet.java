@@ -45,6 +45,13 @@ public class FrameDataSet {
 
         subject = originalFrameData.get(0).getSubject();
         activity = originalFrameData.get(0).getActivity();
+
+        // replace Krieger_1, Krieger_2, Krieger_3 with Krieger (for feet it does not matter which pose we detect)
+        /*if(originalFrameData.get(0).getActivity().startsWith("Krieger"))
+            activity = "Krieger";
+        else
+            activity = originalFrameData.get(0).getActivity();*/
+
         allSensorLists = new ArrayList<>();
 
         // collect all frame data in its corresponding sensor list
@@ -139,30 +146,30 @@ public class FrameDataSet {
                     || frameDataA.getSensorPosition().equals("rForeArm")
                     || frameDataA.getSensorPosition().equals("lHand")
                     || frameDataA.getSensorPosition().equals("rHand")) {
-                if (frameDataA.getRawPosY() > 3.0) {
+                if (frameDataA.getPosY() > 3.0) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("head")) {
-                if (frameDataA.getRawPosY() > 2.75) {
+                if (frameDataA.getPosY() > 2.75) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("rArm")) {
-                if (frameDataA.getRawPosY() > 2.5) {
+                if (frameDataA.getPosY() > 2.5) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("spine")) {
-                if (frameDataA.getRawPosY() > 2.25) {
+                if (frameDataA.getPosY() > 2.25) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("hip")) {
-                if (frameDataA.getRawPosY() > 1.5) {
+                if (frameDataA.getPosY() > 1.5) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("lLeg")
                     || frameDataA.getSensorPosition().equals("rLeg")
                     || frameDataA.getSensorPosition().equals("lFoot")
                     || frameDataA.getSensorPosition().equals("rFoot")) {
-                if (frameDataA.getRawPosY() > 1.0) {
+                if (frameDataA.getPosY() > 1.0) {
                     frameDataA.setInvalid();
                 }
             }
@@ -172,7 +179,7 @@ public class FrameDataSet {
             for (int b = a + 1; b < allSensorLists.size(); b++) {
 
                 FrameData frameDataB = allSensorLists.get(b).get(indexForNewestData);
-                double distance = MathHelper.distanceRawPosition(frameDataA, frameDataB);
+                double distance = MathHelper.distancePosition(frameDataA, frameDataB);
 
                 // no distance should be higher than this, no matter which sensor combination
                 if (distance > 3.5) {

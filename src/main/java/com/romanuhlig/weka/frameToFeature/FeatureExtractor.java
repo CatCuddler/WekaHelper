@@ -135,20 +135,24 @@ public class FeatureExtractor {
      */
     public static SubjectsFeatureExtractionResults createFeatureFiles(String inputFilePath, String outputFilePath) {
 
-        ArrayList<FrameDataSet> windows;
-
+        ArrayList<FrameDataSet> windows = new ArrayList<>();
 
         ArrayList<FrameDataSet> originalFrameDataSets = readAllFrameDataSets(inputFilePath);
 
-        if (TestBenchSettings.getSeparateByExecution()) {
-            // read original recorded data and separate for each movement (one window == movement)
-            windows = originalFrameDataSets;
-        } else {
-            // read original recorded data, and separate into windows
-            windows = separateFrameDataSetsIntoWindows(
-                    originalFrameDataSets,
-                    TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
-                    TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
+        for (FrameDataSet originalFrameDataSet : originalFrameDataSets) {
+            if (originalFrameDataSet.getActivity().contains("Krieger")) {
+                // read original recorded data and separate for each movement (one window == movement)
+                windows.add(originalFrameDataSet);
+            } else {
+                // read original recorded data, and separate into windows
+                ArrayList<FrameDataSet> dataSetWindows =
+                        originalFrameDataSet.separateFrameDataIntoValidWindows(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
+                                TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
+                // add only the first 10 windows (because we also have only 10 trials for each yoga pose)
+                /*for (int i = 0; i < 10; i++)
+                    windows.add(dataSetWindows.get(i));*/
+                windows.addAll(dataSetWindows);
+            }
         }
 
         // collect all subject names
@@ -341,26 +345,26 @@ public class FeatureExtractor {
                 FrameData frameData = singleSensorList.get(i);
 
                 // collect points in order to calculate maximum range in different dimensions
-                rangePointsXZ.add(new ConvexHullPoint(frameData.getRawPosX(), frameData.getRawPosZ()));
-                rangePointsXYZ[i] = new Point3d(frameData.getRawPosX(), frameData.getRawPosY(), frameData.getRawPosZ());
+                rangePointsXZ.add(new ConvexHullPoint(frameData.getPosX(), frameData.getPosZ()));
+                rangePointsXYZ[i] = new Point3d(frameData.getPosX(), frameData.getPosY(), frameData.getPosZ());
 
                 // collect other values over time for future analysis
                 double timeSinceLastFrame = frameData.getFrameDuration();
 
                 // velocity
-                Velocity_X.addValue(Math.abs(frameData.getRawLinVelX()), timeSinceLastFrame);
-                Velocity_Z.addValue(Math.abs(frameData.getRawLinVelZ()), timeSinceLastFrame);
-                Velocity_Height.addValue(Math.abs(frameData.getRawLinVelY()), timeSinceLastFrame);
+                Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
+                Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
+                Velocity_Height.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
                 Velocity_XZ.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getRawLinVelX(),
-                                frameData.getRawLinVelZ()),
+                                frameData.getLinVelX(),
+                                frameData.getLinVelZ()),
                         timeSinceLastFrame);
                 Velocity_XYZ.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getRawLinVelX(),
-                                frameData.getRawLinVelY(),
-                                frameData.getRawLinVelZ()),
+                                frameData.getLinVelX(),
+                                frameData.getLinVelY(),
+                                frameData.getLinVelZ()),
                         timeSinceLastFrame);
 
                 // acceleration
@@ -382,9 +386,9 @@ public class FeatureExtractor {
                 // angular velocity
                 AngularVelocity.addValue(
                         MathHelper.EuclideanNorm(
-                                frameData.getRawAngVelX(),
-                                frameData.getRawAngVelY(),
-                                frameData.getRawAngVelZ()),
+                                frameData.getAngVelX(),
+                                frameData.getAngVelY(),
+                                frameData.getAngVelZ()),
                         timeSinceLastFrame);
                 AngularAcceleration.addValue(
                         MathHelper.EuclideanNorm(
@@ -394,9 +398,9 @@ public class FeatureExtractor {
                         timeSinceLastFrame);
 
                 // position
-                Position_X.addValue(frameData.getRawPosX(), timeSinceLastFrame);
-                Position_Z.addValue(frameData.getRawPosZ(), timeSinceLastFrame);
-                Position_Height.addValue(frameData.getRawPosY(), timeSinceLastFrame);
+                Position_X.addValue(frameData.getPosX(), timeSinceLastFrame);
+                Position_Z.addValue(frameData.getPosZ(), timeSinceLastFrame);
+                Position_Height.addValue(frameData.getPosY(), timeSinceLastFrame);
             }
 
             // determine individual values that do not use the collector class
@@ -548,30 +552,30 @@ public class FeatureExtractor {
                         // distance
                         double averageDistanceCurrentFrameX =
                                 MathHelper.distance(
-                                        frameDataA.getRawPosX(),
-                                        frameDataB.getRawPosX());
+                                        frameDataA.getPosX(),
+                                        frameDataB.getPosX());
                         double averageDistanceCurrentFrameZ =
                                 MathHelper.distance(
-                                        frameDataA.getRawPosZ(),
-                                        frameDataB.getRawPosZ());
+                                        frameDataA.getPosZ(),
+                                        frameDataB.getPosZ());
                         double averageDistanceCurrentFrameHeight =
                                 MathHelper.distance(
-                                        frameDataA.getRawPosY(),
-                                        frameDataB.getRawPosY());
+                                        frameDataA.getPosY(),
+                                        frameDataB.getPosY());
                         double averageDistanceCurrentFrameXZ =
                                 MathHelper.distance(
-                                        frameDataA.getRawPosX(),
-                                        frameDataA.getRawPosZ(),
-                                        frameDataB.getRawPosX(),
-                                        frameDataB.getRawPosZ());
+                                        frameDataA.getPosX(),
+                                        frameDataA.getPosZ(),
+                                        frameDataB.getPosX(),
+                                        frameDataB.getPosZ());
                         double averageDistanceCurrentFrameXYZ =
                                 MathHelper.distance(
-                                        frameDataA.getRawPosX(),
-                                        frameDataA.getRawPosY(),
-                                        frameDataA.getRawPosZ(),
-                                        frameDataB.getRawPosX(),
-                                        frameDataB.getRawPosY(),
-                                        frameDataB.getRawPosZ());
+                                        frameDataA.getPosX(),
+                                        frameDataA.getPosY(),
+                                        frameDataA.getPosZ(),
+                                        frameDataB.getPosX(),
+                                        frameDataB.getPosY(),
+                                        frameDataB.getPosZ());
                         distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
                         distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
                         distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
@@ -580,25 +584,25 @@ public class FeatureExtractor {
 
                         // difference in velocity
                         differenceVelocityX.addValue(Math.abs(
-                                frameDataA.getRawLinVelX() - frameDataB.getRawLinVelX()), timeSinceLastFrame);
+                                frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
                         differenceVelocityZ.addValue(Math.abs(
-                                frameDataA.getRawLinVelZ() - frameDataB.getRawLinVelZ()), timeSinceLastFrame);
+                                frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
                         differenceVelocityHeight.addValue(Math.abs(
-                                frameDataA.getRawLinVelY() - frameDataB.getRawLinVelY()), timeSinceLastFrame);
+                                frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
                         double velocityXZa = MathHelper.EuclideanNorm(
-                                frameDataA.getRawLinVelX(),
-                                frameDataA.getRawLinVelZ());
+                                frameDataA.getLinVelX(),
+                                frameDataA.getLinVelZ());
                         double velocityXZb = MathHelper.EuclideanNorm(
-                                frameDataB.getRawLinVelX(),
-                                frameDataB.getRawLinVelZ());
+                                frameDataB.getLinVelX(),
+                                frameDataB.getLinVelZ());
                         double velocityXYZa = MathHelper.EuclideanNorm(
-                                frameDataA.getRawLinVelX(),
-                                frameDataA.getRawLinVelY(),
-                                frameDataA.getRawLinVelZ());
+                                frameDataA.getLinVelX(),
+                                frameDataA.getLinVelY(),
+                                frameDataA.getLinVelZ());
                         double velocityXYZb = MathHelper.EuclideanNorm(
-                                frameDataB.getRawLinVelX(),
-                                frameDataB.getRawLinVelY(),
-                                frameDataB.getRawLinVelZ());
+                                frameDataB.getLinVelX(),
+                                frameDataB.getLinVelY(),
+                                frameDataB.getLinVelZ());
                         differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
                         differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
                     }

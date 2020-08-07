@@ -131,9 +131,9 @@ public class MathHelper {
      * @param frameDataB
      * @return
      */
-    public static double distanceRawPosition(FrameData frameDataA, FrameData frameDataB) {
+    public static double distancePosition(FrameData frameDataA, FrameData frameDataB) {
         return distance(
-                frameDataA.getRawPosX(), frameDataA.getRawPosY(), frameDataA.getRawPosZ(),
-                frameDataB.getRawPosX(), frameDataB.getRawPosY(), frameDataB.getRawPosZ());
+                frameDataA.getPosX(), frameDataA.getPosY(), frameDataA.getPosZ(),
+                frameDataB.getPosX(), frameDataB.getPosY(), frameDataB.getPosZ());
     }
 }

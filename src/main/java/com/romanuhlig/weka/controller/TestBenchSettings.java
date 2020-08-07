@@ -35,10 +35,8 @@ public class TestBenchSettings {
     // leave empty if you want to use the standard folder name, generated from the chosen settings
     private static String forceFolderName = "";
 
-    // if this is true, we separate by execution, not window size
-    private static boolean separateByExecution = true;
-    // window size and spacing for feature generation (only used if separateByExecution == false)
-    private static double windowSizeForFrameDataToFeatureConversion = 1;
+    // window size and spacing for feature generation
+    private static double windowSizeForFrameDataToFeatureConversion = 5;
     private static double windowSpacingForFrameDataToFeatureConversion = 1;
 
     // whether to include data of tested subject in training data (subject independent: None)
@@ -113,13 +111,13 @@ public class TestBenchSettings {
 //            ClassifierType.SMOfeatureSelected
 //            ,
             ClassifierType.J48
-//            ,
+            ,
 //            ClassifierType.RandomForest
 //            ,
 //            ClassifierType.NaiveBayes
 //            ,
-//            ClassifierType.SMO
-//            ,
+            ClassifierType.SMO
+            ,
 //            ClassifierType.LibSVM
 //            ,
 //            ClassifierType.LibLinear
@@ -142,7 +140,7 @@ public class TestBenchSettings {
 //            ,
 //            ClassifierType.OneR                   // only useful for sanity checks
 //            ,
-//            ClassifierType.ZeroR                  // only useful for sanity checks
+            ClassifierType.ZeroR                  // only useful for sanity checks
 //            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,
@@ -346,15 +344,6 @@ public class TestBenchSettings {
      */
     public static String getOutputFolderTag() {
         return outputFolderTag;
-    }
-
-    /**
-     * Check if we separate by execution
-     *
-     * @return
-     */
-    public static boolean getSeparateByExecution() {
-        return separateByExecution;
     }
 
     /**
