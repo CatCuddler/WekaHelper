@@ -149,9 +149,12 @@ public class FeatureExtractor {
                         originalFrameDataSet.separateFrameDataIntoValidWindows(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion(),
                                 TestBenchSettings.getWindowSpacingForFrameDataToFeatureConversion());
                 // add only the first 10 windows (because we also have only 10 trials for each yoga pose)
-                /*for (int i = 0; i < 10; i++)
-                    windows.add(dataSetWindows.get(i));*/
-                windows.addAll(dataSetWindows);
+                for (int i = 0; i < 10; i++) {
+                    if (i < dataSetWindows.size()) {
+                        windows.add(dataSetWindows.get(i));
+                    }
+                }
+                //windows.addAll(dataSetWindows);
             }
         }
 
