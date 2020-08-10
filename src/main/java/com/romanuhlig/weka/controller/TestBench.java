@@ -369,10 +369,13 @@ public class TestBench {
                         // build and evaluate model for current sensor subset, classifier and subject
                         Evaluation eval = null;
                         try {
-                            // Leave one out
                             classifier.buildClassifier(trainingDataFinal);
+
+                            // leave one out
                             eval = new Evaluation(trainingDataFinal);
                             eval.evaluateModel(classifier, testDataFinal);
+
+                            getEvaluationSummary(classifier, eval, sensorSubset);
                         } catch (Exception e) {
                             System.out.println("Unable to train and evaluate model: " + classifier.getClass().toString());
                             e.printStackTrace();
@@ -416,27 +419,19 @@ public class TestBench {
                     singleTestStopWatch.start();
 
                     // build and evaluate model for current sensor subset and classifier
-                    // use cross-validation
                     Evaluation eval = null;
+                    final int numFolds = 10;
                     try {
                         classifier.buildClassifier(finalDataSet);
+                        // cross-validation
                         eval = new Evaluation(finalDataSet);
-                        eval.crossValidateModel(classifier, finalDataSet, 10, new Random(1));
+                        eval.crossValidateModel(classifier, finalDataSet, numFolds, new Random(1));
+
+                        getEvaluationSummary(classifier, eval, sensorSubset);
                     } catch (Exception e) {
                         System.out.println("Unable to train and evaluate model: " + classifier.getClass().toString());
                         e.printStackTrace();
                         System.exit(-1);
-                    }
-
-                    // Output accuracy
-                    System.out.println("Summary for " + classifier.getClass().toString() + " (" + sensorSubset.getSensorListRepresentation() + ")");
-                    final String[] metrics = new String[]{"Correct", "Incorrect", "Kappa", "Total cost", "Average cost", "KB relative", "KB information", "Correlation", "Complexity 0", "Complexity scheme", "Complexity improvement", "MAE", "RMSE", "RAE", "RRSE", "Coverage", "Region size", "TP rate", "FP rate", "Precision", "Recall", "F-measure", "MCC", "ROC area", "PRC area"};
-                    eval.setMetricsToDisplay(Arrays.asList(metrics));
-                    System.out.println(eval.toSummaryString());
-                    try {
-                        System.out.println(eval.toClassDetailsString());
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
 
                     measureTime(classifier);
@@ -618,5 +613,15 @@ public class TestBench {
             }
         }
         return dataSetFinal;
+    }
+
+    void getEvaluationSummary(Classifier classifier, Evaluation eval, SensorSubset sensorSubset) {
+        System.out.println("\n Summary for " + classifier.getClass().toString() + " (" + sensorSubset.getSensorListRepresentation() + ")");
+        System.out.println(eval.toSummaryString(true));
+        try {
+            System.out.println(eval.toClassDetailsString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
