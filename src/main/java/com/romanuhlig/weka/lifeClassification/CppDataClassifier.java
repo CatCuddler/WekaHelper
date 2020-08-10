@@ -60,17 +60,17 @@ public class CppDataClassifier {
         frameDataSet = new FrameDataSet("", "");
 
         // load pre-trained weka model from the same folder as the jar file
-        pathToClassifier = getFolderPathToJar() + "/wekaModel.model";
+        pathToClassifier = getFolderPathToJar() + "/currentModel.model";
         try {
             classifier = (Classifier) weka.core.SerializationHelper.read(pathToClassifier);
-            outputClassifierResultToCpp("weka model successfully loaded from file");
+            outputClassifierResultToCpp("weka model successfully loaded from file " + pathToClassifier);
         } catch (Exception e) {
-            outputClassifierResultToCpp("unable to load weka classifier from   " + pathToClassifier + "   !!!");
+            outputClassifierResultToCpp("unable to load weka classifier from " + pathToClassifier + "!!!");
         }
 
         // initialize class names
         classVal = new ArrayList<>();
-        classVal.add("jogging");
+        /*classVal.add("jogging");
         classVal.add("kick");
         classVal.add("kickPunch");
         classVal.add("lateralBounding");
@@ -78,6 +78,12 @@ public class CppDataClassifier {
         classVal.add("punch");
         classVal.add("sitting");
         classVal.add("squats");
+        classVal.add("standing");
+        classVal.add("walking");*/
+        classVal.add("Krieger_1");
+        classVal.add("Krieger_2");
+        classVal.add("Krieger_3");
+        classVal.add("sitting");
         classVal.add("standing");
         classVal.add("walking");
         classAttribute = new Attribute("activity", classVal);
@@ -116,7 +122,7 @@ public class CppDataClassifier {
 
         // only consider a new classification once a new frame has started
         // that is, not while different sensors for the current frame might still be incoming
-        if ((time != timeOfLastFrameData) && (time - timeOfLastClassification > timeBetweenClassifications)) {
+        /*if ((time != timeOfLastFrameData) && (time - timeOfLastClassification > timeBetweenClassifications)) {
 
             // if enough data was collected, start a new classification attempt
             if (frameDataSet.enoughDataForWindowSize(TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion())) {
@@ -191,7 +197,7 @@ public class CppDataClassifier {
 
                 threadPool.execute(recognitionThread);
             }
-        }
+        }*/
 
         // create and remember new frame data
         FrameData newFrameData = new FrameData(
@@ -203,7 +209,76 @@ public class CppDataClassifier {
                 scale, time);
         frameDataSet.addFrameData(newFrameData);
 
-        timeOfLastFrameData = newFrameData.getTime();
+        //timeOfLastFrameData = newFrameData.getTime();
+    }
+
+    public void recognizeLastMovement() {
+        // copy the data required for a classification attempt, and get rid of older data
+        FrameDataSet frameDataSetForWindow =
+                frameDataSet.getLatestDataForWindowSizeAndRemoveEarlierData(
+                        TestBenchSettings.getWindowSizeForFrameDataToFeatureConversion());
+
+        // run the feature computation and execution within a separate thread, to avoid slowdowns
+        Runnable recognitionThread = new Runnable() {
+            public void run() {
+
+                // create features
+                FeatureVector features = FeatureExtractor.getFeaturesForFrameDataSet(frameDataSetForWindow);
+
+                // if this is the first classification attempt, create header and attribute types
+                if (instanceHeader == null) {
+
+                    // header
+                    instanceHeader = FeatureExtractor.getFeatureHeaderForFrameDataSet(
+                            frameDataSetForWindow, false, false);
+
+                    // attribute types
+                    int numberOfFeatures = instanceHeader.size();
+                    attributes = new ArrayList<>(numberOfFeatures);
+                    for (int i = 0; i < numberOfFeatures; i++) {
+                        Attribute newAttribute = new Attribute(instanceHeader.get(i));
+                        attributes.add(newAttribute);
+                    }
+                    attributes.add(classAttribute);
+                }
+
+                // create a new instance
+                int numberOfFeatures = instanceHeader.size();
+                Instance instance = new DenseInstance(numberOfFeatures);
+
+                // create an InstanceS Object to house the Instance (as its single entry)
+                Instances instances = new Instances("LifeInstances", attributes, 0);
+                instances.setClass(classAttribute);
+
+                // make them known to each other
+                instances.add(instance);
+                instance.setDataset(instances);
+
+                // create the feature values for the instance
+                ArrayList<Double> featureValues = features.getFeaturesWithoutClassAndSubject();
+
+                // fill the attribute values for the instance with the feature values
+                for (int i = 0; i < numberOfFeatures; i++) {
+                    try {
+                        instance.setValue(i, featureValues.get(i));
+                    } catch (Exception e) {
+                        outputClassifierResultToCpp(e.getLocalizedMessage());
+                        outputClassifierResultToCpp(
+                                "error setting value:   " + i + "   " + attributes.get(i).name());
+                    }
+                }
+
+                // predict the class of the created instance
+                try {
+                    double prediction = classifier.classifyInstance(instance);
+                    outputClassifierResultToCpp(classVal.get((int) prediction));
+                } catch (Exception e) {
+                    outputClassifierResultToCpp(e.getLocalizedMessage());
+                    outputClassifierResultToCpp("classification failed !!!");
+                }
+            }
+        };
+        threadPool.execute(recognitionThread);
     }
 
     /**
