@@ -120,8 +120,8 @@ public class TestBenchSettings {
             ,
             ClassifierType.SMO
             ,
-            ClassifierType.LibSVM
-            ,
+//            ClassifierType.LibSVM
+//            ,
 //            ClassifierType.LibLinear
 //            ,
 //            ClassifierType.LMT
