@@ -313,6 +313,14 @@ public class FeatureExtractor {
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Position_Z =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Rotation_X =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Rotation_Y =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Rotation_Z =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Rotation_W =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_X =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_Z =
@@ -404,6 +412,12 @@ public class FeatureExtractor {
                 Position_X.addValue(frameData.getPosX(), timeSinceLastFrame);
                 Position_Z.addValue(frameData.getPosZ(), timeSinceLastFrame);
                 Position_Height.addValue(frameData.getPosY(), timeSinceLastFrame);
+
+                // rotation
+                Rotation_X.addValue(frameData.getRotX(), timeSinceLastFrame);
+                Rotation_Y.addValue(frameData.getRotY(), timeSinceLastFrame);
+                Rotation_Z.addValue(frameData.getRotZ(), timeSinceLastFrame);
+                Rotation_W.addValue(frameData.getRotW(), timeSinceLastFrame);
             }
 
             // determine individual values that do not use the collector class
@@ -451,6 +465,13 @@ public class FeatureExtractor {
             // the order and type-based selection here has to be consistent with the generated header
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
                 addStandardFeatures(featureVector, Position_Height);
+            }
+
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Rotation)) {
+                addStandardFeatures(featureVector, Rotation_X);
+                addStandardFeatures(featureVector, Rotation_Y);
+                addStandardFeatures(featureVector, Rotation_Z);
+                addStandardFeatures(featureVector, Rotation_W);
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
@@ -658,6 +679,13 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
                 addStandardFeatureHeader(headerFields, sensorType, "Position_Height");
+            }
+
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Rotation)) {
+                addStandardFeatureHeader(headerFields, sensorType, "Rotation_X");
+                addStandardFeatureHeader(headerFields, sensorType, "Rotation_Y");
+                addStandardFeatureHeader(headerFields, sensorType, "Rotation_Z");
+                addStandardFeatureHeader(headerFields, sensorType, "Rotation_W");
             }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.SubjectOrientationRelevant)) {

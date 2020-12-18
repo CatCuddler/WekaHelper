@@ -27,7 +27,7 @@ public class TestBenchSettings {
     ////////////////////////////////////////////////////////////////////
 
     // Evaluate a classifier using leave-one-out principle (true) or 10-fold cross-validation (false)
-    private static boolean leaveOneOut = false;
+    private static boolean leaveOneOut = true;
 
     // Do not generate new features, read old file instead?
     // To read an old file, place the existing featureExtractionResults file (not the actual feature file)
@@ -143,14 +143,14 @@ public class TestBenchSettings {
             ClassifierType.OneR                   // only useful for sanity checks
             ,
             ClassifierType.ZeroR                  // only useful for sanity checks
-//            ,
+            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.KStar                  // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.MultilayerPerceptron   // very, very slow in training
 //            ,
-//            ClassifierType.BayesNet               // - bin problems (too similar, scaling does not always help)
+            ClassifierType.BayesNet               // - bin problems (too similar, scaling does not always help)
 //            ,
 //            ClassifierType.DecisionTable          // - bin problems (too similar, scaling does not always help)
 //            ,
@@ -218,6 +218,7 @@ public class TestBenchSettings {
         SubjectOrientationRelevant,
         DualSensorCombination,
         Position,
+        Rotation,
         Velocity,
         Acceleration
     }
