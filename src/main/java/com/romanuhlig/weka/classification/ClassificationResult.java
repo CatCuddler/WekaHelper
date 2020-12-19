@@ -38,6 +38,8 @@ public class ClassificationResult {
     // bonus information for csv output
     private static String[] headerForCSV;
     private String[] dataForCSV;
+    private static String[] headerForCSVcompressed;
+    private String[] dataForCSVcompressed;
 
     // formatting / organisation of data
     private static ClassificationResultF1Comparator f1Comparator = new ClassificationResultF1Comparator();
@@ -137,7 +139,6 @@ public class ClassificationResult {
             headerForCSV = headerList.toArray(new String[headerList.size()]);
         }
 
-
         // collect data for CSV writing later on, MIND THE ORDER
         LinkedList<String> dataForCSVList = new LinkedList<>();
         dataForCSVList.add(classifier);
@@ -170,6 +171,27 @@ public class ClassificationResult {
         }
 
         dataForCSV = dataForCSVList.toArray(new String[dataForCSVList.size()]);
+
+
+        if (headerForCSVcompressed == null) {
+            LinkedList<String> headerList = new LinkedList<>();
+            headerList = new LinkedList<>();
+            headerList.add("Classifier");
+            headerList.add("F1");
+            headerList.add("Accuracy");
+            headerList.add("Sensor-summary");
+
+            headerForCSVcompressed = headerList.toArray(new String[headerList.size()]);
+        }
+
+        // collect data for CSV writing later on, MIND THE ORDER
+        dataForCSVList = new LinkedList<>();
+        dataForCSVList.add(classifier);
+        dataForCSVList.add(f1ResultForTable(averageF1Score));
+        dataForCSVList.add(f1ResultForTable(accuracy));
+        dataForCSVList.add(sensorSummary);
+
+        dataForCSVcompressed = dataForCSVList.toArray(new String[dataForCSVList.size()]);
 
         // collect original data for comparisons
         this.classifier = classifier;
@@ -223,7 +245,7 @@ public class ClassificationResult {
         _averageF1zeroNAN /= instances.numClasses();
 
         // calculate accuracy
-        double _accuracy = evaluation.pctCorrect(); //evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
+        double _accuracy = evaluation.correct() / (evaluation.correct() + evaluation.incorrect());
 
 
 
@@ -422,12 +444,30 @@ public class ClassificationResult {
     }
 
     /**
+     * The header for all values that get written to csv files from this class
+     * Compatible with getDataForCSV
+     * @return
+     */
+    public static String[] getHeaderForCSVcompressed() {
+        return headerForCSVcompressed;
+    }
+
+    /**
      * Data that represents a line in a csv file
      * Compatible with getHeaderForCSV
      * @return
      */
     public String[] getDataForCSV() {
         return dataForCSV;
+    }
+
+    /**
+     * Data that represents a line in a csv file
+     * Compatible with getHeaderForCSV
+     * @return
+     */
+    public String[] getDataForCSVcompressed() {
+        return dataForCSVcompressed;
     }
 
     /**

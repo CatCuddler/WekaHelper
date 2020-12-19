@@ -483,6 +483,8 @@ public class TestBench {
         }
 
         // write all results
+        FileWriter.writeClassificationResultsCompressed(allResults, outputFolderPath, "classificationResultCompressed");
+
         allResults.sort(ClassificationResult.getF1Comparator());
         FileWriter.writeClassificationResults(allResults, resultsBaseFolder, "classificationResult");
         // write the overall results in base folder as well, for easier access

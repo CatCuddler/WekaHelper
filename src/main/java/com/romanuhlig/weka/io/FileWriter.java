@@ -69,6 +69,34 @@ public class FileWriter {
         }
     }
 
+    public static void writeClassificationResultsCompressed(
+            List<ClassificationResult> results, String folder, String filename) {
+
+        ensureFolderExists(folder);
+
+        String fullFilePath = folder + filename + ".csv";
+
+        try (
+                // create table writer
+                Writer writer = Files.newBufferedWriter(Paths.get(fullFilePath));
+                CSVWriter csvWriter = new CSVWriter(writer,
+                        CSVWriter.DEFAULT_SEPARATOR,
+                        CSVWriter.NO_QUOTE_CHARACTER,
+                        CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                        CSVWriter.DEFAULT_LINE_END);
+        ) {
+            // add header
+            csvWriter.writeNext(ClassificationResult.getHeaderForCSVcompressed());
+
+            // writer results line by line
+            for (ClassificationResult result : results) {
+                csvWriter.writeNext(result.getDataForCSVcompressed());
+            }
+        } catch (Exception e) {
+            System.err.println("could not write classification result " + fullFilePath);
+        }
+    }
+
     /**
      * Write the given string to a simple text file
      *
