@@ -35,18 +35,27 @@ public class FrameData {
     private double rotZ;
     @CsvBindByName(column = "finalRotW")
     private double rotW;
-    @CsvBindByName(column = "angVelX")
+    /*@CsvBindByName(column = "angVelX")
     private double angVelX;
     @CsvBindByName(column = "angVelY")
     private double angVelY;
     @CsvBindByName(column = "angVelZ")
     private double angVelZ;
+    @CsvBindByName(column = "angVelW") // Missing in .csv
+    private double angVelW;
     @CsvBindByName(column = "linVelX")
     private double linVelX;
     @CsvBindByName(column = "linVelY")
     private double linVelY;
     @CsvBindByName(column = "linVelZ")
+    private double linVelZ;*/
+    private double linVelX;
+    private double linVelY;
     private double linVelZ;
+    private double angVelX;
+    private double angVelY;
+    private double angVelZ;
+    private double angVelW;
 
     // the acceleration can not be read directly from the sensors, and has to be derived using two frames
     private double linAccelerationX;
@@ -55,6 +64,7 @@ public class FrameData {
     private double angAccelerationX;
     private double angAccelerationY;
     private double angAccelerationZ;
+    private double angAccelerationW;
 
     @CsvBindByName
     private double scale;
@@ -103,8 +113,8 @@ public class FrameData {
     public FrameData(String sensorPosition, String subject, String activity,
                      double posX, double posY, double posZ,
                      double rotX, double rotY, double rotZ, double rotW,
-                     double angVelX, double angVelY, double angVelZ,
-                     double linVelX, double linVelY, double linVelZ,
+                     //double angVelX, double angVelY, double angVelZ,
+                     //double linVelX, double linVelY, double linVelZ,
                      double scale, double time) {
         this.sensorPosition = sensorPosition;
         this.subject = subject;
@@ -116,12 +126,12 @@ public class FrameData {
         this.rotY = rotY;
         this.rotZ = rotZ;
         this.rotW = rotW;
-        this.angVelX = angVelX;
+        /*this.angVelX = angVelX;
         this.angVelY = angVelY;
         this.angVelZ = angVelZ;
         this.linVelX = linVelX;
         this.linVelY = linVelY;
-        this.linVelZ = linVelZ;
+        this.linVelZ = linVelZ;*/
         this.scale = scale;
         this.time = time;
     }
@@ -132,6 +142,24 @@ public class FrameData {
      * @param previousFrame
      */
     public void computeAdditionalDataBasedOnPreviousFrame(FrameData previousFrame) {
+        
+        // linear velocity
+        this.linVelX = MathHelper.calculateVelocityFromPosition(
+                previousFrame.posX, this.posX, previousFrame.time, this.time);
+        this.linVelY = MathHelper.calculateVelocityFromPosition(
+                previousFrame.posY, this.posY, previousFrame.time, this.time);
+        this.linVelZ = MathHelper.calculateVelocityFromPosition(
+                previousFrame.posZ, this.posZ, previousFrame.time, this.time);
+        
+        // angular velocity 
+        this.angVelX = MathHelper.calculateVelocityFromPosition(
+                previousFrame.rotX, this.rotX, previousFrame.time, this.time);
+        this.angVelY = MathHelper.calculateVelocityFromPosition(
+                previousFrame.rotY, this.rotY, previousFrame.time, this.time);
+        this.angVelZ = MathHelper.calculateVelocityFromPosition(
+                previousFrame.rotZ, this.rotZ, previousFrame.time, this.time);
+        this.angVelW = MathHelper.calculateVelocityFromPosition(
+                previousFrame.rotW, this.rotW, previousFrame.time, this.time);
 
         // linear acceleration
         this.linAccelerationX = MathHelper.calculateAccelerationFromVelocity(
@@ -148,6 +176,8 @@ public class FrameData {
                 previousFrame.angVelY, this.angVelY, previousFrame.time, this.time);
         this.angAccelerationZ = MathHelper.calculateAccelerationFromVelocity(
                 previousFrame.angVelZ, this.angVelZ, previousFrame.time, this.time);
+        this.angAccelerationW = MathHelper.calculateAccelerationFromVelocity(
+                previousFrame.angVelW, this.angVelW, previousFrame.time, this.time);
 
         // frame duration
         this.frameDuration = this.time - previousFrame.time;
@@ -273,6 +303,15 @@ public class FrameData {
     }
 
     /**
+     * The w angular velocity
+     *
+     * @return
+     */
+    public double getAngVelW() {
+        return angVelW;
+    }
+
+    /**
      * The x linear velocity
      *
      * @return
@@ -351,6 +390,15 @@ public class FrameData {
      */
     public double getAngAccelerationZ() {
         return angAccelerationZ;
+    }
+
+    /**
+     * The w angular acceleration, derived from the velocity of this and the previous frame
+     *
+     * @return
+     */
+    public double getAngAccelerationW() {
+        return angAccelerationW;
     }
 
     /**

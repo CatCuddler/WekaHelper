@@ -18,6 +18,20 @@ public class MathHelper {
      * @param timeFinal
      * @return
      */
+    public static double calculateVelocityFromPosition(
+            double positionBegin, double positionFinal, double timeBegin, double timeFinal) {
+        return (positionFinal - positionBegin) / (timeFinal - timeBegin);
+    }
+
+    /**
+     * Calculate the acceleration based on a change in velocity
+     *
+     * @param velocityBegin
+     * @param velocityFinal
+     * @param timeBegin
+     * @param timeFinal
+     * @return
+     */
     public static double calculateAccelerationFromVelocity(
             double velocityBegin, double velocityFinal, double timeBegin, double timeFinal) {
         return (velocityFinal - velocityBegin) / (timeFinal - timeBegin);
