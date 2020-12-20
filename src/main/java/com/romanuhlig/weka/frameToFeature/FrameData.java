@@ -104,6 +104,7 @@ public class FrameData {
      * @param angVelX
      * @param angVelY
      * @param angVelZ
+     * @param angVelW
      * @param linVelX
      * @param linVelY
      * @param linVelZ
@@ -113,8 +114,8 @@ public class FrameData {
     public FrameData(String sensorPosition, String subject, String activity,
                      double posX, double posY, double posZ,
                      double rotX, double rotY, double rotZ, double rotW,
-                     //double angVelX, double angVelY, double angVelZ,
-                     //double linVelX, double linVelY, double linVelZ,
+                     double angVelX, double angVelY, double angVelZ, double angVelW,
+                     double linVelX, double linVelY, double linVelZ,
                      double scale, double time) {
         this.sensorPosition = sensorPosition;
         this.subject = subject;
@@ -126,12 +127,12 @@ public class FrameData {
         this.rotY = rotY;
         this.rotZ = rotZ;
         this.rotW = rotW;
-        /*this.angVelX = angVelX;
+        this.angVelX = angVelX;
         this.angVelY = angVelY;
         this.angVelZ = angVelZ;
         this.linVelX = linVelX;
         this.linVelY = linVelY;
-        this.linVelZ = linVelZ;*/
+        this.linVelZ = linVelZ;
         this.scale = scale;
         this.time = time;
     }

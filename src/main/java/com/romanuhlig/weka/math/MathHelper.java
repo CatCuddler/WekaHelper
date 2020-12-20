@@ -12,15 +12,19 @@ public class MathHelper {
     /**
      * Calculate the acceleration based on a change in velocity
      *
-     * @param velocityBegin
-     * @param velocityFinal
+     * @param positionBegin
+     * @param positionFinal
      * @param timeBegin
      * @param timeFinal
      * @return
      */
     public static double calculateVelocityFromPosition(
             double positionBegin, double positionFinal, double timeBegin, double timeFinal) {
-        return (positionFinal - positionBegin) / (timeFinal - timeBegin);
+        double velocity = (positionFinal - positionBegin) / (timeFinal - timeBegin);
+        if (Double.isNaN(velocity) || Double.isInfinite(velocity))
+            return 0;
+        else
+            return velocity;
     }
 
     /**
@@ -34,7 +38,11 @@ public class MathHelper {
      */
     public static double calculateAccelerationFromVelocity(
             double velocityBegin, double velocityFinal, double timeBegin, double timeFinal) {
-        return (velocityFinal - velocityBegin) / (timeFinal - timeBegin);
+        double acceleration = (velocityFinal - velocityBegin) / (timeFinal - timeBegin);
+        if (Double.isNaN(acceleration) || Double.isInfinite(acceleration))
+            return 0;
+        else
+            return acceleration;
     }
 
     /**
@@ -46,6 +54,18 @@ public class MathHelper {
      */
     public static double EuclideanNorm(double a, double b) {
         return Math.sqrt(a * a + b * b);
+    }
+
+    /**
+     * The euclidean norm for three values
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @return
+     */
+    public static double EuclideanNorm(double x, double y, double z, double w) {
+        return Math.sqrt(x * x + y * y + z * z + w * w);
     }
 
     /**

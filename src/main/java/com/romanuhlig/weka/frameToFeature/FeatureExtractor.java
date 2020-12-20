@@ -399,13 +399,15 @@ public class FeatureExtractor {
                         MathHelper.EuclideanNorm(
                                 frameData.getAngVelX(),
                                 frameData.getAngVelY(),
-                                frameData.getAngVelZ()),
+                                frameData.getAngVelZ(),
+                                frameData.getAngVelW()),
                         timeSinceLastFrame);
                 AngularAcceleration.addValue(
                         MathHelper.EuclideanNorm(
                                 frameData.getAngAccelerationX(),
                                 frameData.getAngAccelerationY(),
-                                frameData.getAngAccelerationZ()),
+                                frameData.getAngAccelerationZ(),
+                                frameData.getAngAccelerationW()),
                         timeSinceLastFrame);
 
                 // position
@@ -606,6 +608,7 @@ public class FeatureExtractor {
                         distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
                         distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
+
                         // difference in velocity
                         differenceVelocityX.addValue(Math.abs(
                                 frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
@@ -641,6 +644,7 @@ public class FeatureExtractor {
                     addStandardFeatures(featureVector, distanceXZ);
                     addStandardFeatures(featureVector, distanceXYZ);
 
+
                     if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                         addStandardFeatures(featureVector, differenceVelocityX);
                         addStandardFeatures(featureVector, differenceVelocityZ);
@@ -648,6 +652,7 @@ public class FeatureExtractor {
                     addStandardFeatures(featureVector, differenceVelocityHeight);
                     addStandardFeatures(featureVector, differenceVelocityXZ);
                     addStandardFeatures(featureVector, differenceVelocityXYZ);
+
                 }
             }
         }
