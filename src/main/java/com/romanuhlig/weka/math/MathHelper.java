@@ -170,4 +170,47 @@ public class MathHelper {
                 frameDataA.getPosX(), frameDataA.getPosY(), frameDataA.getPosZ(),
                 frameDataB.getPosX(), frameDataB.getPosY(), frameDataB.getPosZ());
     }
+
+    /**
+     * Get x-axis rotations
+     * @param rotX
+     * @param rotY
+     * @param rotZ
+     * @param rotW
+     * @return
+     */
+    public static double getRoll(double rotX, double rotY, double rotZ, double rotW) {
+        double t0 = 2.0 * (rotW * rotX + rotY * rotZ);
+        double t1 = 1.0 - 2.0 * (rotX * rotX + rotY * rotY);
+        return Math.atan2(t0, t1);
+    }
+
+    /**
+     * Get y-axis rotations
+     * @param rotX
+     * @param rotY
+     * @param rotZ
+     * @param rotW
+     * @return
+     */
+    public static double getPitch(double rotX, double rotY, double rotZ, double rotW) {
+        double t2 = 2.0 * (rotW * rotY - rotZ * rotX);
+	    t2 = t2 > 1.0 ? 1.0 : t2;
+	    t2 = t2 < -1.0 ? -1.0 : t2;
+	    return Math.asin(t2);
+    }
+
+    /**
+     * Get z-axis rotations
+     * @param rotX
+     * @param rotY
+     * @param rotZ
+     * @param rotW
+     * @return
+     */
+    public static double getYaw(double rotX, double rotY, double rotZ, double rotW) {
+        double t3 = 2.0 * (rotW * rotZ + rotX * rotY);
+        double t4 = 1.0 - 2.0 * (rotY * rotY + rotZ * rotZ);
+	    return Math.atan2(t3, t4);
+    }
 }

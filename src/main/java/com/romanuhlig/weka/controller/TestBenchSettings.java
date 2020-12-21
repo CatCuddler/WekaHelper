@@ -47,11 +47,10 @@ public class TestBenchSettings {
 
     // types of features to exclude (does not apply to existing feature file, if reused)
     private static ArrayList<FeatureType> forbiddenFeatureTypes = new ArrayList<>(Arrays.asList(
-            FeatureType.Angular,
-//            FeatureType.SubjectOrientationRelevant,
 //            FeatureType.DualSensorCombination,
 //            FeatureType.Position
-            FeatureType.Velocity,
+//            FeatureType.Rotation
+            FeatureType.Velocity
             FeatureType.Acceleration
     ));
 
@@ -140,17 +139,17 @@ public class TestBenchSettings {
             ,
             ClassifierType.RandomTree
             ,
+            ClassifierType.BayesNet               // - bin problems (too similar, scaling does not always help)
+            ,
             ClassifierType.OneR                   // only useful for sanity checks
             ,
             ClassifierType.ZeroR                  // only useful for sanity checks
-            ,
+//            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.KStar                  // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.MultilayerPerceptron   // very, very slow in training
-//            ,
-            ClassifierType.BayesNet               // - bin problems (too similar, scaling does not always help)
 //            ,
 //            ClassifierType.DecisionTable          // - bin problems (too similar, scaling does not always help)
 //            ,
@@ -214,7 +213,6 @@ public class TestBenchSettings {
 
     // types of features that can be excluded from feature extraction process
     public enum FeatureType {
-        Angular,
         SubjectOrientationRelevant,
         DualSensorCombination,
         Position,
