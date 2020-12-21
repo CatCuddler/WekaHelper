@@ -375,7 +375,7 @@ public class TestBench {
                             eval = new Evaluation(trainingDataFinal);
                             eval.evaluateModel(classifier, testDataFinal);
 
-                            getEvaluationSummary(classifier, eval, sensorSubset);
+                            //getEvaluationSummary(classifier, eval, sensorSubset);
                         } catch (Exception e) {
                             System.out.println("Unable to train and evaluate model: " + classifier.getClass().toString());
                             e.printStackTrace();
@@ -427,7 +427,7 @@ public class TestBench {
                         eval = new Evaluation(finalDataSet);
                         eval.crossValidateModel(classifier, finalDataSet, numFolds, new Random(1));
 
-                        getEvaluationSummary(classifier, eval, sensorSubset);
+                        //getEvaluationSummary(classifier, eval, sensorSubset);
                     } catch (Exception e) {
                         System.out.println("Unable to train and evaluate model: " + classifier.getClass().toString());
                         e.printStackTrace();
