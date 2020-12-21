@@ -50,7 +50,7 @@ public class TestBenchSettings {
 //            FeatureType.DualSensorCombination,
 //            FeatureType.Position
 //            FeatureType.Rotation
-            FeatureType.Velocity
+            FeatureType.Velocity,
             FeatureType.Acceleration
     ));
 
