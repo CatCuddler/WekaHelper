@@ -6,6 +6,9 @@ import com.romanuhlig.weka.math.MathHelper;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
+import weka.classifiers.meta.AdaBoostM1;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.meta.RandomCommittee;
 import weka.core.Instances;
 
 import java.text.DecimalFormat;
@@ -203,6 +206,17 @@ public class ClassificationResult {
 
         // retrieve basic information
         String _classifier = classifier.getClass().getSimpleName();
+        if (classifier.getClass().equals(AdaBoostM1.class)) {
+            _classifier = _classifier + '_' +
+                    ((AdaBoostM1) classifier).getClassifier().getClass().getSimpleName();
+        } else if (classifier.getClass().equals(Bagging.class)) {
+            _classifier = _classifier + '_' +
+                    ((Bagging) classifier).getClassifier().getClass().getSimpleName();
+        } else if (classifier.getClass().equals(RandomCommittee.class)) {
+            _classifier = _classifier + '_' +
+                    ((RandomCommittee) classifier).getClassifier().getClass().getSimpleName();
+        }
+
         String _testDataSubject = subject;
         int _numberOfSensors = sensorSubset.getNumberOfSensors();
         List<String> _sensorList = sensorSubset.getIncludedSensors();

@@ -11,6 +11,9 @@ import org.apache.commons.lang3.time.StopWatch;
 
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
+import weka.classifiers.meta.AdaBoostM1;
+import weka.classifiers.meta.Bagging;
+import weka.classifiers.meta.RandomCommittee;
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
@@ -194,6 +197,16 @@ public class TestBench {
                 // prepare to collect all results for this classifier
                 ArrayList<ClassificationResult> classifierResults = new ArrayList<>();
                 String outputFolderClassifier = outputFolderSensorSubset + classifier.getClass().getSimpleName() + "/";
+                if (classifier instanceof AdaBoostM1) {
+                    AdaBoostM1 adaBoost = (AdaBoostM1) classifier;
+                    outputFolderClassifier = outputFolderClassifier + adaBoost.getClassifier().getClass().getSimpleName() + "/";
+                } else if (classifier instanceof Bagging) {
+                    Bagging bagging = (Bagging) classifier;
+                    outputFolderClassifier = outputFolderClassifier + bagging.getClassifier().getClass().getSimpleName() + "/";
+                } else if (classifier instanceof RandomCommittee) {
+                    RandomCommittee randomCommittee = (RandomCommittee) classifier;
+                    outputFolderClassifier = outputFolderClassifier + randomCommittee.getClassifier().getClass().getSimpleName() + "/";
+                }
                 ConfusionMatrixSummary classifierConfusionMatrixSummary = new ConfusionMatrixSummary();
 
                 // Leave one out

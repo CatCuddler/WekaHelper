@@ -6,8 +6,7 @@ import weka.classifiers.bayes.NaiveBayes;
 import weka.classifiers.functions.*;
 import weka.classifiers.lazy.IBk;
 import weka.classifiers.lazy.KStar;
-import weka.classifiers.meta.AttributeSelectedClassifier;
-import weka.classifiers.meta.MultiClassClassifier;
+import weka.classifiers.meta.*;
 import weka.classifiers.rules.*;
 import weka.classifiers.trees.*;
 
@@ -24,9 +23,24 @@ public class ClassifierFactory {
     public enum ClassifierType {
         J48, NaiveBayes, RandomForest, ZeroR, OneR, SMO, DecisionTable, GaussianProcess, M5P, KStar, LMT, BayesNet,
         JRip, SimpleLogistic, LinearRegression, VotedPerceptron, SGD, Logistic, MultilayerPerceptron, REPTree,
-        IBk, RandomTree, SMOreg, LibSVM, LibLinear, SMOfeatureSelected
+        IBk, RandomTree, SMOreg, LibSVM, LibLinear, SMOfeatureSelected,
+        AdaBoost, Bagging, RandomCommittee, Stacking, Vote
     }
 
+    /**
+     * Check for specific meta classifier
+     * @param classifierTypes
+     * @param meta
+     * @return
+     */
+    private boolean checkForMetaClassifier(List<ClassifierType> classifierTypes, ClassifierType meta) {
+        for (ClassifierType classifierType : classifierTypes) {
+            if (classifierType == meta) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      * Returns a list of classifiers based on the requested types
@@ -43,12 +57,33 @@ public class ClassifierFactory {
             switch (classifierType) {
                 case J48:
                     classifiers.add(getJ48());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getJ48()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getJ48()));
+                    }
                     break;
                 case NaiveBayes:
                     classifiers.add(getNaiveBayes());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getNaiveBayes()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getNaiveBayes()));
+                    }
                     break;
                 case RandomForest:
                     classifiers.add(getRandomForest());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getRandomForest()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getRandomForest()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.RandomCommittee)) {
+                        classifiers.add(getRandomCommittee(getRandomForest()));
+                    }
                     break;
                 case ZeroR:
                     classifiers.add(getZeroR());
@@ -64,60 +99,189 @@ public class ClassifierFactory {
                     break;
                 case SMO:
                     classifiers.add(getSMO());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getSMO()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getSMO()));
+                    }
                     break;
                 case DecisionTable:
                     classifiers.add(getDecisionTable());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getDecisionTable()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getDecisionTable()));
+                    }
                     break;
                 case GaussianProcess:
                     classifiers.add(getGaussianProcess());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getGaussianProcess()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getGaussianProcess()));
+                    }
                     break;
                 case M5P:
                     classifiers.add(getM5P());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getM5P()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getM5P()));
+                    }
                     break;
                 case KStar:
                     classifiers.add(getKStar());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getKStar()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getKStar()));
+                    }
                     break;
                 case LMT:
                     classifiers.add(getLMT());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getLMT()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getLMT()));
+                    }
                     break;
                 case BayesNet:
                     classifiers.add(getBayesNet());
+                    /*if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getBayesNet()));
+                    }*/
+                    /*if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getBayesNet()));
+                    }*/
                     break;
                 case JRip:
                     classifiers.add(getJRip());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getJRip()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getJRip()));
+                    }
                     break;
                 case SimpleLogistic:
                     classifiers.add(getSimpleLogistic());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getSimpleLogistic()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getSimpleLogistic()));
+                    }
                     break;
                 case LinearRegression:
                     classifiers.add(getLinearRegression());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getLinearRegression()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getLinearRegression()));
+                    }
                     break;
                 case VotedPerceptron:
                     classifiers.add(getVotedPerceptron());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getVotedPerceptron()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getVotedPerceptron()));
+                    }
                     break;
                 case SGD:
                     classifiers.add(getSGD());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getSGD()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getSGD()));
+                    }
                     break;
                 case Logistic:
                     classifiers.add(getLogistic());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getLogistic()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getLogistic()));
+                    }
                     break;
                 case MultilayerPerceptron:
                     classifiers.add(getMultilayerPerceptron());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getMultilayerPerceptron()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getMultilayerPerceptron()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.RandomCommittee)) {
+                        classifiers.add(getRandomCommittee(getMultilayerPerceptron()));
+                    }
                     break;
                 case REPTree:
                     classifiers.add(getREPTree());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getREPTree()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getREPTree()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.RandomCommittee)) {
+                        classifiers.add(getRandomCommittee(getREPTree()));
+                    }
                     break;
                 case IBk:
                     classifiers.add(getIBk());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getIBk()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getIBk()));
+                    }
                     break;
                 case RandomTree:
                     classifiers.add(getRandomTree());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getRandomTree()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getRandomTree()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.RandomCommittee)) {
+                        classifiers.add(getRandomCommittee(getRandomTree()));
+                    }
                     break;
                 case SMOreg:
                     classifiers.add(getSMOreg());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getSMOreg()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getSMOreg()));
+                    }
                     break;
                 case SMOfeatureSelected:
                     classifiers.add(getSMOfeatureSelected());
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
+                        classifiers.add(getAdaBoost(getSMOfeatureSelected()));
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                        classifiers.add(getBagging(getSMOfeatureSelected()));
+                    }
+                    break;
+                case Stacking:
+                    classifiers.add(getStacking());
+                    break;
+                case Vote:
+                    classifiers.add(getVote());
                     break;
                 default:
                     System.err.println(classifierType.toString() + "  classifier not implemented!");
@@ -184,7 +348,6 @@ public class ClassifierFactory {
      */
     private Classifier getSMO() {
         SMO classifier = new SMO();
-
         return classifier;
     }
 
@@ -224,6 +387,61 @@ public class ClassifierFactory {
         // asClassifier.setSearch(search);
 
         return asClassifier;
+    }
+
+    /**
+     * Meta classifier
+     * @return
+     */
+    private Classifier getAdaBoost(Classifier classifier) {
+        AdaBoostM1 adaBoost = new AdaBoostM1();
+        adaBoost.setClassifier(classifier);
+        return adaBoost;
+    }
+
+    /**
+     * Meta classifier
+     * @return
+     */
+    private Classifier getBagging(Classifier classifier) {
+        Bagging bagging = new Bagging();
+        bagging.setClassifier(classifier);
+        return bagging;
+    }
+
+    /**
+     * Meta classifier
+     * @return
+     */
+    private Classifier getRandomCommittee(Classifier classifier) {
+        RandomCommittee randomCommittee = new RandomCommittee();
+        randomCommittee.setClassifier(classifier);
+        return randomCommittee;
+    }
+
+    /**
+     * Meta classifier
+     * @return
+     */
+    private Classifier getStacking() {
+        Stacking stacking = new Stacking();
+        stacking.setMetaClassifier(getSMO());
+        Classifier[] classifiers = { getRandomForest(), getREPTree(), getJRip(), getBayesNet(),
+                getNaiveBayes(), getJ48(), getRandomTree(), getOneR() };
+        stacking.setClassifiers(classifiers);
+        return stacking;
+    }
+
+    /**
+     * Meta classifier
+     * @return
+     */
+    private Classifier getVote() {
+        Vote vote = new Vote();
+        Classifier[] classifiers = { getSMO(), getRandomForest(), getREPTree(), getJRip(),
+                getBayesNet(), getNaiveBayes(), getJ48(), getRandomTree(), getOneR(), getZeroR() };
+        vote.setClassifiers(classifiers);
+        return vote;
     }
 
     /**
@@ -322,8 +540,7 @@ public class ClassifierFactory {
      * @return
      */
     private Classifier getVotedPerceptron() {
-        MultiClassClassifier classifier = new MultiClassClassifier();
-        classifier.setClassifier(new VotedPerceptron());
+        VotedPerceptron classifier = new VotedPerceptron();
         return classifier;
     }
 
@@ -333,8 +550,7 @@ public class ClassifierFactory {
      * @return
      */
     private Classifier getSGD() {
-        MultiClassClassifier classifier = new MultiClassClassifier();
-        classifier.setClassifier(new SGD());
+        SGD classifier = new SGD();
         return classifier;
     }
 

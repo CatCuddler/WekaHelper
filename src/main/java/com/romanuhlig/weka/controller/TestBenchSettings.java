@@ -50,8 +50,8 @@ public class TestBenchSettings {
 //            FeatureType.DualSensorCombination,
 //            FeatureType.Position
 //            FeatureType.Rotation
-            FeatureType.Velocity,
-            FeatureType.Acceleration
+//            FeatureType.Velocity,
+//            FeatureType.Acceleration
     ));
 
     // scale all features by fixed amount (required to adapt data to some algorithms, should be left at 1 if no errors)
@@ -143,8 +143,8 @@ public class TestBenchSettings {
             ,
             ClassifierType.OneR                   // only useful for sanity checks
             ,
-            ClassifierType.ZeroR                  // only useful for sanity checks
-//            ,
+            ClassifierType.ZeroR                 // only useful for sanity checks
+            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.KStar                  // lazy -> slow + needs to keep data
@@ -160,6 +160,16 @@ public class TestBenchSettings {
 //            ClassifierType.GaussianProcess        // - regression
 //            ,
 //            ClassifierType.M5P                    // - regression
+//            ,
+            ClassifierType.AdaBoost             // meta-classifiers
+            ,
+            ClassifierType.Bagging
+            ,
+            ClassifierType.RandomCommittee
+            ,
+            ClassifierType.Stacking
+            ,
+            ClassifierType.Vote
     ));
 
 
