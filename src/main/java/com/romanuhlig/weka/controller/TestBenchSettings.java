@@ -55,7 +55,7 @@ public class TestBenchSettings {
     ));
 
     // scale all features by fixed amount (required to adapt data to some algorithms, should be left at 1 if no errors)
-    private static double scaleAllFeaturesBy = 1;
+    private static double scaleAllFeaturesBy = 1; // 1000000000.0; needed only for BayesNet
 
     // force usage of exactly these sensor combinations, not more or less
     // if left empty, more generalized options below will be used

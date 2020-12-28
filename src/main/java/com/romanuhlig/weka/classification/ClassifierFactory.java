@@ -153,10 +153,11 @@ public class ClassifierFactory {
                     break;
                 case BayesNet:
                     classifiers.add(getBayesNet());
+                    // Increase scaleAllFeaturesBy
                     /*if (checkForMetaClassifier(classifierTypes, ClassifierType.AdaBoost)) {
                         classifiers.add(getAdaBoost(getBayesNet()));
-                    }*/
-                    /*if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
+                    }
+                    if (checkForMetaClassifier(classifierTypes, ClassifierType.Bagging)) {
                         classifiers.add(getBagging(getBayesNet()));
                     }*/
                     break;
