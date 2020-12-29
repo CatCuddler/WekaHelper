@@ -506,9 +506,8 @@ public class TestBench {
         while (sensorNumberIterator.hasNext()) {
             Integer sensorNumber = sensorNumberIterator.next();
             String outputFolderSensorNumber = resultsBaseFolder + sensorNumber + " sensors/";
-            ArrayList<ClassificationResult> sensorNumberResultsSorted = sensorNumberResults.get(sensorNumber);
-            sensorNumberResultsSorted.sort(ClassificationResult.getF1Comparator());
-            FileWriter.writeClassificationResults(sensorNumberResultsSorted, outputFolderSensorNumber, "classificationResult");
+            ArrayList<ClassificationResult> sensorNumberResultsUnsorted = sensorNumberResults.get(sensorNumber);
+            FileWriter.writeClassificationResults(sensorNumberResultsUnsorted, outputFolderSensorNumber, "classificationResult");
         }
 
         // output runtime for overall evaluation and individual classifiers
