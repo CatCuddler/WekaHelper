@@ -596,12 +596,15 @@ public class FeatureExtractor {
                                         frameDataB.getPosX(),
                                         frameDataB.getPosY(),
                                         frameDataB.getPosZ());
-                        distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
-                        distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
-                        distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
-                        distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
-                        distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
+                        // distance in position
+                        if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                            distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
+                            distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
+                            distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
+                            distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
+                            distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
+                        }
 
                         // difference in velocity
                         if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {

@@ -123,6 +123,8 @@ public class StatisticalValueCollector {
      */
     public double sort_getPercentile(double percentile) {
 
+        if (sortedValues.size() == 0) return 0;
+
         createSortedValues();
 
         // determine percentile
@@ -160,6 +162,7 @@ public class StatisticalValueCollector {
      * @return
      */
     public double sort_getMin() {
+        if (sortedValues.size() == 0) return 0;
         createSortedValues();
         return potentiallyScaledValue(sortedValues.get(0));
     }
@@ -170,6 +173,7 @@ public class StatisticalValueCollector {
      * @return
      */
     public double sort_getMax() {
+        if (sortedValues.size() == 0) return 0;
         createSortedValues();
         return potentiallyScaledValue(sortedValues.get(sortedValues.size() - 1));
     }
@@ -180,6 +184,9 @@ public class StatisticalValueCollector {
      * @return
      */
     public double sort_getRange() {
+
+        if (sortedValues.size() == 0) return 0;
+
         createSortedValues();
         double min = sortedValues.get(0);
         double max = sortedValues.get(sortedValues.size() - 1);
@@ -287,6 +294,8 @@ public class StatisticalValueCollector {
      */
     public double sort_getInterquartileRange() {
 
+        if (sortedValues.size() == 0) return 0;
+
         createSortedValues();
 
         // q75 - q25
@@ -303,6 +312,8 @@ public class StatisticalValueCollector {
      * @return
      */
     public double sort_getMedianCrossingRate() {
+
+        if (sortedValues.size() == 0) return 0;
 
         createSortedValues();
         double median = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
