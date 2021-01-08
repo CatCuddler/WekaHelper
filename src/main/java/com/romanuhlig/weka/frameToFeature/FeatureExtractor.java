@@ -483,7 +483,7 @@ public class FeatureExtractor {
                     addStandardFeatures(featureVector, Position_Z, false, false);
                 }
 
-                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity)) {
+                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatures(featureVector, Velocity_X);
                     addStandardFeatures(featureVector, Velocity_Z);
                 }
@@ -494,7 +494,7 @@ public class FeatureExtractor {
                 featureVector.addFeature(rangeXYZ);
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) /*&& !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)*/) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatures(featureVector, Velocity_Height);
                 addStandardFeatures(featureVector, Velocity_XZ);
                 addStandardFeatures(featureVector, Velocity_XYZ);
@@ -698,7 +698,7 @@ public class FeatureExtractor {
                     addStandardFeatureHeader(headerFields, sensorType, "Position_Z", false, false);
                 }
 
-                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity)) {
+                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatureHeader(headerFields, sensorType, "Velocity_X");
                     addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
                 }
@@ -709,7 +709,7 @@ public class FeatureExtractor {
                 headerFields.add(sensorType + "_range_XYZ");
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_Height");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XYZ");
