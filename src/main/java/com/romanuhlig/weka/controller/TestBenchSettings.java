@@ -47,9 +47,10 @@ public class TestBenchSettings {
 
     // types of features to exclude (does not apply to existing feature file, if reused)
     private static ArrayList<FeatureType> forbiddenFeatureTypes = new ArrayList<>(Arrays.asList(
+            FeatureType.DualSensorOnly
 //            FeatureType.DualSensorCombination,
-//            FeatureType.Position
-//            FeatureType.Rotation
+//            FeatureType.Position,
+//            FeatureType.Rotation,
 //            FeatureType.Velocity,
 //            FeatureType.Acceleration
     ));
@@ -144,7 +145,7 @@ public class TestBenchSettings {
             ClassifierType.OneR                   // only useful for sanity checks
             ,
             ClassifierType.ZeroR                 // only useful for sanity checks
-            ,
+/*            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,
 //            ClassifierType.KStar                  // lazy -> slow + needs to keep data
@@ -169,7 +170,7 @@ public class TestBenchSettings {
             ,
             ClassifierType.Stacking
             ,
-            ClassifierType.Vote
+            ClassifierType.Vote*/
     ));
 
 
@@ -224,6 +225,7 @@ public class TestBenchSettings {
     // types of features that can be excluded from feature extraction process
     public enum FeatureType {
         SubjectOrientationRelevant,
+        DualSensorOnly,
         DualSensorCombination,
         Position,
         Rotation,

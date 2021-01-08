@@ -463,7 +463,7 @@ public class FeatureExtractor {
 
             // collect the calculated single-sensor values for output
             // the order and type-based selection here has to be consistent with the generated header
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatures(featureVector, Position_Height);
             }
 
@@ -475,7 +475,7 @@ public class FeatureExtractor {
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                if (TestBenchSettings.featureTagsAllowed(FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     // positional values have to be adjusted to a base value before use
                     Position_X.adjustToLowestValueAsZero();
                     Position_Z.adjustToLowestValueAsZero();
@@ -489,12 +489,12 @@ public class FeatureExtractor {
                 }
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 featureVector.addFeature(rangeXZ);
                 featureVector.addFeature(rangeXYZ);
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) /*&& !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)*/) {
                 addStandardFeatures(featureVector, Velocity_Height);
                 addStandardFeatures(featureVector, Velocity_XZ);
                 addStandardFeatures(featureVector, Velocity_XYZ);
@@ -518,7 +518,7 @@ public class FeatureExtractor {
 
 
         // collect features that depend on the relationship between two sensors
-        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.DualSensorCombination)) {
+        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.DualSensorCombination) || TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
             for (int ssA = 0; ssA < allSensorLists.size(); ssA++) {
                 List<FrameData> singleSensorA = allSensorLists.get(ssA);
 
@@ -598,39 +598,35 @@ public class FeatureExtractor {
                                         frameDataB.getPosZ());
 
                         // distance in position
-                        if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
-                            distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
-                            distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
-                            distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
-                            distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
-                            distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
-                        }
+                        distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
+                        distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
+                        distanceHeight.addValue(averageDistanceCurrentFrameHeight, timeSinceLastFrame);
+                        distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
+                        distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
                         // difference in velocity
-                        if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
-                            differenceVelocityX.addValue(Math.abs(
-                                    frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
-                            differenceVelocityZ.addValue(Math.abs(
-                                    frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
-                            differenceVelocityHeight.addValue(Math.abs(
-                                    frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
-                            double velocityXZa = MathHelper.EuclideanNorm(
-                                    frameDataA.getLinVelX(),
-                                    frameDataA.getLinVelZ());
-                            double velocityXZb = MathHelper.EuclideanNorm(
-                                    frameDataB.getLinVelX(),
-                                    frameDataB.getLinVelZ());
-                            double velocityXYZa = MathHelper.EuclideanNorm(
-                                    frameDataA.getLinVelX(),
-                                    frameDataA.getLinVelY(),
-                                    frameDataA.getLinVelZ());
-                            double velocityXYZb = MathHelper.EuclideanNorm(
-                                    frameDataB.getLinVelX(),
-                                    frameDataB.getLinVelY(),
-                                    frameDataB.getLinVelZ());
-                            differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
-                            differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
-                        }
+                        differenceVelocityX.addValue(Math.abs(
+                                frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
+                        differenceVelocityZ.addValue(Math.abs(
+                                frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
+                        differenceVelocityHeight.addValue(Math.abs(
+                                frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
+                        double velocityXZa = MathHelper.EuclideanNorm(
+                                frameDataA.getLinVelX(),
+                                frameDataA.getLinVelZ());
+                        double velocityXZb = MathHelper.EuclideanNorm(
+                                frameDataB.getLinVelX(),
+                                frameDataB.getLinVelZ());
+                        double velocityXYZa = MathHelper.EuclideanNorm(
+                                frameDataA.getLinVelX(),
+                                frameDataA.getLinVelY(),
+                                frameDataA.getLinVelZ());
+                        double velocityXYZb = MathHelper.EuclideanNorm(
+                                frameDataB.getLinVelX(),
+                                frameDataB.getLinVelY(),
+                                frameDataB.getLinVelZ());
+                        differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
+                        differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
                     }
 
                     // collect the calculated dual-sensor values for output
@@ -639,9 +635,12 @@ public class FeatureExtractor {
                         addStandardFeatures(featureVector, distanceX);
                         addStandardFeatures(featureVector, distanceZ);
                     }
-                    addStandardFeatures(featureVector, distanceHeight);
-                    addStandardFeatures(featureVector, distanceXZ);
-                    addStandardFeatures(featureVector, distanceXYZ);
+
+                    if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                        addStandardFeatures(featureVector, distanceHeight);
+                        addStandardFeatures(featureVector, distanceXZ);
+                        addStandardFeatures(featureVector, distanceXYZ);
+                    }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
@@ -682,7 +681,7 @@ public class FeatureExtractor {
                 continue;
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatureHeader(headerFields, sensorType, "Position_Height");
             }
 
@@ -694,7 +693,7 @@ public class FeatureExtractor {
             }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.SubjectOrientationRelevant)) {
-                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
+                if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatureHeader(headerFields, sensorType, "Position_X", false, false);
                     addStandardFeatureHeader(headerFields, sensorType, "Position_Z", false, false);
                 }
@@ -705,7 +704,7 @@ public class FeatureExtractor {
                 }
             }
 
-            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position)) {
+            if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 headerFields.add(sensorType + "_range_XZ");
                 headerFields.add(sensorType + "_range_XYZ");
             }
@@ -734,7 +733,7 @@ public class FeatureExtractor {
 
         // collect the dual-sensor header fields
         // the order and type-based selection here has to be consistent with the generated features
-        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.DualSensorCombination)) {
+        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.DualSensorCombination) || TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
             for (int ssA = 0; ssA < sensorTypes.size(); ssA++) {
                 String singleSensorA = sensorTypes.get(ssA);
 
@@ -755,9 +754,12 @@ public class FeatureExtractor {
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
                     }
-                    addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
-                    addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
-                    addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
+
+                    if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
+                    }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
