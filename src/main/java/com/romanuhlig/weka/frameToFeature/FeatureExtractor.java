@@ -631,12 +631,11 @@ public class FeatureExtractor {
 
                     // collect the calculated dual-sensor values for output
                     // the order and type-based selection here has to be consistent with the generated header
-                    if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                        addStandardFeatures(featureVector, distanceX);
-                        addStandardFeatures(featureVector, distanceZ);
-                    }
-
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
+                            addStandardFeatures(featureVector, distanceX);
+                            addStandardFeatures(featureVector, distanceZ);
+                        }
                         addStandardFeatures(featureVector, distanceHeight);
                         addStandardFeatures(featureVector, distanceXZ);
                         addStandardFeatures(featureVector, distanceXYZ);
@@ -750,12 +749,11 @@ public class FeatureExtractor {
                         continue;
                     }
 
-                    if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
-                    }
-
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
+                        if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
+                        }
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Height");
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
