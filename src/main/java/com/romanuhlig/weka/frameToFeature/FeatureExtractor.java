@@ -574,25 +574,25 @@ public class FeatureExtractor {
                         double timeSinceLastFrame = frameDataA.getFrameDuration();
 
                         // distance
-                        double averageDistanceCurrentFrameX =
+                        double meanDistanceCurrentFrameX =
                                 MathHelper.distance(
                                         frameDataA.getPosX(),
                                         frameDataB.getPosX());
-                        double averageDistanceCurrentFrameY =
+                        double meanDistanceCurrentFrameY =
                                 MathHelper.distance(
                                         frameDataA.getPosY(),
                                         frameDataB.getPosY());
-                        double averageDistanceCurrentFrameZ =
+                        double meanDistanceCurrentFrameZ =
                                 MathHelper.distance(
                                         frameDataA.getPosZ(),
                                         frameDataB.getPosZ());
-                        double averageDistanceCurrentFrameXZ =
+                        double meanDistanceCurrentFrameXZ =
                                 MathHelper.distance(
                                         frameDataA.getPosX(),
                                         frameDataA.getPosZ(),
                                         frameDataB.getPosX(),
                                         frameDataB.getPosZ());
-                        double averageDistanceCurrentFrameXYZ =
+                        double meanDistanceCurrentFrameXYZ =
                                 MathHelper.distance(
                                         frameDataA.getPosX(),
                                         frameDataA.getPosY(),
@@ -602,11 +602,11 @@ public class FeatureExtractor {
                                         frameDataB.getPosZ());
 
                         // distance in position
-                        distanceX.addValue(averageDistanceCurrentFrameX, timeSinceLastFrame);
-                        distanceY.addValue(averageDistanceCurrentFrameY, timeSinceLastFrame);
-                        distanceZ.addValue(averageDistanceCurrentFrameZ, timeSinceLastFrame);
-                        distanceXZ.addValue(averageDistanceCurrentFrameXZ, timeSinceLastFrame);
-                        distanceXYZ.addValue(averageDistanceCurrentFrameXYZ, timeSinceLastFrame);
+                        distanceX.addValue(meanDistanceCurrentFrameX, timeSinceLastFrame);
+                        distanceY.addValue(meanDistanceCurrentFrameY, timeSinceLastFrame);
+                        distanceZ.addValue(meanDistanceCurrentFrameZ, timeSinceLastFrame);
+                        distanceXZ.addValue(meanDistanceCurrentFrameXZ, timeSinceLastFrame);
+                        distanceXYZ.addValue(meanDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
                         // difference in velocity
                         differenceVelocityX.addValue(Math.abs(
@@ -755,12 +755,12 @@ public class FeatureExtractor {
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_X");
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Z");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_X");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Z");
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_Y");
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XZ");
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "AverageDistance_XYZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Y");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XYZ");
                     }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
@@ -800,7 +800,7 @@ public class FeatureExtractor {
             boolean includeMin, boolean includeMax) {
 
         // the order and option-based selection here has to be consistent with the standard feature header
-        featureVector.addFeature(valueCollector.getAverageScaledByTime());
+        featureVector.addFeature(valueCollector.getMeanScaledByTime());
         featureVector.addFeature(valueCollector.getRootMeanSquare());
         featureVector.addFeature(valueCollector.getStandardDeviation());
         featureVector.addFeature(valueCollector.getVariance());
@@ -815,11 +815,10 @@ public class FeatureExtractor {
         }
 
         featureVector.addFeature(valueCollector.sort_getRange());
-        featureVector.addFeature(valueCollector.sort_getMedianCrossingRate());
+        featureVector.addFeature(valueCollector.sort_getMeanCrossingRate());
 
-        for (int i = 25; i < 100; i += 25) {
-            featureVector.addFeature(valueCollector.sort_getPercentile(i / 100d));
-        }
+        featureVector.addFeature(valueCollector.sort_getPercentile(0.25));
+        featureVector.addFeature(valueCollector.sort_getPercentile(0.75));
     }
 
     /**
@@ -846,7 +845,7 @@ public class FeatureExtractor {
                                                  boolean includeMin, boolean includeMax) {
 
         // the order and option-based selection here has to be consistent with the standard features
-        headerFields.add(sensor + "_average_" + attribute);
+        headerFields.add(sensor + "_mean_" + attribute);
         headerFields.add(sensor + "_rootMeanSquare_" + attribute);
         headerFields.add(sensor + "_standardDeviation_" + attribute);
         headerFields.add(sensor + "_variance_" + attribute);
@@ -861,11 +860,10 @@ public class FeatureExtractor {
         }
 
         headerFields.add(sensor + "_range_" + attribute);
-        headerFields.add(sensor + "_medianCrossingRate_" + attribute);
+        headerFields.add(sensor + "_meanCrossingRate_" + attribute);
 
-        for (int i = 25; i < 100; i += 25) {
-            headerFields.add(sensor + "_percentile" + i + "_" + attribute);
-        }
+        headerFields.add(sensor + "_percentile25_" + attribute);
+        headerFields.add(sensor + "_percentile75_" + attribute);
     }
 
     /**

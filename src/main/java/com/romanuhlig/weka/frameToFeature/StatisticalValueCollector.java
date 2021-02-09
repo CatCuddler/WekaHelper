@@ -24,9 +24,9 @@ public class StatisticalValueCollector {
     private double runningSum = 0;
     private final boolean scaleRunningSumByFrameDuration;
 
-    // the average of all collected values, only calculated when needed
-    private double unscaledAverage = 0;
-    private boolean unscaledAverageComputed = false;
+    // the mean of all collected values, only calculated when needed
+    private double unscaledMean = 0;
+    private boolean unscaledMeanComputed = false;
 
     // the variance of all collected values, only calculated when needed
     private double variance = 0;
@@ -79,7 +79,7 @@ public class StatisticalValueCollector {
 
         // after a new value was added, statistics have to be recreated when needed
         sortedValuesWereCreated = false;
-        unscaledAverageComputed = false;
+        unscaledMeanComputed = false;
         varianceComputed = false;
     }
 
@@ -145,11 +145,11 @@ public class StatisticalValueCollector {
     }
 
     /**
-     * The average of all collected values, scaled by the total time
+     * The mean of all collected values, scaled by the total time
      *
      * @return
      */
-    public double getAverageScaledByTime() {
+    public double getMeanScaledByTime() {
         return potentiallyScaledValue(runningSum / totalTimeForAllFrames);
     }
 
@@ -192,32 +192,32 @@ public class StatisticalValueCollector {
      * @return
      */
     public double getRootMeanSquare() {
-        // = sqrt of the average of the sum of all squares:
+        // = sqrt of the mean of the sum of all squares:
         // sum all squares
         double rootMeanSquare = 0;
         for (Double value : values) {
             rootMeanSquare += Math.pow(value, 2);
         }
-        // average (of the sum of all squares)
+        // mean (of the sum of all squares)
         rootMeanSquare /= values.size();
-        // sqrt (of the average of the sum of all squares)
+        // sqrt (of the mean of the sum of all squares)
         rootMeanSquare = Math.sqrt(rootMeanSquare);
         return potentiallyScaledValue(rootMeanSquare);
     }
 
     /**
-     * Determine and set the unscaled average of all collected values
+     * Determine and set the unscaled mean of all collected values
      */
-    private void computeUnscaledAverage() {
-        if (!unscaledAverageComputed) {
+    private void computeUnscaledMean() {
+        if (!unscaledMeanComputed) {
 
-            unscaledAverage = 0;
+            unscaledMean = 0;
             for (Double value : values) {
-                unscaledAverage += value;
+                unscaledMean += value;
             }
-            unscaledAverage /= values.size();
+            unscaledMean /= values.size();
 
-            unscaledAverageComputed = true;
+            unscaledMeanComputed = true;
         }
     }
 
@@ -250,11 +250,11 @@ public class StatisticalValueCollector {
     private void computeVariance() {
 
         if (!varianceComputed) {
-            computeUnscaledAverage();
+            computeUnscaledMean();
 
             variance = 0;
             for (Double value : values) {
-                variance += Math.pow(value - unscaledAverage, 2);
+                variance += Math.pow(value - unscaledMean, 2);
             }
             variance = variance / (values.size() - 1);
 
@@ -269,11 +269,11 @@ public class StatisticalValueCollector {
      */
     public double getMeanAbsoluteDeviation() {
 
-        computeUnscaledAverage();
+        computeUnscaledMean();
 
         double meanAbsoluteDeviation = 0;
         for (Double value : values) {
-            meanAbsoluteDeviation += Math.abs(value - unscaledAverage);
+            meanAbsoluteDeviation += Math.abs(value - unscaledMean);
         }
         meanAbsoluteDeviation /= values.size();
 
@@ -297,22 +297,24 @@ public class StatisticalValueCollector {
     }
 
     /**
-     * Get the median crossing rate of all collected values, after creating the sorted value list
+     * Get the mean crossing rate of all collected values, after creating the sorted value list
      *
      * @return
      */
-    public double sort_getMedianCrossingRate() {
+    public double sort_getMeanCrossingRate() {
         createSortedValues();
-        double median = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
+        //double median = sortedValues.get((int) ((sortedValues.size() - 1) * 0.5));
+        computeUnscaledMean();
+        double mean = unscaledMean;
 
-        // count instances where current and previous value are on opposite sides of median
+        // count instances where current and previous value are on opposite sides of mean
         double crossingRate = 0;
         for (int i = 1; i < values.size(); i++) {
             double previousValue = values.get(i - 1);
             double currentValue = values.get(i);
 
-            if (previousValue < median && currentValue > median
-                    || previousValue > median && currentValue < median) {
+            if (previousValue < mean && currentValue > mean
+                    || previousValue > mean && currentValue < mean) {
                 crossingRate++;
             }
         }
