@@ -146,11 +146,11 @@ public class FrameDataSet {
                     || frameDataA.getSensorPosition().equals("rForeArm")
                     || frameDataA.getSensorPosition().equals("lHand")
                     || frameDataA.getSensorPosition().equals("rHand")) {
-                if (frameDataA.getPosY() > 3.0) {
+                if (frameDataA.getPosZ() > 3.0) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("head")) {
-                if (frameDataA.getPosY() > 2.75) {
+                if (frameDataA.getPosZ() > 2.75) {
                     frameDataA.setInvalid();
                 }
             } else if (frameDataA.getSensorPosition().equals("rArm")) {
