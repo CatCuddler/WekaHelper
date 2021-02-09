@@ -329,7 +329,11 @@ public class FeatureExtractor {
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_Z =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Velocity_XY =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_XZ =
+                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            StatisticalValueCollector Velocity_YZ =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_XYZ =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
@@ -340,7 +344,11 @@ public class FeatureExtractor {
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_Z =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+            StatisticalValueCollector Acceleration_XY =
+                    new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_XZ =
+                    new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+            StatisticalValueCollector Acceleration_YZ =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_XYZ =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
@@ -370,9 +378,19 @@ public class FeatureExtractor {
                 Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
                 Velocity_Y.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
                 Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
+                Velocity_XY.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinVelX(),
+                                frameData.getLinVelY()),
+                        timeSinceLastFrame);
                 Velocity_XZ.addValue(
                         MathHelper.EuclideanNorm(
                                 frameData.getLinVelX(),
+                                frameData.getLinVelZ()),
+                        timeSinceLastFrame);
+                Velocity_YZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinVelY(),
                                 frameData.getLinVelZ()),
                         timeSinceLastFrame);
                 Velocity_XYZ.addValue(
@@ -386,9 +404,19 @@ public class FeatureExtractor {
                 Acceleration_X.addValue(Math.abs(frameData.getLinAccelerationX()), timeSinceLastFrame);
                 Acceleration_Y.addValue(Math.abs(frameData.getLinAccelerationY()), timeSinceLastFrame);
                 Acceleration_Z.addValue(Math.abs(frameData.getLinAccelerationZ()), timeSinceLastFrame);
+                Acceleration_XY.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinAccelerationX(),
+                                frameData.getLinAccelerationY()),
+                        timeSinceLastFrame);
                 Acceleration_XZ.addValue(
                         MathHelper.EuclideanNorm(
                                 frameData.getLinAccelerationX(),
+                                frameData.getLinAccelerationZ()),
+                        timeSinceLastFrame);
+                Acceleration_YZ.addValue(
+                        MathHelper.EuclideanNorm(
+                                frameData.getLinAccelerationY(),
                                 frameData.getLinAccelerationZ()),
                         timeSinceLastFrame);
                 Acceleration_XYZ.addValue(
@@ -500,7 +528,9 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatures(featureVector, Velocity_Z);
+                addStandardFeatures(featureVector, Velocity_XY);
                 addStandardFeatures(featureVector, Velocity_XZ);
+                addStandardFeatures(featureVector, Velocity_YZ);
                 addStandardFeatures(featureVector, Velocity_XYZ);
                 addStandardFeatures(featureVector, AngularVelocity);
             }
@@ -514,7 +544,9 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
                 addStandardFeatures(featureVector, Acceleration_Z);
+                addStandardFeatures(featureVector, Acceleration_XY);
                 addStandardFeatures(featureVector, Acceleration_XZ);
+                addStandardFeatures(featureVector, Acceleration_YZ);
                 addStandardFeatures(featureVector, Acceleration_XYZ);
                 addStandardFeatures(featureVector, AngularAcceleration);
             }
@@ -714,7 +746,9 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
+                addStandardFeatureHeader(headerFields, sensorType, "Velocity_XY");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XZ");
+                addStandardFeatureHeader(headerFields, sensorType, "Velocity_YZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XYZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_Angular");
             }
@@ -728,7 +762,9 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.Acceleration)) {
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Z");
+                addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XY");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XZ");
+                addStandardFeatureHeader(headerFields, sensorType, "Acceleration_YZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XYZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Angular");
             }
