@@ -483,8 +483,8 @@ public class FeatureExtractor {
                     // positional values have to be adjusted to a base value before use
                     Position_X.adjustToLowestValueAsZero();
                     Position_Z.adjustToLowestValueAsZero();
-                    addStandardFeatures(featureVector, Position_X, false, false);
-                    addStandardFeatures(featureVector, Position_Y, false, false);
+                    addStandardFeatures(featureVector, Position_X, false, false, true);
+                    addStandardFeatures(featureVector, Position_Y, false, false, true);
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
@@ -637,20 +637,20 @@ public class FeatureExtractor {
                     // the order and type-based selection here has to be consistent with the generated header
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatures(featureVector, distanceX);
-                            addStandardFeatures(featureVector, distanceY);
+                            addStandardFeatures(featureVector, distanceX, true, true, false);
+                            addStandardFeatures(featureVector, distanceY, true, true, false);
                         }
-                        addStandardFeatures(featureVector, distanceZ);
+                        addStandardFeatures(featureVector, distanceZ, true, true, false);
                         //addStandardFeatures(featureVector, distanceXZ);
                         //addStandardFeatures(featureVector, distanceXYZ);
                     }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatures(featureVector, differenceVelocityX);
-                            addStandardFeatures(featureVector, differenceVelocityY);
+                            addStandardFeatures(featureVector, differenceVelocityX, true, true, false);
+                            addStandardFeatures(featureVector, differenceVelocityY, true, true, false);
                         }
-                        addStandardFeatures(featureVector, differenceVelocityZ);
+                        addStandardFeatures(featureVector, differenceVelocityZ, true, true, false);
                         //addStandardFeatures(featureVector, differenceVelocityXZ);
                         //addStandardFeatures(featureVector, differenceVelocityXYZ);
                     }
@@ -697,8 +697,8 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                    addStandardFeatureHeader(headerFields, sensorType, "Position_X", false, false);
-                    addStandardFeatureHeader(headerFields, sensorType, "Position_Y", false, false);
+                    addStandardFeatureHeader(headerFields, sensorType, "Position_X", false, false, true);
+                    addStandardFeatureHeader(headerFields, sensorType, "Position_Y", false, false, true);
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
@@ -755,20 +755,20 @@ public class FeatureExtractor {
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_X");
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_Y");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_X", true, true, false);
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_Y", true, true, false);
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_Z");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_Z", true, true, false);
                         //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_XZ");
                         //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "PositionDistance_XYZ");
                     }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_X");
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Y");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_X", true, true, false);
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Y", true, true, false);
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Z");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Z", true, true, false);
                         //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XZ");
                         //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XYZ");
                     }
@@ -797,13 +797,13 @@ public class FeatureExtractor {
      */
     private static void addStandardFeatures(
             FeatureVector featureVector, StatisticalValueCollector valueCollector,
-            boolean includeMin, boolean includeMax) {
+            boolean includeMin, boolean includeMax, boolean median_crossing_rate) {
 
         // the order and option-based selection here has to be consistent with the standard feature header
         featureVector.addFeature(valueCollector.getMeanScaledByTime());
         featureVector.addFeature(valueCollector.getRootMeanSquare());
-        featureVector.addFeature(valueCollector.getStandardDeviation());
-        featureVector.addFeature(valueCollector.getVariance());
+        //featureVector.addFeature(valueCollector.getStandardDeviation());
+        //featureVector.addFeature(valueCollector.getVariance());
         featureVector.addFeature(valueCollector.getMeanAbsoluteDeviation());
         featureVector.addFeature(valueCollector.sort_getInterquartileRange());
 
@@ -815,21 +815,24 @@ public class FeatureExtractor {
         }
 
         featureVector.addFeature(valueCollector.sort_getRange());
-        featureVector.addFeature(valueCollector.sort_getMeanCrossingRate());
+
+        if (median_crossing_rate) {
+            featureVector.addFeature(valueCollector.sort_getMeanCrossingRate());
+        }
 
         featureVector.addFeature(valueCollector.sort_getPercentile(0.25));
         featureVector.addFeature(valueCollector.sort_getPercentile(0.75));
     }
 
     /**
-     * Add the standard features of the given ValueCollector to the given FeatureVector
+     * Add the standard set of features
      *
      * @param featureVector
      * @param valueCollector
      */
     private static void addStandardFeatures(
             FeatureVector featureVector, StatisticalValueCollector valueCollector) {
-        addStandardFeatures(featureVector, valueCollector, true, true);
+        addStandardFeatures(featureVector, valueCollector, true, true, true);
     }
 
     /**
@@ -842,13 +845,14 @@ public class FeatureExtractor {
      * @param includeMax
      */
     private static void addStandardFeatureHeader(ArrayList<String> headerFields, String sensor, String attribute,
-                                                 boolean includeMin, boolean includeMax) {
+                                                 boolean includeMin, boolean includeMax,
+                                                 boolean median_crossing_rate) {
 
         // the order and option-based selection here has to be consistent with the standard features
         headerFields.add(sensor + "_mean_" + attribute);
         headerFields.add(sensor + "_rootMeanSquare_" + attribute);
-        headerFields.add(sensor + "_standardDeviation_" + attribute);
-        headerFields.add(sensor + "_variance_" + attribute);
+        //headerFields.add(sensor + "_standardDeviation_" + attribute);
+        //headerFields.add(sensor + "_variance_" + attribute);
         headerFields.add(sensor + "_meanAbsoluteDeviation_" + attribute);
         headerFields.add(sensor + "_interquartileRange_" + attribute);
 
@@ -860,21 +864,24 @@ public class FeatureExtractor {
         }
 
         headerFields.add(sensor + "_range_" + attribute);
-        headerFields.add(sensor + "_meanCrossingRate_" + attribute);
+
+        if (median_crossing_rate) {
+            headerFields.add(sensor + "_meanCrossingRate_" + attribute);
+        }
 
         headerFields.add(sensor + "_percentile25_" + attribute);
         headerFields.add(sensor + "_percentile75_" + attribute);
     }
 
     /**
-     * Add the standard features for the given sensor and attribute to the given header fields
+     * Add headed for the standard set of features
      *
      * @param headerFields
      * @param sensor
      * @param attribute
      */
     private static void addStandardFeatureHeader(ArrayList<String> headerFields, String sensor, String attribute) {
-        addStandardFeatureHeader(headerFields, sensor, attribute, true, true);
+        addStandardFeatureHeader(headerFields, sensor, attribute, true, true, true);
     }
 
     /**
