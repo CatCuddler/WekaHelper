@@ -587,16 +587,20 @@ public class FeatureExtractor {
                     //StatisticalValueCollector distanceXYZ =
                     //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
 
-                    StatisticalValueCollector differenceVelocityX =
-                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    StatisticalValueCollector differenceVelocityY =
-                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    StatisticalValueCollector differenceVelocityZ =
-                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    //StatisticalValueCollector differenceVelocityXZ =
+                    //StatisticalValueCollector differenceVelocityX =
                     //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    //StatisticalValueCollector differenceVelocityXYZ =
+                    //StatisticalValueCollector differenceVelocityY =
                     //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    //StatisticalValueCollector differenceVelocityZ =
+                    //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    StatisticalValueCollector differenceVelocityXY =
+                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    StatisticalValueCollector differenceVelocityXZ =
+                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    StatisticalValueCollector differenceVelocityYZ =
+                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    StatisticalValueCollector differenceVelocityXYZ =
+                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
 
                     for (int i = 0; i < singleSensorA.size(); i++) {
 
@@ -641,17 +645,29 @@ public class FeatureExtractor {
                         //distanceXYZ.addValue(positionDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
                         // difference in velocity
-                        differenceVelocityX.addValue(Math.abs(
+                        /*differenceVelocityX.addValue(Math.abs(
                                 frameDataA.getLinVelX() - frameDataB.getLinVelX()), timeSinceLastFrame);
                         differenceVelocityY.addValue(Math.abs(
                                 frameDataA.getLinVelY() - frameDataB.getLinVelY()), timeSinceLastFrame);
                         differenceVelocityZ.addValue(Math.abs(
-                                frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);
-                        /*double velocityXZa = MathHelper.EuclideanNorm(
+                                frameDataA.getLinVelZ() - frameDataB.getLinVelZ()), timeSinceLastFrame);*/
+                        double velocityXYa = MathHelper.EuclideanNorm(
+                                frameDataA.getLinVelX(),
+                                frameDataA.getLinVelY());
+                        double velocityXYb = MathHelper.EuclideanNorm(
+                                frameDataB.getLinVelX(),
+                                frameDataB.getLinVelY());
+                        double velocityXZa = MathHelper.EuclideanNorm(
                                 frameDataA.getLinVelX(),
                                 frameDataA.getLinVelZ());
                         double velocityXZb = MathHelper.EuclideanNorm(
                                 frameDataB.getLinVelX(),
+                                frameDataB.getLinVelZ());
+                        double velocityYZa = MathHelper.EuclideanNorm(
+                                frameDataA.getLinVelY(),
+                                frameDataA.getLinVelZ());
+                        double velocityYZb = MathHelper.EuclideanNorm(
+                                frameDataB.getLinVelY(),
                                 frameDataB.getLinVelZ());
                         double velocityXYZa = MathHelper.EuclideanNorm(
                                 frameDataA.getLinVelX(),
@@ -660,9 +676,11 @@ public class FeatureExtractor {
                         double velocityXYZb = MathHelper.EuclideanNorm(
                                 frameDataB.getLinVelX(),
                                 frameDataB.getLinVelY(),
-                                frameDataB.getLinVelZ());*/
-                        //differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
-                        //differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
+                                frameDataB.getLinVelZ());
+                        differenceVelocityXY.addValue(Math.abs(velocityXYa - velocityXYb), timeSinceLastFrame);
+                        differenceVelocityXZ.addValue(Math.abs(velocityXZa - velocityXZb), timeSinceLastFrame);
+                        differenceVelocityYZ.addValue(Math.abs(velocityYZa - velocityYZb), timeSinceLastFrame);
+                        differenceVelocityXYZ.addValue(Math.abs(velocityXYZa - velocityXYZb), timeSinceLastFrame);
                     }
 
                     // collect the calculated dual-sensor values for output
@@ -679,12 +697,14 @@ public class FeatureExtractor {
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatures(featureVector, differenceVelocityX, true, true, false);
-                            addStandardFeatures(featureVector, differenceVelocityY, true, true, false);
+                            //addStandardFeatures(featureVector, differenceVelocityX, true, true, false);
+                            //addStandardFeatures(featureVector, differenceVelocityY, true, true, false);
                         }
-                        addStandardFeatures(featureVector, differenceVelocityZ, true, true, false);
-                        //addStandardFeatures(featureVector, differenceVelocityXZ);
-                        //addStandardFeatures(featureVector, differenceVelocityXYZ);
+                        //addStandardFeatures(featureVector, differenceVelocityZ, true, true, false);
+                        addStandardFeatures(featureVector, differenceVelocityXY);
+                        addStandardFeatures(featureVector, differenceVelocityXZ);
+                        addStandardFeatures(featureVector, differenceVelocityYZ);
+                        addStandardFeatures(featureVector, differenceVelocityXYZ);
                     }
 
                 }
@@ -801,12 +821,14 @@ public class FeatureExtractor {
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_X", true, true, false);
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Y", true, true, false);
+                            //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_X", true, true, false);
+                            //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Y", true, true, false);
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Z", true, true, false);
-                        //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XZ");
-                        //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XYZ");
+                        //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_Z", true, true, false);
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XY");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_YZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "DifferenceVelocity_XYZ");
                     }
                 }
             }
