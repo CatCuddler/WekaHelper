@@ -323,12 +323,12 @@ public class FeatureExtractor {
             StatisticalValueCollector Rotation_W =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
 
-            StatisticalValueCollector Velocity_X =
-                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-            StatisticalValueCollector Velocity_Y =
-                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-            StatisticalValueCollector Velocity_Z =
-                    new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            //StatisticalValueCollector Velocity_X =
+            //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            //StatisticalValueCollector Velocity_Y =
+            //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+            //StatisticalValueCollector Velocity_Z =
+            //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_XY =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_XZ =
@@ -338,12 +338,12 @@ public class FeatureExtractor {
             StatisticalValueCollector Velocity_XYZ =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
 
-            StatisticalValueCollector Acceleration_X =
-                    new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
-            StatisticalValueCollector Acceleration_Y =
-                    new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
-            StatisticalValueCollector Acceleration_Z =
-                    new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+            //StatisticalValueCollector Acceleration_X =
+            //        new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+            //StatisticalValueCollector Acceleration_Y =
+            //        new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+            //StatisticalValueCollector Acceleration_Z =
+            //        new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_XY =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_XZ =
@@ -375,9 +375,9 @@ public class FeatureExtractor {
                 double timeSinceLastFrame = frameData.getFrameDuration();
 
                 // velocity
-                Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
-                Velocity_Y.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
-                Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
+                //Velocity_X.addValue(Math.abs(frameData.getLinVelX()), timeSinceLastFrame);
+                //Velocity_Y.addValue(Math.abs(frameData.getLinVelY()), timeSinceLastFrame);
+                //Velocity_Z.addValue(Math.abs(frameData.getLinVelZ()), timeSinceLastFrame);
                 Velocity_XY.addValue(
                         MathHelper.EuclideanNorm(
                                 frameData.getLinVelX(),
@@ -401,9 +401,9 @@ public class FeatureExtractor {
                         timeSinceLastFrame);
 
                 // acceleration
-                Acceleration_X.addValue(Math.abs(frameData.getLinAccelerationX()), timeSinceLastFrame);
-                Acceleration_Y.addValue(Math.abs(frameData.getLinAccelerationY()), timeSinceLastFrame);
-                Acceleration_Z.addValue(Math.abs(frameData.getLinAccelerationZ()), timeSinceLastFrame);
+                //Acceleration_X.addValue(Math.abs(frameData.getLinAccelerationX()), timeSinceLastFrame);
+                //Acceleration_Y.addValue(Math.abs(frameData.getLinAccelerationY()), timeSinceLastFrame);
+                //Acceleration_Z.addValue(Math.abs(frameData.getLinAccelerationZ()), timeSinceLastFrame);
                 Acceleration_XY.addValue(
                         MathHelper.EuclideanNorm(
                                 frameData.getLinAccelerationX(),
@@ -516,8 +516,8 @@ public class FeatureExtractor {
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                    addStandardFeatures(featureVector, Velocity_X);
-                    addStandardFeatures(featureVector, Velocity_Y);
+                    //addStandardFeatures(featureVector, Velocity_X);
+                    //addStandardFeatures(featureVector, Velocity_Y);
                 }
             }
 
@@ -527,7 +527,7 @@ public class FeatureExtractor {
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatures(featureVector, Velocity_Z);
+                //addStandardFeatures(featureVector, Velocity_Z);
                 addStandardFeatures(featureVector, Velocity_XY);
                 addStandardFeatures(featureVector, Velocity_XZ);
                 addStandardFeatures(featureVector, Velocity_YZ);
@@ -537,13 +537,13 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
-                    addStandardFeatures(featureVector, Acceleration_X);
-                    addStandardFeatures(featureVector, Acceleration_Y);
+                    //addStandardFeatures(featureVector, Acceleration_X);
+                    //addStandardFeatures(featureVector, Acceleration_Y);
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
-                addStandardFeatures(featureVector, Acceleration_Z);
+                //addStandardFeatures(featureVector, Acceleration_Z);
                 addStandardFeatures(featureVector, Acceleration_XY);
                 addStandardFeatures(featureVector, Acceleration_XZ);
                 addStandardFeatures(featureVector, Acceleration_YZ);
@@ -734,8 +734,8 @@ public class FeatureExtractor {
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                    addStandardFeatureHeader(headerFields, sensorType, "Velocity_X");
-                    addStandardFeatureHeader(headerFields, sensorType, "Velocity_Y");
+                    //addStandardFeatureHeader(headerFields, sensorType, "Velocity_X");
+                    //addStandardFeatureHeader(headerFields, sensorType, "Velocity_Y");
                 }
             }
 
@@ -745,7 +745,7 @@ public class FeatureExtractor {
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
+                //addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XY");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_YZ");
@@ -755,13 +755,13 @@ public class FeatureExtractor {
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
-                    addStandardFeatureHeader(headerFields, sensorType, "Acceleration_X");
-                    addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Y");
+                    //addStandardFeatureHeader(headerFields, sensorType, "Acceleration_X");
+                    //addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Y");
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.Acceleration)) {
-                addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Z");
+                //addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Z");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XY");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_YZ");
