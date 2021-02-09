@@ -329,7 +329,6 @@ public class FeatureExtractor {
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_Z =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-
             StatisticalValueCollector Velocity_XZ =
                     new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
             StatisticalValueCollector Velocity_XYZ =
@@ -345,14 +344,15 @@ public class FeatureExtractor {
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector Acceleration_XYZ =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
+
             StatisticalValueCollector AngularVelocity =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
             StatisticalValueCollector AngularAcceleration =
                     new StatisticalValueCollector(true, false, overallTimePassed, bodySize);
 
             // collect points in order to calculate maximum range in different dimensions
-            ArrayList<ConvexHullPoint> rangePointsXZ = new ArrayList<>(singleSensorList.size());
-            Point3d[] rangePointsXYZ = new Point3d[singleSensorList.size()];
+            //ArrayList<ConvexHullPoint> rangePointsXZ = new ArrayList<>(singleSensorList.size());
+            //Point3d[] rangePointsXYZ = new Point3d[singleSensorList.size()];
 
             // collect values of this sensor over time
             for (int i = 0; i < singleSensorList.size(); i++) {
@@ -360,8 +360,8 @@ public class FeatureExtractor {
                 FrameData frameData = singleSensorList.get(i);
 
                 // collect points in order to calculate maximum range in different dimensions
-                rangePointsXZ.add(new ConvexHullPoint(frameData.getPosX(), frameData.getPosZ()));
-                rangePointsXYZ[i] = new Point3d(frameData.getPosX(), frameData.getPosY(), frameData.getPosZ());
+                //rangePointsXZ.add(new ConvexHullPoint(frameData.getPosX(), frameData.getPosZ()));
+                //rangePointsXYZ[i] = new Point3d(frameData.getPosX(), frameData.getPosY(), frameData.getPosZ());
 
                 // collect other values over time for future analysis
                 double timeSinceLastFrame = frameData.getFrameDuration();
@@ -426,7 +426,7 @@ public class FeatureExtractor {
 
             // determine individual values that do not use the collector class
             // compute convex hull in 2D, and test for maximum distance among hull points
-            List<ConvexHullPoint> rangeXZouterPoints = ConvexHull.makeHull(rangePointsXZ);
+            /*List<ConvexHullPoint> rangeXZouterPoints = ConvexHull.makeHull(rangePointsXZ);
             double rangeXZ = 0;
             for (int a = 0; a < rangeXZouterPoints.size(); a++) {
                 ConvexHullPoint pointA = rangeXZouterPoints.get(a);
@@ -462,13 +462,13 @@ public class FeatureExtractor {
                 // if there is an exception, it is because all points were too similar
                 // if this is the case, we can just keep the maximum distance value at 0
             }
-            rangeXYZ /= bodySize;
+            rangeXYZ /= bodySize;*/
 
 
             // collect the calculated single-sensor values for output
             // the order and type-based selection here has to be consistent with the generated header
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatures(featureVector, Position_Y);
+                addStandardFeatures(featureVector, Position_Z);
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Rotation)) {
@@ -484,22 +484,22 @@ public class FeatureExtractor {
                     Position_X.adjustToLowestValueAsZero();
                     Position_Z.adjustToLowestValueAsZero();
                     addStandardFeatures(featureVector, Position_X, false, false);
-                    addStandardFeatures(featureVector, Position_Z, false, false);
+                    addStandardFeatures(featureVector, Position_Y, false, false);
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatures(featureVector, Velocity_X);
-                    addStandardFeatures(featureVector, Velocity_Z);
+                    addStandardFeatures(featureVector, Velocity_Y);
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                featureVector.addFeature(rangeXZ);
-                featureVector.addFeature(rangeXYZ);
+                //featureVector.addFeature(rangeXZ);
+                //featureVector.addFeature(rangeXYZ);
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatures(featureVector, Velocity_Y);
+                addStandardFeatures(featureVector, Velocity_Z);
                 addStandardFeatures(featureVector, Velocity_XZ);
                 addStandardFeatures(featureVector, Velocity_XYZ);
                 addStandardFeatures(featureVector, AngularVelocity);
@@ -508,12 +508,12 @@ public class FeatureExtractor {
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
                     addStandardFeatures(featureVector, Acceleration_X);
-                    addStandardFeatures(featureVector, Acceleration_Z);
+                    addStandardFeatures(featureVector, Acceleration_Y);
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
-                addStandardFeatures(featureVector, Acceleration_Y);
+                addStandardFeatures(featureVector, Acceleration_Z);
                 addStandardFeatures(featureVector, Acceleration_XZ);
                 addStandardFeatures(featureVector, Acceleration_XYZ);
                 addStandardFeatures(featureVector, AngularAcceleration);
@@ -550,10 +550,10 @@ public class FeatureExtractor {
                             new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
                     StatisticalValueCollector distanceZ =
                             new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    StatisticalValueCollector distanceXZ =
-                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
-                    StatisticalValueCollector distanceXYZ =
-                            new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    //StatisticalValueCollector distanceXZ =
+                    //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
+                    //StatisticalValueCollector distanceXYZ =
+                    //        new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
 
                     StatisticalValueCollector differenceVelocityX =
                             new StatisticalValueCollector(true, true, overallTimePassed, bodySize);
@@ -586,7 +586,7 @@ public class FeatureExtractor {
                                 MathHelper.distance(
                                         frameDataA.getPosZ(),
                                         frameDataB.getPosZ());
-                        double meanDistanceCurrentFrameXZ =
+                        /*double meanDistanceCurrentFrameXZ =
                                 MathHelper.distance(
                                         frameDataA.getPosX(),
                                         frameDataA.getPosZ(),
@@ -599,14 +599,14 @@ public class FeatureExtractor {
                                         frameDataA.getPosZ(),
                                         frameDataB.getPosX(),
                                         frameDataB.getPosY(),
-                                        frameDataB.getPosZ());
+                                        frameDataB.getPosZ());*/
 
                         // distance in position
                         distanceX.addValue(meanDistanceCurrentFrameX, timeSinceLastFrame);
                         distanceY.addValue(meanDistanceCurrentFrameY, timeSinceLastFrame);
                         distanceZ.addValue(meanDistanceCurrentFrameZ, timeSinceLastFrame);
-                        distanceXZ.addValue(meanDistanceCurrentFrameXZ, timeSinceLastFrame);
-                        distanceXYZ.addValue(meanDistanceCurrentFrameXYZ, timeSinceLastFrame);
+                        //distanceXZ.addValue(meanDistanceCurrentFrameXZ, timeSinceLastFrame);
+                        //distanceXYZ.addValue(meanDistanceCurrentFrameXYZ, timeSinceLastFrame);
 
                         // difference in velocity
                         differenceVelocityX.addValue(Math.abs(
@@ -638,19 +638,19 @@ public class FeatureExtractor {
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                             addStandardFeatures(featureVector, distanceX);
-                            addStandardFeatures(featureVector, distanceZ);
+                            addStandardFeatures(featureVector, distanceY);
                         }
-                        addStandardFeatures(featureVector, distanceY);
-                        addStandardFeatures(featureVector, distanceXZ);
-                        addStandardFeatures(featureVector, distanceXYZ);
+                        addStandardFeatures(featureVector, distanceZ);
+                        //addStandardFeatures(featureVector, distanceXZ);
+                        //addStandardFeatures(featureVector, distanceXYZ);
                     }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                             addStandardFeatures(featureVector, differenceVelocityX);
-                            addStandardFeatures(featureVector, differenceVelocityZ);
+                            addStandardFeatures(featureVector, differenceVelocityY);
                         }
-                        addStandardFeatures(featureVector, differenceVelocityY);
+                        addStandardFeatures(featureVector, differenceVelocityZ);
                         addStandardFeatures(featureVector, differenceVelocityXZ);
                         addStandardFeatures(featureVector, differenceVelocityXYZ);
                     }
@@ -685,7 +685,7 @@ public class FeatureExtractor {
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatureHeader(headerFields, sensorType, "Position_Y");
+                addStandardFeatureHeader(headerFields, sensorType, "Position_Z");
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Rotation)) {
@@ -698,22 +698,22 @@ public class FeatureExtractor {
             if (TestBenchSettings.featureTagsAllowed(FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatureHeader(headerFields, sensorType, "Position_X", false, false);
-                    addStandardFeatureHeader(headerFields, sensorType, "Position_Z", false, false);
+                    addStandardFeatureHeader(headerFields, sensorType, "Position_Y", false, false);
                 }
 
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
                     addStandardFeatureHeader(headerFields, sensorType, "Velocity_X");
-                    addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
+                    addStandardFeatureHeader(headerFields, sensorType, "Velocity_Y");
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Position) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                headerFields.add(sensorType + "_range_XZ");
-                headerFields.add(sensorType + "_range_XYZ");
+                //headerFields.add(sensorType + "_range_XZ");
+                //headerFields.add(sensorType + "_range_XYZ");
             }
 
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Velocity) && !TestBenchSettings.featureTagsAllowed(FeatureType.DualSensorOnly)) {
-                addStandardFeatureHeader(headerFields, sensorType, "Velocity_Y");
+                addStandardFeatureHeader(headerFields, sensorType, "Velocity_Z");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_XYZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Velocity_Angular");
@@ -722,12 +722,12 @@ public class FeatureExtractor {
             if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                 if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.Acceleration)) {
                     addStandardFeatureHeader(headerFields, sensorType, "Acceleration_X");
-                    addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Z");
+                    addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Y");
                 }
             }
 
             if (TestBenchSettings.featureTagsAllowed(FeatureType.Acceleration)) {
-                addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Y");
+                addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Z");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_XYZ");
                 addStandardFeatureHeader(headerFields, sensorType, "Acceleration_Angular");
@@ -756,19 +756,19 @@ public class FeatureExtractor {
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Position)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                             addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_X");
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Z");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Y");
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Y");
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XZ");
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XYZ");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_Z");
+                        //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XZ");
+                        //addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "MeanDistance_XYZ");
                     }
 
                     if (TestBenchSettings.featureTagsAllowed(FeatureType.Velocity)) {
                         if (TestBenchSettings.featureTagsAllowed(TestBenchSettings.FeatureType.SubjectOrientationRelevant)) {
                             addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_X");
-                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Z");
+                            addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Y");
                         }
-                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Y");
+                        addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_Z");
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XZ");
                         addStandardFeatureHeader(headerFields, singleSensorA + "_" + singleSensorB, "differenceVelocity_XYZ");
                     }
