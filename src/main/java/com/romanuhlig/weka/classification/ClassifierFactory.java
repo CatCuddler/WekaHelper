@@ -318,7 +318,8 @@ public class ClassifierFactory {
      * @return
      */
     private Classifier getRandomForest() {
-        Classifier classifier = new RandomForest();
+        RandomForest classifier = new RandomForest();
+        classifier.setMaxDepth(20);
         return classifier;
     }
 
@@ -601,7 +602,9 @@ public class ClassifierFactory {
      * @return
      */
     private Classifier getRandomTree() {
-        Classifier classifier = new RandomTree();
+        RandomTree classifier = new RandomTree();
+        classifier.setMaxDepth(20);
+        classifier.setMinNum(2);
         return classifier;
     }
 
