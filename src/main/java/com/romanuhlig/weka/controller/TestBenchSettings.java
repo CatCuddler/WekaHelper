@@ -47,12 +47,12 @@ public class TestBenchSettings {
 
     // types of features to exclude (does not apply to existing feature file, if reused)
     private static ArrayList<FeatureType> forbiddenFeatureTypes = new ArrayList<>(Arrays.asList(
-            FeatureType.DualSensorOnly
+            FeatureType.DualSensorOnly,
 //            FeatureType.DualSensorCombination,
 //            FeatureType.Position,
 //            FeatureType.Rotation,
-//            FeatureType.Velocity,
-//            FeatureType.Acceleration
+            FeatureType.Velocity,
+            FeatureType.Acceleration
     ));
 
     // scale all features by fixed amount (required to adapt data to some algorithms, should be left at 1 if no errors)
@@ -144,7 +144,7 @@ public class TestBenchSettings {
             ,
             ClassifierType.OneR                   // only useful for sanity checks
             ,
-            ClassifierType.ZeroR                 // only useful for sanity checks
+            ClassifierType.ZeroR                  // only useful for sanity checks
 /*            ,
 //            ClassifierType.IBk                    // lazy -> slow + needs to keep data
 //            ,

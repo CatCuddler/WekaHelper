@@ -582,7 +582,8 @@ public class ClassifierFactory {
      * @return
      */
     private Classifier getREPTree() {
-        Classifier classifier = new REPTree();
+        REPTree classifier = new REPTree();
+        classifier.setMaxDepth(20);
         return classifier;
     }
 
