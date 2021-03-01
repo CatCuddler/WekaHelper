@@ -427,9 +427,9 @@ public class ClassifierFactory {
      */
     private Classifier getStacking() {
         Stacking stacking = new Stacking();
-        stacking.setMetaClassifier(getSMO());
-        Classifier[] classifiers = { getRandomForest(), getREPTree(), getJRip(), getBayesNet(),
-                getNaiveBayes(), getJ48(), getRandomTree(), getOneR() };
+        stacking.setMetaClassifier(getRandomForest());
+        Classifier[] classifiers = { getSMO(), getREPTree(), getJRip(), getBayesNet(),
+                getNaiveBayes(), getJ48(), getOneR() }; // getRandomTree()
         stacking.setClassifiers(classifiers);
         return stacking;
     }
@@ -441,7 +441,7 @@ public class ClassifierFactory {
     private Classifier getVote() {
         Vote vote = new Vote();
         Classifier[] classifiers = { getSMO(), getRandomForest(), getREPTree(), getJRip(),
-                getBayesNet(), getNaiveBayes(), getJ48(), getRandomTree(), getOneR(), getZeroR() };
+                getBayesNet(), getNaiveBayes(), getJ48(), getOneR(), getZeroR() }; // getRandomTree(),
         vote.setClassifiers(classifiers);
         return vote;
     }
