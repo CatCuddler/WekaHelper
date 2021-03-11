@@ -224,7 +224,7 @@ public class TestBenchSettings {
 
     // types of features that can be excluded from feature extraction process
     public enum FeatureType {
-        SubjectOrientationRelevant,
+        //SubjectOrientationRelevant,
         DualSensorOnly,
         DualSensorCombination,
         Position,
